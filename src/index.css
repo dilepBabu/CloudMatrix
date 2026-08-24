@@ -1,0 +1,635 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =========================================================================
+   CLOUD MATRIX TECHNOLOGIES
+   PREMIUM BLUE / CYAN DESIGN SYSTEM
+=========================================================================== */
+
+:root {
+  position: relative;
+
+  --cm-navy: #031b2e;
+  --cm-blue: #0066b3;
+  --cm-cyan: #00a9e0;
+  --cm-teal: #00a878;
+  --cm-orange: #f47b20;
+  --cm-yellow: #f2b632;
+  --cm-lime: #9cbd32;
+}
+
+/* =========================================================================
+   GLOBAL
+=========================================================================== */
+
+html {
+  position: relative;
+  scroll-behavior: auto;
+  overflow-x: hidden;
+  background: #ffffff;
+  overscroll-behavior-x: none;
+}
+
+body {
+  position: relative;
+  overflow-x: hidden;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeSpeed;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+main,
+section {
+  max-width: 100%;
+}
+
+/* =========================================================================
+   CURSOR
+=========================================================================== */
+
+@media (pointer: fine) {
+  html.signal-cursor-active,
+  html.signal-cursor-active body,
+  html.signal-cursor-active a,
+  html.signal-cursor-active button,
+  html.signal-cursor-active input,
+  html.signal-cursor-active textarea,
+  html.signal-cursor-active select {
+    cursor: none !important;
+  }
+}
+
+@media (hover: none), (pointer: coarse) {
+  html.signal-cursor-active,
+  html.signal-cursor-active body,
+  html.signal-cursor-active a,
+  html.signal-cursor-active button,
+  html.signal-cursor-active input,
+  html.signal-cursor-active textarea,
+  html.signal-cursor-active select {
+    cursor: auto !important;
+  }
+}
+
+.signal-cursor-layer {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  pointer-events: none;
+}
+
+/* =========================================================================
+   PERFORMANCE
+=========================================================================== */
+
+.motion-safe-transform {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.gpu-accelerated {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+[data-scroll-reveal] {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* =========================================================================
+   BASE
+=========================================================================== */
+
+@layer base {
+  html {
+    position: relative;
+    scroll-behavior: auto !important;
+    overflow-x: hidden;
+    background: #ffffff;
+  }
+
+  body {
+    @apply bg-white text-slate-900 font-body antialiased;
+
+    overflow-x: hidden;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display;
+  }
+
+  ::selection {
+    background: #0066b3;
+    color: #ffffff;
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
+
+/* =========================================================================
+   UTILITIES
+=========================================================================== */
+
+@layer utilities {
+  .container-x {
+    @apply mx-auto max-w-7xl px-6 md:px-10;
+  }
+
+  .eyebrow {
+    @apply font-mono text-xs uppercase tracking-[0.22em];
+
+    color: #00a9e0;
+  }
+
+  .text-gradient {
+    background: linear-gradient(110deg, #00a9e0 0%, #0066b3 48%, #00a878 100%);
+
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .hero-brand-gradient {
+    background: linear-gradient(
+      100deg,
+      #00a9e0 0%,
+      #00a9e0 35%,
+      #00a878 62%,
+      #f2b632 82%,
+      #f47b20 100%
+    );
+
+    background-size: 220% 100%;
+
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    color: transparent;
+
+    animation: brand-gradient-flow 9s ease-in-out infinite;
+  }
+
+  .cursor-interactive {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+}
+
+/* =========================================================================
+   HERO GRID
+=========================================================================== */
+
+.hero-tech-grid {
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    linear-gradient(rgba(0, 169, 224, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 169, 224, 0.045) 1px, transparent 1px);
+
+  background-size: 58px 58px;
+
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    rgba(0, 0, 0, 0.7) 55%,
+    transparent 100%
+  );
+
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    rgba(0, 0, 0, 0.7) 55%,
+    transparent 100%
+  );
+
+  opacity: 0.75;
+
+  animation: heroGridMove 24s linear infinite;
+
+  transform: translate3d(0, 0, 0);
+}
+
+/* =========================================================================
+   CLOUD VISUAL
+=========================================================================== */
+
+.cloud-visual {
+  filter: drop-shadow(0 0 25px rgba(0, 169, 224, 0.07));
+
+  transform: translateZ(0);
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* =========================================================================
+   PREMIUM GLASS
+=========================================================================== */
+
+@layer components {
+  .career-input {
+    @apply w-full rounded-xl border border-[#D5E7EC] bg-[#F9FCFD] px-4 py-3.5 text-sm text-[#173C45] outline-none transition-all duration-300 placeholder:text-[#9AAEB4] focus:border-[#00A8C4] focus:bg-white focus:ring-4 focus:ring-[#00A8C4]/10 dark:border-[#194657] dark:bg-[#071F2C] dark:text-[#E5F9FC] dark:placeholder:text-[#648A96] dark:focus:border-[#27C9DF] dark:focus:bg-[#082432] dark:focus:ring-[#27C9DF]/10;
+  }
+}
+
+.cloud-glass {
+  background: rgba(3, 27, 46, 0.78);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* =========================================================================
+   GLOWS
+=========================================================================== */
+
+.shadow-cloud {
+  box-shadow:
+    0 0 0 1px rgba(0, 169, 224, 0.08),
+    0 16px 45px rgba(0, 102, 179, 0.16);
+}
+
+.shadow-teal {
+  box-shadow: 0 0 25px rgba(0, 168, 120, 0.14);
+}
+
+.shadow-blue {
+  box-shadow: 0 0 25px rgba(0, 102, 179, 0.16);
+}
+
+/* =========================================================================
+   GRAIN
+=========================================================================== */
+
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+
+  pointer-events: none;
+
+  opacity: 0.018;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
+  z-index: 0;
+}
+
+/* =========================================================================
+   SCROLLBAR
+=========================================================================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f4f6f8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #0066b3, #00a9e0);
+
+  border-radius: 20px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #00a9e0, #00a878);
+}
+
+/* =========================================================================
+   ANIMATION HELPERS
+=========================================================================== */
+
+.animate-transform {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.decorative-layer {
+  pointer-events: none;
+  user-select: none;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* =========================================================================
+   HERO GRADIENT TEXT
+=========================================================================== */
+
+.animated-gradient-text {
+  background: linear-gradient(
+    110deg,
+    #ffffff 0%,
+    #00a9e0 25%,
+    #00a878 50%,
+    #00a9e0 75%,
+    #ffffff 100%
+  );
+
+  background-size: 250% 100%;
+
+  -webkit-background-clip: text;
+  background-clip: text;
+
+  -webkit-text-fill-color: transparent;
+
+  animation: heroGradientFlow 5s ease-in-out infinite;
+}
+
+/* =========================================================================
+   KEYFRAMES
+=========================================================================== */
+
+@keyframes heroGridMove {
+  from {
+    background-position:
+      0 0,
+      0 0;
+  }
+
+  to {
+    background-position:
+      58px 58px,
+      58px 58px;
+  }
+}
+
+@keyframes brand-gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes heroGradientFlow {
+  0% {
+    background-position: 100% 50%;
+  }
+
+  50% {
+    background-position: 0% 50%;
+  }
+
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+/* =========================================================================
+   PROCESS
+=========================================================================== */
+
+.process-fold-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.process-paper-grain {
+  background-blend-mode: multiply;
+
+  background-image:
+    radial-gradient(
+      circle at 22% 18%,
+      rgba(0, 169, 224, 0.05),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 82% 72%,
+      rgba(0, 168, 120, 0.04),
+      transparent 46%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(3, 27, 46, 0.015) 0px,
+      rgba(3, 27, 46, 0.015) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+.dark .process-paper-grain {
+  background-blend-mode: screen;
+
+  background-image:
+    radial-gradient(
+      circle at 22% 18%,
+      rgba(0, 169, 224, 0.09),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at 82% 72%,
+      rgba(139, 234, 255, 0.05),
+      transparent 46%
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.012) 0px,
+      rgba(255, 255, 255, 0.012) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+/* =========================================================================
+   REDUCED MOTION
+
+   IMPORTANT:
+   Do NOT globally force every element to 0.001ms.
+
+   Framer Motion is controlled with MotionConfig.
+=========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .grain-overlay {
+    display: none;
+  }
+
+  .hero-tech-grid,
+  .hero-light-ribbon,
+  .hero-signal-line,
+  .hero-signal-line-two,
+  .hero-shine {
+    animation: none;
+  }
+
+  .process-fold-face {
+    transform: none !important;
+  }
+}
+
+/* =========================================================================
+   TABLET
+=========================================================================== */
+
+@media (max-width: 1024px) {
+  .cloud-visual {
+    max-width: 520px;
+  }
+
+  .shadow-cloud {
+    box-shadow:
+      0 0 0 1px rgba(0, 169, 224, 0.06),
+      0 14px 40px rgba(0, 102, 179, 0.13);
+  }
+
+  .cloud-glass {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .grain-overlay {
+    opacity: 0.012;
+  }
+}
+
+/* =========================================================================
+   MOBILE
+=========================================================================== */
+
+@media (max-width: 640px) {
+  .cloud-visual {
+    max-width: 430px;
+  }
+
+  .hero-tech-grid {
+    background-size: 42px 42px;
+    animation-duration: 32s;
+  }
+
+  .shadow-cloud {
+    box-shadow:
+      0 0 0 1px rgba(0, 169, 224, 0.05),
+      0 10px 30px rgba(0, 102, 179, 0.11);
+  }
+
+  .shadow-teal,
+  .shadow-blue {
+    box-shadow: none;
+  }
+
+  .cloud-glass {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .grain-overlay {
+    opacity: 0.008;
+  }
+
+  .hero-light-ribbon {
+    opacity: 0.28;
+    filter: blur(25px);
+  }
+
+  .hero-signal-line,
+  .hero-signal-line-two {
+    opacity: 0.18;
+  }
+
+  .hero-shine {
+    opacity: 0.45;
+  }
+}
+
+/* =========================================================================
+   VERY SMALL
+=========================================================================== */
+
+@media (max-width: 480px) {
+  .hero-tech-grid {
+    background-size: 34px 34px;
+  }
+
+  .grain-overlay {
+    display: none;
+  }
+
+  .cloud-glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(3, 27, 46, 0.88);
+  }
+
+  .hero-light-ribbon,
+  .hero-shine {
+    display: none;
+  }
+
+  .hero-signal-line,
+  .hero-signal-line-two {
+    opacity: 0.1;
+  }
+}
+
+/* =========================================================================
+   LOW DATA
+
+   Keep this separate from motion preference.
+=========================================================================== */
+
+@media (prefers-reduced-data: reduce) {
+  .grain-overlay {
+    display: none;
+  }
+
+  .hero-brand-gradient {
+    animation: none;
+    background-position: 0% 50%;
+  }
+
+  .cloud-glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .hero-tech-grid,
+  .hero-light-ribbon,
+  .hero-signal-line,
+  .hero-signal-line-two,
+  .hero-shine {
+    animation: none;
+  }
+}
