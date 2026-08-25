@@ -7,7 +7,7 @@ import {
 import ScrollReveal from "../components/ScrollReveal";
 import NodeSpine from "../components/NodeSpine";
 import TiltCard from "../components/TiltCard";
-import ParallaxImageReveal from "../components/ParallaxImageReveal";
+import ParallaxImageReveal from "../components/Parallaximagereveal";
 
 import { useCursor } from "../context/CursorContext";
 import { services } from "../data/content";
