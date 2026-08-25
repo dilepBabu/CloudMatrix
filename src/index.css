@@ -633,3 +633,41 @@ section {
     animation: none;
   }
 }
+/* =========================================================
+   FAQ ONLY
+========================================================= */
+
+.faq-item {
+  position: relative;
+}
+
+.faq-question-button {
+  position: relative !important;
+  z-index: 20 !important;
+
+  width: 100% !important;
+
+  pointer-events: auto !important;
+  cursor: pointer !important;
+
+  touch-action: manipulation !important;
+
+  -webkit-user-select: none !important;
+  user-select: none !important;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+.faq-question-button > * {
+  pointer-events: none !important;
+}
+
+.faq-question-button::before,
+.faq-question-button::after {
+  pointer-events: none !important;
+}
+
+[data-faq-trigger="true"] {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}

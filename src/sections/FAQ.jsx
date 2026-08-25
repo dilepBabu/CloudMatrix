@@ -1,133 +1,153 @@
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-
-import ScrollReveal from "../components/ScrollReveal";
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { faqs } from "../data/content";
 
-function Item({ f, isOpen, onToggle }) {
+/* =========================================================
+   FAQ ITEM
+========================================================= */
+function FAQItem({ faq, index, isOpen }) {
+  const questionId = `faq-question-${index}`;
+  const answerId = `faq-answer-${index}`;
+
   return (
     <div
       className="
-        group
+        faq-item
+        relative
         border-b
         border-[#DCE8E5]
+        last:border-b-0
         dark:border-sky-400/15
       "
     >
+      {/* ===================================================
+          QUESTION
+      =================================================== */}
       <button
-        onClick={onToggle}
+        id={questionId}
+        type="button"
+        data-faq-trigger="true"
+        data-faq-index={index}
+        aria-expanded={isOpen}
+        aria-controls={answerId}
         className="
+          faq-question-button
+          group
           relative
-          w-full
+          z-[10]
           flex
+          min-h-[72px]
+          w-full
           items-center
           justify-between
           gap-4
+          rounded-xl
           py-6
           text-left
+          outline-none
+          select-none
+          cursor-pointer
+          pointer-events-auto
+          touch-manipulation
+          focus-visible:ring-2
+          focus-visible:ring-[#0F766E]/40
+          dark:focus-visible:ring-sky-400/40
         "
       >
         {/* Hover background */}
-        <motion.div
+        <span
           aria-hidden="true"
           className="
             pointer-events-none
             absolute
-            inset-x-0
-            inset-y-1
+            inset-1
+            z-0
             rounded-xl
-
             bg-[#ECF8F5]
-
+            opacity-0
+            transition-opacity
+            duration-300
+            group-hover:opacity-100
             dark:bg-sky-400/[0.045]
           "
-          initial={{ opacity: 0 }}
-          whileHover={{ opacity: 1 }}
-          transition={{ duration: 0.25 }}
         />
 
-        {/* Question */}
+        {/* Question text */}
         <span
           className="
             relative
-            z-10
-
+            z-[1]
+            flex-1
+            pointer-events-none
             font-display
-            font-medium
-
             text-base
-            md:text-lg
-
+            font-medium
+            leading-snug
             text-[#17211F]
-            dark:text-slate-100
-
             transition-colors
             duration-300
-
             group-hover:text-[#0F766E]
+            dark:text-slate-100
             dark:group-hover:text-sky-300
+            md:text-lg
           "
         >
-          {f.q}
+          {faq.q}
         </span>
 
-        {/* Plus button */}
+        {/* Plus */}
         <motion.span
-          animate={{
-            rotate: isOpen ? 45 : 0,
-            scale: isOpen ? 1.05 : 1,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 260,
-            damping: 18,
-          }}
+          aria-hidden="true"
           className="
             relative
-            z-10
-            shrink-0
-
+            z-[1]
             flex
             h-9
             w-9
+            shrink-0
+            pointer-events-none
             items-center
             justify-center
-
             rounded-full
-
             bg-gradient-to-br
             from-[#0F766E]
             via-[#0891B2]
             to-[#0D9488]
-
+            text-lg
+            font-bold
+            text-white
+            shadow-[0_6px_20px_rgba(15,118,110,0.16)]
             dark:from-[#38BDF8]
             dark:via-[#22D3EE]
             dark:to-[#0EA5E9]
-
-            text-white
             dark:text-[#061426]
-
-            text-lg
-            font-bold
-
-            shadow-[0_6px_20px_rgba(15,118,110,0.16)]
             dark:shadow-[0_6px_22px_rgba(34,211,238,0.18)]
-
-            transition-shadow
-            duration-300
-
-            group-hover:shadow-[0_8px_25px_rgba(15,118,110,0.28)]
-            dark:group-hover:shadow-[0_8px_30px_rgba(34,211,238,0.32)]
           "
+          animate={{
+            rotate: isOpen ? 45 : 0,
+            scale: isOpen ? 1.06 : 1,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 320,
+            damping: 22,
+            mass: 0.7,
+          }}
         >
           +
         </motion.span>
       </button>
 
-      {/* Answer */}
+      {/* ===================================================
+          ANSWER
+      =================================================== */}
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
+            id={answerId}
+            key={answerId}
+            role="region"
+            aria-labelledby={questionId}
             initial={{
               height: 0,
               opacity: 0,
@@ -146,12 +166,16 @@ function Item({ f, isOpen, onToggle }) {
                 ease: [0.22, 1, 0.36, 1],
               },
               opacity: {
-                duration: 0.25,
+                duration: 0.22,
               },
             }}
-            className="overflow-hidden"
+            className="
+              relative
+              z-[5]
+              overflow-hidden
+            "
           >
-            <motion.p
+            <motion.div
               initial={{
                 opacity: 0,
                 y: -8,
@@ -165,25 +189,28 @@ function Item({ f, isOpen, onToggle }) {
                 y: -5,
               }}
               transition={{
-                duration: 0.3,
-                delay: 0.05,
+                duration: 0.28,
                 ease: [0.22, 1, 0.36, 1],
               }}
               className="
-                max-w-2xl
                 pb-6
-
-                text-sm
-                md:text-[15px]
-
-                leading-relaxed
-
-                text-[#64736F]
-                dark:text-slate-300/75
+                pr-12
+                md:pr-16
               "
             >
-              {f.a}
-            </motion.p>
+              <p
+                className="
+                  max-w-2xl
+                  text-sm
+                  leading-relaxed
+                  text-[#64736F]
+                  dark:text-slate-300/75
+                  md:text-[15px]
+                "
+              >
+                {faq.a}
+              </p>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -191,56 +218,153 @@ function Item({ f, isOpen, onToggle }) {
   );
 }
 
+/* =========================================================
+   FAQ
+========================================================= */
 export default function FAQ() {
-  const [open, setOpen] = useState(0);
+  const [open, setOpen] = useState(
+    Array.isArray(faqs) && faqs.length > 0 ? 0 : -1
+  );
+
+  /* =======================================================
+     DOCUMENT POINTER HANDLER
+     
+     This is the important fix.
+
+     Even if another visual layer is sitting above the FAQ,
+     elementsFromPoint() gives us the complete stack of
+     elements underneath the pointer.
+
+     We locate the FAQ button and open that exact question.
+  ======================================================= */
+  useEffect(() => {
+    if (!Array.isArray(faqs) || faqs.length === 0) {
+      return undefined;
+    }
+
+    const handleDocumentPointerDown = (event) => {
+      /*
+       * Only normal primary mouse/touch interactions.
+       */
+      if (
+        event.pointerType === "mouse" &&
+        event.button !== 0
+      ) {
+        return;
+      }
+
+      /*
+       * Get every element below the pointer.
+       */
+      const elements = document.elementsFromPoint(
+        event.clientX,
+        event.clientY
+      );
+
+      /*
+       * Find our FAQ trigger somewhere in that stack.
+       */
+      const trigger = elements.find((element) => {
+        return (
+          element instanceof HTMLElement &&
+          element.closest(
+            "[data-faq-trigger='true']"
+          )
+        );
+      });
+
+      if (!trigger) {
+        return;
+      }
+
+      const button = trigger.closest(
+        "[data-faq-trigger='true']"
+      );
+
+      if (!button) {
+        return;
+      }
+
+      const indexValue =
+        button.getAttribute("data-faq-index");
+
+      const index = Number(indexValue);
+
+      if (
+        Number.isNaN(index) ||
+        index < 0 ||
+        index >= faqs.length
+      ) {
+        return;
+      }
+
+      /*
+       * Open selected FAQ.
+       * Clicking same FAQ closes it.
+       */
+      setOpen((current) => {
+        if (current === index) {
+          return -1;
+        }
+
+        return index;
+      });
+    };
+
+    /*
+     * Capture phase makes this very reliable.
+     */
+    document.addEventListener(
+      "pointerdown",
+      handleDocumentPointerDown,
+      true
+    );
+
+    return () => {
+      document.removeEventListener(
+        "pointerdown",
+        handleDocumentPointerDown,
+        true
+      );
+    };
+  }, []);
+
+  /* =======================================================
+     SAFETY
+  ======================================================= */
+  if (!Array.isArray(faqs) || faqs.length === 0) {
+    return null;
+  }
 
   return (
     <section
       className="
         relative
+        isolate
         overflow-hidden
-
-        py-24
-        md:py-32
-
-        /* =========================
-           LIGHT MODE
-        ========================== */
-
         bg-[#F8FAF9]
-
-        /* =========================
-           DARK MODE - BLUE
-        ========================== */
-
+        py-24
         dark:bg-[#071426]
-
-        transition-colors
-        duration-500
+        md:py-32
       "
     >
-      {/* =========================================
-          DARK BLUE AMBIENT GLOW
-      ========================================= */}
+      {/* ===================================================
+          BACKGROUND
+      =================================================== */}
 
       <div
         aria-hidden="true"
         className="
           pointer-events-none
           absolute
-
-          -top-32
           -right-32
-
+          -top-32
+          z-0
           h-80
           w-80
-
           rounded-full
-
           bg-teal-500/[0.045]
-
           blur-3xl
-
           dark:bg-sky-400/[0.055]
         "
       />
@@ -250,45 +374,76 @@ export default function FAQ() {
         className="
           pointer-events-none
           absolute
-
           -bottom-40
           -left-32
-
+          z-0
           h-96
           w-96
-
           rounded-full
-
           bg-cyan-500/[0.035]
-
           blur-3xl
-
           dark:bg-blue-500/[0.05]
         "
       />
 
-      {/* =========================================
-          CONTENT
-      ========================================= */}
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          left-1/2
+          top-1/2
+          z-0
+          h-[500px]
+          w-[500px]
+          -translate-x-1/2
+          -translate-y-1/2
+          rounded-full
+          bg-teal-400/[0.018]
+          blur-3xl
+          dark:bg-sky-400/[0.025]
+        "
+      />
 
+      {/* ===================================================
+          CONTENT
+      =================================================== */}
       <div
         className="
           container-x
-          max-w-3xl
           relative
-          z-10
+          z-[10]
+          mx-auto
+          max-w-3xl
         "
       >
-        {/* HEADER */}
-
-        <ScrollReveal className="mb-14">
+        {/* =================================================
+            HEADER
+        ================================================= */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 25,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
+          viewport={{
+            once: true,
+            amount: 0.2,
+          }}
+          transition={{
+            duration: 0.65,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="mb-14"
+        >
           <p
             className="
               eyebrow
               mb-4
-
               text-[#0F766E]
-
               dark:text-sky-300
             "
           >
@@ -297,26 +452,20 @@ export default function FAQ() {
 
           <h2
             className="
-              text-3xl
-              md:text-4xl
-
               font-display
+              text-3xl
               font-semibold
-
               text-[#17211F]
-
               dark:text-white
+              md:text-4xl
             "
           >
             Frequently asked questions
           </h2>
 
-          {/* Accent line */}
-
           <motion.div
             initial={{
               scaleX: 0,
-              transformOrigin: "left",
             }}
             whileInView={{
               scaleX: 1,
@@ -333,58 +482,95 @@ export default function FAQ() {
               mt-5
               h-[2px]
               w-20
-
+              origin-left
               rounded-full
-
               bg-gradient-to-r
               from-[#0F766E]
               via-[#0891B2]
               to-transparent
-
               dark:from-[#38BDF8]
               dark:via-[#22D3EE]
               dark:to-transparent
             "
           />
-        </ScrollReveal>
+        </motion.div>
 
-        {/* FAQ CARD */}
+        {/* =================================================
+            FAQ CARD
+        ================================================= */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            y: 25,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
+          viewport={{
+            once: true,
+            amount: 0.1,
+          }}
+          transition={{
+            duration: 0.65,
+            delay: 0.1,
+            ease: [0.22, 1, 0.36, 1],
+          }}
+          className="
+            relative
+            z-[20]
+            w-full
+            overflow-hidden
+            rounded-2xl
+            border
+            border-[#DCE8E5]
+            bg-white
+            px-5
+            shadow-[0_15px_50px_rgba(15,118,110,0.05)]
+            dark:border-sky-400/10
+            dark:bg-[#0A1B31]/75
+            dark:shadow-[0_15px_60px_rgba(14,165,233,0.07)]
+            md:px-7
+          "
+        >
+          {/* Card decoration */}
+          <div
+            aria-hidden="true"
+            className="
+              pointer-events-none
+              absolute
+              right-0
+              top-0
+              z-0
+              h-48
+              w-48
+              rounded-full
+              bg-teal-400/[0.025]
+              blur-3xl
+              dark:bg-sky-400/[0.035]
+            "
+          />
 
-        <ScrollReveal delay={0.1}>
+          {/* =================================================
+              FAQ LIST
+          ================================================= */}
           <div
             className="
-              rounded-2xl
-              border
-
-              border-[#DCE8E5]
-
-              bg-white
-
-              dark:border-sky-400/10
-              dark:bg-[#0A1B31]/75
-
-              backdrop-blur-sm
-
-              px-5
-              md:px-7
-
-              shadow-[0_15px_50px_rgba(15,118,110,0.05)]
-
-              dark:shadow-[0_15px_60px_rgba(14,165,233,0.07)]
+              relative
+              z-[50]
+              pointer-events-auto
             "
           >
-            {faqs.map((f, i) => (
-              <Item
-                key={f.q}
-                f={f}
-                isOpen={open === i}
-                onToggle={() =>
-                  setOpen(open === i ? -1 : i)
-                }
+            {faqs.map((faq, index) => (
+              <FAQItem
+                key={`${faq.q}-${index}`}
+                faq={faq}
+                index={index}
+                isOpen={open === index}
               />
             ))}
           </div>
-        </ScrollReveal>
+        </motion.div>
       </div>
     </section>
   );
