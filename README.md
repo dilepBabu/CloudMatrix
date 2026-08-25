@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Cloud Matrix Technologies — Website Redesign
 
 A modern, animated React frontend for Cloud Matrix Technologies, built with
@@ -101,3 +102,6 @@ src/
   pages/         Home, Blog, Career, TalkToExpert, PrivacyPolicy, TermsOfService, NotFound
   sections/      Home page sections (Hero, Services, FAQ, etc.)
 ```
+=======
+# CloudMatrix
+>>>>>>> 60a373921869becbc8aa70d9a223cb703961b843
