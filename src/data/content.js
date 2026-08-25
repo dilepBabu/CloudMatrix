@@ -29,7 +29,7 @@ export const company = {
 
   email: "support@cmatrix.in",
 
-  whatsappNumber: "919500966480",
+  whatsappNumber: "919994555400",
 
   /* IMPORTANT:
      These must be plain URLs.
@@ -472,7 +472,7 @@ export const testimonials = [
     quote:
       "Cloud Matrix Technologies gave us a user-friendly billing platform with many features in one place. It is genuinely easy to use.",
 
-    name: "dlipbabu",
+    name: "Kevin T",
 
     role: "Cafe Owner, Salem",
   },
@@ -490,7 +490,7 @@ export const testimonials = [
     quote:
       "We needed a customized software solution for our daily operations, and Cloud Matrix Technologies built exactly what our business required. The solution has made our workflow much more organized.",
 
-    name: "harivignesh",
+    name: "Harivignesh",
 
     role: "Managing Director, Salem",
   },
@@ -517,7 +517,7 @@ export const testimonials = [
     quote:
       "What impressed us most was their ability to understand our business before suggesting a technology solution. Their approach was practical, transparent, and focused on our actual requirements.",
 
-    name: "Ramesh",
+    name: "Deepak",
 
     role: "Director, Salem",
   },
@@ -535,7 +535,7 @@ export const testimonials = [
     quote:
       "We were looking for a reliable technology partner rather than just a development company. Cloud Matrix Technologies provided excellent communication, technical guidance, and a solution that fits our business.",
 
-    name: "Suresh",
+    name: "Jai Amudhan",
 
     role: "Founder, Tamil Nadu",
   },
@@ -544,7 +544,7 @@ export const testimonials = [
     quote:
       "The team was very responsive throughout the project. They listened to our feedback, made the necessary improvements, and ensured the final product matched our expectations.",
 
-    name: "Manoj",
+    name: "George Antony",
 
     role: "Business Owner, Salem",
   },
