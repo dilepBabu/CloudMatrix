@@ -1,12 +1,7 @@
-import {
-  motion,
-  useScroll,
-} from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 
 export default function ScrollProgress() {
-  const {
-    scrollYProgress,
-  } = useScroll();
+  const { scrollYProgress } = useScroll();
 
   return (
     <div
@@ -19,18 +14,19 @@ export default function ScrollProgress() {
         top-0
         z-[60]
         h-[2px]
+        transform-gpu
       "
     >
       <motion.div
         style={{
           scaleX: scrollYProgress,
-          transformOrigin:
-            "0% 50%",
+          transformOrigin: "0% 50%",
         }}
         className="
           h-full
           w-full
           bg-node-gradient
+          will-change-transform
         "
       />
     </div>

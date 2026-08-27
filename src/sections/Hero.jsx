@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   motion,
@@ -34,6 +34,53 @@ const SMOOTH_EASE = [
   0.36,
   1,
 ];
+
+/* =========================================================================
+   PERFORMANCE MODE
+
+   Full effects are reserved for higher-capability desktop hardware.
+   Laptops, tablets, iPad and mobile use the same visual direction but
+   remove the expensive continuous 3D/blur/parallax layers.
+=========================================================================== */
+
+function usePerformanceMode() {
+  const [mode, setMode] = useState("touch");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const getMode = () => {
+      const fine = window.matchMedia("(pointer: fine)").matches;
+      const width = window.innerWidth;
+      const cores = navigator.hardwareConcurrency || 4;
+      const memory = navigator.deviceMemory || 8;
+
+      if (!fine) return "touch";
+
+      if (width >= 1440 && cores >= 6 && memory >= 6) {
+        return "full";
+      }
+
+      return "light";
+    };
+
+    const update = () => setMode(getMode());
+
+    update();
+
+    window.addEventListener("resize", update, { passive: true });
+
+    const pointerQuery = window.matchMedia("(pointer: fine)");
+    pointerQuery.addEventListener?.("change", update);
+
+    return () => {
+      window.removeEventListener("resize", update);
+      pointerQuery.removeEventListener?.("change", update);
+    };
+  }, []);
+
+  return mode;
+}
 
 /* =========================================================================
    CONTENT ANIMATION
@@ -143,6 +190,7 @@ function AnimatedWords({
 
 function HeroBackground({
   scrollYProgress,
+  performance = "light",
 }) {
   const mouseX =
     useMotionValue(0);
@@ -227,6 +275,41 @@ function HeroBackground({
       [0, 1],
       [0, -45]
     );
+
+  /* -----------------------------------------------------------------------
+     LIGHTWEIGHT BACKGROUND
+
+     The scroll-linked/pointer-driven layers remain only on full mode.
+     This prevents dozens of animated blur/compositing layers from
+     competing with the scroll frame on laptops and touch devices.
+  ----------------------------------------------------------------------- */
+
+  if (performance !== "full") {
+    return (
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 z-0 overflow-hidden bg-[#031B2E]"
+      >
+        <div className="pointer-events-none absolute inset-0 bg-[#031B2E]" />
+
+        <div
+          className="pointer-events-none absolute inset-[-10%] hero-tech-grid opacity-[0.12]"
+        />
+
+        <div
+          className="pointer-events-none absolute -right-32 -top-32 h-[420px] w-[420px] rounded-full bg-[#0066B3]/10 blur-[55px]"
+        />
+
+        <div
+          className="pointer-events-none absolute -bottom-40 -left-32 h-[400px] w-[400px] rounded-full bg-[#00A9E0]/8 blur-[50px]"
+        />
+
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[25%] bg-gradient-to-t from-[#031B2E] via-[#031B2E]/35 to-transparent"
+        />
+      </div>
+    );
+  }
 
   /* -----------------------------------------------------------------------
      POINTER
@@ -793,6 +876,7 @@ function HeroBackground({
 
 function AnimatedHeroImage({
   scrollYProgress,
+  performance = "light",
 }) {
   const imageRef =
     useRef(null);
@@ -1089,6 +1173,43 @@ function AnimatedHeroImage({
       [0, 1],
       [0, 28]
     );
+
+  /* -----------------------------------------------------------------------
+     LIGHTWEIGHT IMAGE MODE
+  ----------------------------------------------------------------------- */
+
+  if (performance !== "full") {
+    return (
+      <div
+        className="relative w-full max-w-[760px] select-none aspect-[16/10] transform-gpu"
+      >
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-[8%] rounded-[36px] bg-[#0066B3]/12 blur-[35px]"
+        />
+
+        <motion.div
+          style={{ y: performance === "light" ? scrollY : 0 }}
+          className="relative z-10 h-full w-full overflow-hidden rounded-[30px] border border-[#00A9E0]/20 bg-[#031B2E] shadow-[0_25px_65px_rgba(0,0,0,0.30)] transform-gpu"
+        >
+          <img
+            src={HERO_IMAGE}
+            alt="Cloud Matrix Technologies AI Cloud Solutions"
+            draggable="false"
+            loading="eager"
+            decoding="async"
+
+            className="pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+          />
+
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(3,27,46,0.04),transparent_38%,rgba(0,102,179,0.10)_72%,rgba(3,27,46,0.30))]"
+          />
+        </motion.div>
+      </div>
+    );
+  }
 
   /* -----------------------------------------------------------------------
      POINTER MOVE
@@ -2124,6 +2245,8 @@ function AnimatedHeroImage({
 =========================================================================== */
 
 export default function Hero() {
+  const performance = usePerformanceMode();
+
   const ref =
     useRef(null);
 
@@ -2174,6 +2297,7 @@ export default function Hero() {
         scrollYProgress={
           scrollYProgress
         }
+        performance={performance}
       />
 
       {/* GRAIN */}
@@ -2524,6 +2648,7 @@ export default function Hero() {
               scrollYProgress={
                 scrollYProgress
               }
+              performance={performance}
             />
           </motion.div>
         </div>

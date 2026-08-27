@@ -25,51 +25,46 @@
 
 html {
   position: relative;
-
-  /*
-   * Lenis controls smooth scrolling.
-   * Do not use browser smooth scrolling at the same time.
-   */
+  width: 100%;
+  min-width: 0;
   scroll-behavior: auto !important;
-
   overflow-x: clip;
-
   background: #ffffff;
-
   overscroll-behavior-x: none;
 }
 
 body {
   position: relative;
-
   width: 100%;
-
+  min-width: 0;
   margin: 0;
   padding: 0;
 
   overflow-x: clip;
-
-  /*
-   * Do not disable normal vertical browser scrolling.
-   */
   overscroll-behavior-x: none;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  /*
+   * Keep this because your site contains a lot of animated
+   * graphics and text. It avoids expensive typographic
+   * rendering while scrolling.
+   */
   text-rendering: optimizeSpeed;
 }
 
 #root {
+  position: relative;
   width: 100%;
-  min-height: 100vh;
   min-width: 0;
-
+  min-height: 100vh;
   overflow-x: clip;
 }
 
 main,
 section {
+  width: 100%;
   max-width: 100%;
   min-width: 0;
 }
@@ -103,36 +98,8 @@ section {
 }
 
 .signal-cursor-layer {
-  transform: translate3d(0, 0, 0);
-
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-
   pointer-events: none;
-}
-
-/* =========================================================================
-   PERFORMANCE
-=========================================================================== */
-
-.motion-safe-transform {
   transform: translate3d(0, 0, 0);
-
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.gpu-accelerated {
-  transform: translate3d(0, 0, 0);
-
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/*
- * Do not force will-change on every reveal.
- */
-[data-scroll-reveal] {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -144,22 +111,21 @@ section {
 @layer base {
   html {
     position: relative;
-
     scroll-behavior: auto !important;
-
     overflow-x: clip;
-
     background: #ffffff;
   }
 
   body {
     @apply bg-white text-slate-900 font-body antialiased;
 
+    position: relative;
     width: 100%;
+    min-width: 0;
     margin: 0;
     padding: 0;
-
     overflow-x: clip;
+    overscroll-behavior-x: none;
   }
 
   h1,
@@ -184,6 +150,50 @@ section {
 }
 
 /* =========================================================================
+   BASIC GPU / COMPOSITING HELPERS
+=========================================================================== */
+
+.motion-safe-transform {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.gpu-accelerated {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.animate-transform {
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.decorative-layer {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.no-select {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/*
+ * Do not apply will-change globally.
+ * It can create too many compositor layers.
+ */
+[data-scroll-reveal="true"],
+.cloud-visual,
+.hero-tech-grid,
+.signal-cursor-layer {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* =========================================================================
    UTILITIES
 =========================================================================== */
 
@@ -199,36 +209,32 @@ section {
   }
 
   .text-gradient {
-    background:
-      linear-gradient(
-        110deg,
-        #00a9e0 0%,
-        #0066b3 48%,
-        #00a878 100%
-      );
+    background: linear-gradient(
+      110deg,
+      #00a9e0 0%,
+      #0066b3 48%,
+      #00a878 100%
+    );
 
     -webkit-background-clip: text;
     background-clip: text;
-
     color: transparent;
   }
 
   .hero-brand-gradient {
-    background:
-      linear-gradient(
-        100deg,
-        #00a9e0 0%,
-        #00a9e0 35%,
-        #00a878 62%,
-        #f2b632 82%,
-        #f47b20 100%
-      );
+    background: linear-gradient(
+      100deg,
+      #00a9e0 0%,
+      #00a9e0 35%,
+      #00a878 62%,
+      #f2b632 82%,
+      #f47b20 100%
+    );
 
     background-size: 220% 100%;
 
     -webkit-background-clip: text;
     background-clip: text;
-
     color: transparent;
 
     animation:
@@ -265,21 +271,19 @@ section {
 
   background-size: 58px 58px;
 
-  mask-image:
-    linear-gradient(
-      to bottom,
-      black 0%,
-      rgba(0, 0, 0, 0.7) 55%,
-      transparent 100%
-    );
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    rgba(0, 0, 0, 0.7) 55%,
+    transparent 100%
+  );
 
-  -webkit-mask-image:
-    linear-gradient(
-      to bottom,
-      black 0%,
-      rgba(0, 0, 0, 0.7) 55%,
-      transparent 100%
-    );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    rgba(0, 0, 0, 0.7) 55%,
+    transparent 100%
+  );
 
   opacity: 0.75;
 
@@ -290,6 +294,9 @@ section {
     infinite;
 
   transform: translate3d(0, 0, 0);
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 /* =========================================================================
@@ -303,7 +310,7 @@ section {
       rgba(0, 169, 224, 0.07)
     );
 
-  transform: translateZ(0);
+  transform: translate3d(0, 0, 0);
 
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -320,24 +327,20 @@ section {
 }
 
 .cloud-glass {
-  background:
-    rgba(3, 27, 46, 0.78);
+  background: rgba(3, 27, 46, 0.78);
 
-  border:
-    1px solid
-    rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 
-  backdrop-filter:
-    blur(10px);
-
-  -webkit-backdrop-filter:
-    blur(10px);
+  /*
+   * Keep your glass effect on desktop.
+   * Responsive reductions are below.
+   */
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 
   box-shadow:
-    0 20px 50px
-      rgba(0, 0, 0, 0.2),
-    inset 0 1px 0
-      rgba(255, 255, 255, 0.06);
+    0 20px 50px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* =========================================================================
@@ -373,6 +376,7 @@ section {
   inset: 0;
 
   pointer-events: none;
+  z-index: 0;
 
   opacity: 0.018;
 
@@ -380,8 +384,6 @@ section {
     url(
       "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"
     );
-
-  z-index: 0;
 }
 
 /* =========================================================================
@@ -417,28 +419,6 @@ section {
 }
 
 /* =========================================================================
-   ANIMATION HELPERS
-=========================================================================== */
-
-.animate-transform {
-  transform:
-    translate3d(0, 0, 0);
-
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.decorative-layer {
-  pointer-events: none;
-  user-select: none;
-}
-
-.no-select {
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* =========================================================================
    HERO GRADIENT TEXT
 =========================================================================== */
 
@@ -457,7 +437,6 @@ section {
 
   -webkit-background-clip: text;
   background-clip: text;
-
   -webkit-text-fill-color: transparent;
 
   animation:
@@ -569,182 +548,18 @@ section {
 }
 
 /* =========================================================================
-   REDUCED MOTION
-=========================================================================== */
-
-@media (prefers-reduced-motion: reduce) {
-  .grain-overlay {
-    display: none;
-  }
-
-  .hero-tech-grid,
-  .hero-light-ribbon,
-  .hero-signal-line,
-  .hero-signal-line-two,
-  .hero-shine,
-  .hero-brand-gradient,
-  .animated-gradient-text {
-    animation: none !important;
-  }
-
-  .process-fold-face {
-    transform: none !important;
-  }
-}
-
-/* =========================================================================
-   TABLET
-=========================================================================== */
-
-@media (max-width: 1024px) {
-  .cloud-visual {
-    max-width: 520px;
-  }
-
-  .shadow-cloud {
-    box-shadow:
-      0 0 0 1px
-        rgba(0, 169, 224, 0.06),
-      0 14px 40px
-        rgba(0, 102, 179, 0.13);
-  }
-
-  .cloud-glass {
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-  }
-
-  .grain-overlay {
-    opacity: 0.006;
-  }
-}
-
-/* =========================================================================
-   MOBILE
-=========================================================================== */
-
-@media (max-width: 768px) {
-  .cloud-visual {
-    max-width: 430px;
-  }
-
-  /*
-   * Make large effects cheaper.
-   */
-  .cloud-glass {
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
-  }
-
-  .grain-overlay {
-    opacity: 0.003;
-  }
-
-  .shadow-cloud {
-    box-shadow:
-      0 0 0 1px
-        rgba(0, 169, 224, 0.035),
-      0 8px 22px
-        rgba(0, 102, 179, 0.07);
-  }
-
-  .shadow-teal,
-  .shadow-blue {
-    box-shadow: none;
-  }
-
-  .hero-tech-grid {
-    background-size: 42px 42px;
-    animation-duration: 32s;
-  }
-
-  .hero-light-ribbon {
-    opacity: 0.18;
-  }
-
-  .hero-signal-line,
-  .hero-signal-line-two {
-    opacity: 0.12;
-  }
-
-  .hero-shine {
-    opacity: 0.35;
-  }
-}
-
-/* =========================================================================
-   VERY SMALL
-=========================================================================== */
-
-@media (max-width: 480px) {
-  .hero-tech-grid {
-    background-size: 34px 34px;
-  }
-
-  .grain-overlay {
-    display: none;
-  }
-
-  .cloud-glass {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-
-    background:
-      rgba(3, 27, 46, 0.88);
-  }
-
-  .hero-light-ribbon,
-  .hero-shine {
-    display: none;
-  }
-
-  .hero-signal-line,
-  .hero-signal-line-two {
-    opacity: 0.08;
-  }
-}
-
-/* =========================================================================
-   LOW DATA
-=========================================================================== */
-
-@media (prefers-reduced-data: reduce) {
-  .grain-overlay {
-    display: none;
-  }
-
-  .hero-brand-gradient {
-    animation: none;
-
-    background-position:
-      0% 50%;
-  }
-
-  .cloud-glass {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
-  .hero-tech-grid,
-  .hero-light-ribbon,
-  .hero-signal-line,
-  .hero-signal-line-two,
-  .hero-shine {
-    animation: none;
-  }
-}
-/* =========================================================
    LIGHTWEIGHT SCROLL REVEAL
-========================================================= */
+
+   IMPORTANT:
+   These values intentionally match your existing animation.
+
+   No direction is overridden by responsive rules.
+=========================================================================== */
 
 [data-scroll-reveal="true"] {
-  /*
-   * Defaults.
-   */
   --reveal-x: 0px;
   --reveal-y: 22px;
   --reveal-scale: 0.995;
-
   --reveal-delay: 0s;
   --reveal-duration: 0.5s;
 
@@ -760,9 +575,6 @@ section {
       var(--reveal-scale)
     );
 
-  /*
-   * Only transform and opacity are animated.
-   */
   transition:
     opacity
       var(--reveal-duration)
@@ -773,6 +585,7 @@ section {
         1
       )
       var(--reveal-delay),
+
     transform
       var(--reveal-duration)
       cubic-bezier(
@@ -787,6 +600,16 @@ section {
   -webkit-backface-visibility: hidden;
 }
 
+/*
+ * Only ask the browser to prepare the element while it
+ * is actually hidden/revealing.
+ */
+[data-scroll-reveal="true"][data-reveal-visible="false"] {
+  will-change:
+    transform,
+    opacity;
+}
+
 [data-scroll-reveal="true"][data-reveal-visible="true"] {
   opacity: 1;
 
@@ -797,11 +620,13 @@ section {
       0
     )
     scale(1);
+
+  will-change: auto;
 }
 
-/* =========================================================
-   DIRECTIONS
-========================================================= */
+/* =========================================================================
+   REVEAL DIRECTIONS
+=========================================================================== */
 
 [data-scroll-reveal="true"][data-reveal-direction="up"] {
   --reveal-x: 0px;
@@ -839,63 +664,14 @@ section {
   --reveal-scale: 0.96;
 }
 
-/* =========================================================
-   TABLET
-========================================================= */
-
-@media (max-width: 1024px) {
-  [data-scroll-reveal="true"] {
-    --reveal-y: 17px;
-  }
-}
-
-/* =========================================================
-   MOBILE
-========================================================= */
-
-@media (max-width: 768px) {
-  [data-scroll-reveal="true"] {
-    --reveal-y: 14px;
-    --reveal-duration: 0.42s;
-  }
-}
-
-/* =========================================================
-   SMALL MOBILE
-========================================================= */
-
-@media (max-width: 480px) {
-  [data-scroll-reveal="true"] {
-    --reveal-y: 12px;
-    --reveal-duration: 0.38s;
-  }
-}
-
-/* =========================================================
-   REDUCED MOTION
-========================================================= */
-
-@media (prefers-reduced-motion: reduce) {
-  [data-scroll-reveal="true"] {
-    opacity: 1 !important;
-
-    transform: none !important;
-
-    transition: none !important;
-  }
-}
-
-/* =========================================================
+/* =========================================================================
    SERVICE PAGE
-========================================================= */
+=========================================================================== */
 
 .service-page {
   position: relative;
-
   width: 100%;
-
   min-width: 0;
-
   overflow-x: clip;
 }
 
@@ -905,24 +681,21 @@ section {
 
 .service-card {
   position: relative;
-
   min-width: 0;
 
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
-/* =========================================================
+/* =========================================================================
    SERVICE SHINE
-========================================================= */
+=========================================================================== */
 
 .service-shine {
   position: absolute;
-
   inset: 0;
 
   pointer-events: none;
-
   overflow: hidden;
 
   transform:
@@ -981,9 +754,9 @@ section {
   }
 }
 
-/* =========================================================
+/* =========================================================================
    SERVICE GLOW
-========================================================= */
+=========================================================================== */
 
 .service-glow {
   pointer-events: none;
@@ -999,49 +772,103 @@ section {
   -webkit-backface-visibility: hidden;
 }
 
-/* =========================================================
-   TABLET SERVICE
-========================================================= */
+/* =========================================================================
+   TABLET
+=========================================================================== */
 
 @media (max-width: 1024px) {
-  .service-card {
+  .cloud-visual {
+    max-width: 520px;
+  }
+
+  .shadow-cloud {
     box-shadow:
-      0 10px 30px
-      rgba(
-        0,
-        102,
-        179,
-        0.08
-      );
+      0 0 0 1px
+        rgba(
+          0,
+          169,
+          224,
+          0.06
+        ),
+      0 14px 40px
+        rgba(
+          0,
+          102,
+          179,
+          0.13
+        );
   }
 
-  .service-shine {
-    opacity: 0.7;
-  }
-
-  .service-page .blur-3xl {
-    opacity: 0.65;
-  }
-
-  .service-page .blur-2xl {
-    opacity: 0.7;
+  .cloud-glass {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
   }
 }
 
-/* =========================================================
-   MOBILE SERVICE
-========================================================= */
+/* =========================================================================
+   MOBILE
+=========================================================================== */
 
 @media (max-width: 768px) {
+  .cloud-visual {
+    max-width: 430px;
+  }
+
+  .cloud-glass {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+
+  .shadow-cloud {
+    box-shadow:
+      0 0 0 1px
+        rgba(
+          0,
+          169,
+          224,
+          0.035
+        ),
+      0 8px 22px
+        rgba(
+          0,
+          102,
+          179,
+          0.07
+        );
+  }
+
+  .shadow-teal,
+  .shadow-blue {
+    box-shadow: none;
+  }
+
+  .hero-tech-grid {
+    background-size: 42px 42px;
+    animation-duration: 32s;
+  }
+
+  .hero-light-ribbon {
+    opacity: 0.18;
+  }
+
+  .hero-signal-line,
+  .hero-signal-line-two {
+    opacity: 0.12;
+  }
+
+  .hero-shine {
+    opacity: 0.35;
+  }
+
   .service-card {
     box-shadow:
       0 7px 22px
-      rgba(
-        0,
-        102,
-        179,
-        0.07
-      );
+        rgba(
+          0,
+          102,
+          179,
+          0.07
+        );
   }
 
   .service-shine {
@@ -1057,121 +884,245 @@ section {
   }
 }
 
-/* =========================================================
+/* =========================================================================
    SMALL MOBILE
-========================================================= */
+=========================================================================== */
 
 @media (max-width: 480px) {
+  .hero-tech-grid {
+    background-size: 34px 34px;
+  }
+
+  .cloud-glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+
+    background:
+      rgba(
+        3,
+        27,
+        46,
+        0.88
+      );
+  }
+
+  .grain-overlay {
+    display: none;
+  }
+
+  .hero-light-ribbon,
+  .hero-shine {
+    display: none;
+  }
+
+  .hero-signal-line,
+  .hero-signal-line-two {
+    opacity: 0.08;
+  }
+
   .service-shine {
     opacity: 0.24;
   }
 }
 
-/* =========================================================
-   GLOBAL SCROLL PERFORMANCE
-========================================================= */
+/* =========================================================================
+   TOUCH DEVICES / IPAD
 
-html {
-  position: relative;
+   Keep native browser scrolling.
+   Don't force extra GPU behavior onto touch layouts.
+=========================================================================== */
 
-  scroll-behavior: auto !important;
-
-  overflow-x: clip;
-
-  background: #ffffff;
-
-  overscroll-behavior-x: none;
-}
-
-body {
-  position: relative;
-
-  width: 100%;
-
-  margin: 0;
-  padding: 0;
-
-  overflow-x: clip;
-
-  overscroll-behavior-x: none;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#root {
-  width: 100%;
-
-  min-width: 0;
-
-  min-height: 100vh;
-
-  overflow-x: clip;
-}
-
-main,
-section {
-  max-width: 100%;
-  min-width: 0;
-}
-
-/* =========================================================
-   DON'T CREATE GPU LAYERS EVERYWHERE
-========================================================= */
-
-.motion-safe-transform {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-.gpu-accelerated {
-  transform:
-    translate3d(
-      0,
-      0,
-      0
-    );
-
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/*
- * Important:
- * Don't put will-change on every scroll reveal.
- */
-[data-scroll-reveal] {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-}
-
-/* =========================================================
-   MOBILE PERFORMANCE
-========================================================= */
-
-@media (max-width: 768px) {
-  .shadow-teal,
-  .shadow-blue {
-    box-shadow: none;
+@media (hover: none), (pointer: coarse) {
+  /*
+   * Avoid creating unnecessary compositor layers for
+   * static reveal elements on touch devices.
+   */
+  [data-scroll-reveal="true"][data-reveal-visible="true"] {
+    will-change: auto;
   }
 
+  /*
+   * Pointer hover effects aren't useful on touch devices.
+   */
+  .service-shine {
+    animation: none !important;
+  }
+}
+
+/* =========================================================================
+   REDUCED MOTION
+=========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
   .grain-overlay {
-    opacity: 0.003;
+    display: none;
   }
 
-  .cloud-glass {
-    backdrop-filter: blur(3px);
-    -webkit-backdrop-filter: blur(3px);
+  .hero-tech-grid,
+  .hero-light-ribbon,
+  .hero-signal-line,
+  .hero-signal-line-two,
+  .hero-shine,
+  .hero-brand-gradient,
+  .animated-gradient-text {
+    animation: none !important;
+  }
+
+  .process-fold-face {
+    transform: none !important;
+  }
+
+  [data-scroll-reveal="true"] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+
+  html {
+    scroll-behavior: auto !important;
   }
 }
 
-@media (max-width: 480px) {
+/* =========================================================================
+   LOW DATA
+=========================================================================== */
+
+@media (prefers-reduced-data: reduce) {
+  .grain-overlay {
+    display: none;
+  }
+
+  .hero-brand-gradient {
+    animation: none;
+    background-position: 0% 50%;
+  }
+
   .cloud-glass {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
 
-  .grain-overlay {
+  .hero-tech-grid,
+  .hero-light-ribbon,
+  .hero-signal-line,
+  .hero-signal-line-two,
+  .hero-shine {
+    animation: none;
+  }
+}
+
+/* =========================================================================
+   ADDITIONAL HERO COMPOSITING HELPERS
+
+   Use data-hero-layer="true" on large animated decorative
+   Motion elements in the Hero component.
+
+   This does NOT change their animation.
+=========================================================================== */
+
+[data-hero-layer="true"] {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/*
+ * Only animated layers should use will-change.
+ * Avoid putting this class on the complete hero.
+ */
+[data-hero-layer="true"].will-change-transform {
+  will-change: transform;
+}
+
+/* =========================================================================
+   SCROLL PROGRESS
+=========================================================================== */
+
+[aria-hidden="true"] {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* =========================================================================
+   FINAL RESPONSIVE PERFORMANCE
+=========================================================================== */
+
+/*
+ * Desktop:
+ * Full visual effects remain enabled.
+ */
+
+@media (min-width: 1025px) {
+  .hero-tech-grid,
+  .cloud-visual,
+  .service-glow {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/*
+ * Tablet / iPad:
+ * Keep the visual design but reduce expensive compositing.
+ */
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .service-page .blur-3xl {
+    opacity: 0.65;
+  }
+
+  .service-page .blur-2xl {
+    opacity: 0.7;
+  }
+}
+/* =========================================================
+   FUTURISTIC IMAGE SHINE
+   Transform-only animation: cheap during scroll.
+========================================================= */
+
+.service-image-shine {
+  left: -70%;
+  transform: translate3d(-140%, 0, 0) skewX(-22deg);
+  opacity: 0;
+}
+
+.group:hover .service-image-shine {
+  opacity: 1;
+  animation: serviceImageShine 1.15s cubic-bezier(0.16, 1, 0.3, 1) 1;
+}
+
+@keyframes serviceImageShine {
+  0% {
+    transform: translate3d(-140%, 0, 0) skewX(-22deg);
+  }
+
+  100% {
+    transform: translate3d(520%, 0, 0) skewX(-22deg);
+  }
+}
+
+/* Desktop Hero shine should remain subtle and transform-only. */
+
+@media (max-width: 1024px) {
+  .service-image-shine {
     display: none;
+  }
+
+  /* Keep the service image interactive without running a sweep. */
+  .group:active .service-image-shine {
+    display: none;
+  }
+}
+
+/* Touch devices: remove hover-dependent shine and keep the image responsive. */
+@media (hover: none), (pointer: coarse) {
+  .service-image-shine {
+    display: none !important;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .service-image-shine {
+    display: none !important;
   }
 }

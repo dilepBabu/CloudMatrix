@@ -4,32 +4,47 @@ import {
   useSpring,
   useTransform,
   useReducedMotion,
+  useInView,
 } from "framer-motion";
-import { useRef } from "react";
+
+import {
+  useEffect,
+  useRef,
+} from "react";
+
 import ScrollReveal from "../components/ScrollReveal";
-import { vision, missionPoints } from "../data/content";
+
+import {
+  vision,
+  missionPoints,
+} from "../data/content";
 
 /* =========================================================
    STATIC VARIANTS
 ========================================================= */
+
+const EASE = [0.22, 1, 0.36, 1];
 
 const sectionVariants = {
   hidden: {
     opacity: 0,
     y: 30,
   },
+
   visible: {
     opacity: 1,
     y: 0,
+
     transition: {
       duration: 0.7,
-      ease: [0.22, 1, 0.36, 1],
+      ease: EASE,
     },
   },
 };
 
 const foundationContainer = {
   hidden: {},
+
   visible: {
     transition: {
       staggerChildren: 0.08,
@@ -43,18 +58,21 @@ const foundationItem = {
     opacity: 0,
     y: 14,
   },
+
   visible: {
     opacity: 1,
     y: 0,
+
     transition: {
       duration: 0.5,
-      ease: [0.22, 1, 0.36, 1],
+      ease: EASE,
     },
   },
 };
 
 const missionContainer = {
   hidden: {},
+
   visible: {
     transition: {
       staggerChildren: 0.07,
@@ -68,12 +86,14 @@ const missionItem = {
     opacity: 0,
     x: 18,
   },
+
   visible: {
     opacity: 1,
     x: 0,
+
     transition: {
       duration: 0.5,
-      ease: [0.22, 1, 0.36, 1],
+      ease: EASE,
     },
   },
 };
@@ -94,7 +114,50 @@ const foundationItems = [
 
 export default function CompanyIntro() {
   const sectionRef = useRef(null);
+
+  /*
+   * Framer Motion reduced-motion preference.
+   */
   const shouldReduceMotion = useReducedMotion();
+
+  /*
+   * Track whether this section is actually near the viewport.
+   *
+   * This is used ONLY to pause expensive decorative loops
+   * while the section is completely off-screen.
+   *
+   * It does NOT change the visible animation.
+   */
+  const sectionInView = useInView(sectionRef, {
+    once: false,
+    amount: 0.05,
+    margin: "15% 0px 15% 0px",
+  });
+
+  /* =======================================================
+     POINTER CAPABILITY
+  ======================================================= */
+
+  const canUsePointerRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const finePointer = window.matchMedia(
+      "(pointer: fine)"
+    ).matches;
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    ).matches;
+
+    canUsePointerRef.current =
+      finePointer && !reducedMotion;
+
+    return undefined;
+  }, []);
 
   /* =======================================================
      MOUSE MOTION
@@ -103,6 +166,10 @@ export default function CompanyIntro() {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
+  /*
+   * Keep the original spring values.
+   * These control the visual feel of the existing card motion.
+   */
   const smoothX = useSpring(mouseX, {
     stiffness: 90,
     damping: 24,
@@ -148,11 +215,49 @@ export default function CompanyIntro() {
   );
 
   /* =======================================================
+     POINTER RAF
+     
+     IMPORTANT:
+     Browser pointer events can fire far more frequently
+     than needed.
+
+     We store the latest pointer coordinates and update
+     Framer Motion at most once per animation frame.
+  ======================================================= */
+
+  const pointerFrameRef = useRef(0);
+
+  const latestPointerRef = useRef({
+    x: 0,
+    y: 0,
+  });
+
+  /* =======================================================
      MOUSE MOVE
   ======================================================= */
 
   const handleMouseMove = (event) => {
-    if (shouldReduceMotion) return;
+    /*
+     * Reduced motion.
+     */
+    if (shouldReduceMotion) {
+      return;
+    }
+
+    /*
+     * No mouse effects on touch/stylus.
+     */
+    if (!canUsePointerRef.current) {
+      return;
+    }
+
+    /*
+     * Do not update pointer effects while the section
+     * is not visible.
+     */
+    if (!sectionInView) {
+      return;
+    }
 
     if (
       event.pointerType &&
@@ -164,25 +269,72 @@ export default function CompanyIntro() {
     const rect =
       event.currentTarget.getBoundingClientRect();
 
-    if (!rect.width || !rect.height) return;
+    if (
+      rect.width <= 0 ||
+      rect.height <= 0
+    ) {
+      return;
+    }
 
-    const x =
-      (event.clientX - rect.left) /
-        rect.width -
-      0.5;
-
-    const y =
-      (event.clientY - rect.top) /
-        rect.height -
-      0.5;
-
-    mouseX.set(
-      Math.max(-0.5, Math.min(0.5, x))
+    /*
+     * Calculate normalized pointer position.
+     */
+    const x = Math.max(
+      -0.5,
+      Math.min(
+        0.5,
+        (event.clientX - rect.left) /
+          rect.width -
+          0.5
+      )
     );
 
-    mouseY.set(
-      Math.max(-0.5, Math.min(0.5, y))
+    const y = Math.max(
+      -0.5,
+      Math.min(
+        0.5,
+        (event.clientY - rect.top) /
+          rect.height -
+          0.5
+      )
     );
+
+    /*
+     * Store only the latest pointer position.
+     */
+    latestPointerRef.current.x = x;
+    latestPointerRef.current.y = y;
+
+    /*
+     * Already scheduled for this frame.
+     */
+    if (pointerFrameRef.current) {
+      return;
+    }
+
+    /*
+     * One MotionValue update per browser frame.
+     */
+    pointerFrameRef.current =
+      requestAnimationFrame(() => {
+        pointerFrameRef.current = 0;
+
+        /*
+         * Section may have left viewport between
+         * pointer event and RAF execution.
+         */
+        if (!sectionInView) {
+          return;
+        }
+
+        mouseX.set(
+          latestPointerRef.current.x
+        );
+
+        mouseY.set(
+          latestPointerRef.current.y
+        );
+      });
   };
 
   /* =======================================================
@@ -190,9 +342,72 @@ export default function CompanyIntro() {
   ======================================================= */
 
   const handleMouseLeave = () => {
+    /*
+     * Cancel pending pointer update.
+     */
+    if (pointerFrameRef.current) {
+      cancelAnimationFrame(
+        pointerFrameRef.current
+      );
+
+      pointerFrameRef.current = 0;
+    }
+
+    /*
+     * Smoothly return the card to its original position.
+     */
     mouseX.set(0);
     mouseY.set(0);
   };
+
+  /* =======================================================
+     STOP POINTER WORK WHEN SECTION LEAVES VIEW
+  ======================================================= */
+
+  useEffect(() => {
+    if (sectionInView) {
+      return undefined;
+    }
+
+    /*
+     * Cancel any queued pointer update.
+     */
+    if (pointerFrameRef.current) {
+      cancelAnimationFrame(
+        pointerFrameRef.current
+      );
+
+      pointerFrameRef.current = 0;
+    }
+
+    /*
+     * Reset to neutral position.
+     */
+    mouseX.set(0);
+    mouseY.set(0);
+
+    return undefined;
+  }, [
+    sectionInView,
+    mouseX,
+    mouseY,
+  ]);
+
+  /* =======================================================
+     CLEANUP
+  ======================================================= */
+
+  useEffect(() => {
+    return () => {
+      if (pointerFrameRef.current) {
+        cancelAnimationFrame(
+          pointerFrameRef.current
+        );
+
+        pointerFrameRef.current = 0;
+      }
+    };
+  }, []);
 
   return (
     <motion.section
@@ -211,18 +426,15 @@ export default function CompanyIntro() {
         py-24
         md:py-32
         transform-gpu
-
         bg-gradient-to-b
         from-white
         via-[#faf9ff]
         to-[#f5f7ff]
-
         dark:from-[#050914]
         dark:via-[#07111f]
         dark:to-[#030712]
       "
     >
-
       {/* ===================================================
           BACKGROUND
       =================================================== */}
@@ -237,7 +449,6 @@ export default function CompanyIntro() {
           overflow-hidden
         "
       >
-
         {/* LIGHT MODE PURPLE / BLUE GLOW */}
 
         <div
@@ -248,10 +459,8 @@ export default function CompanyIntro() {
             h-72
             w-72
             rounded-full
-
             bg-violet-400/[0.10]
             blur-[55px]
-
             dark:bg-cyan-400/[0.07]
           "
         />
@@ -264,10 +473,8 @@ export default function CompanyIntro() {
             h-80
             w-80
             rounded-full
-
             bg-indigo-400/[0.08]
             blur-[60px]
-
             dark:bg-blue-400/[0.06]
           "
         />
@@ -280,10 +487,8 @@ export default function CompanyIntro() {
             h-64
             w-64
             rounded-full
-
             bg-purple-400/[0.06]
             blur-[55px]
-
             dark:bg-teal-500/[0.05]
           "
         />
@@ -294,19 +499,13 @@ export default function CompanyIntro() {
           className="
             absolute
             inset-0
-
             opacity-[0.035]
-
             [background-image:linear-gradient(rgba(99,102,241,1)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,1)_1px,transparent_1px)]
-
             [background-size:55px_55px]
-
             dark:opacity-[0.035]
-
             dark:[background-image:linear-gradient(rgba(34,211,238,1)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,1)_1px,transparent_1px)]
           "
         />
-
       </div>
 
       {/* ===================================================
@@ -325,20 +524,18 @@ export default function CompanyIntro() {
           lg:gap-16
         "
       >
-
         {/* =================================================
             LEFT SIDE
         ================================================= */}
 
         <div className="relative">
-
           {/* HEADING */}
 
           <ScrollReveal direction="left">
-
             <motion.div
               whileHover={
-                shouldReduceMotion
+                shouldReduceMotion ||
+                !canUsePointerRef.current
                   ? undefined
                   : {
                       x: 2,
@@ -350,12 +547,10 @@ export default function CompanyIntro() {
                 damping: 25,
               }}
             >
-
               <p
                 className="
                   eyebrow
                   mb-4
-
                   text-indigo-600
                   dark:text-cyan-300
                 "
@@ -371,32 +566,27 @@ export default function CompanyIntro() {
                   leading-tight
                   tracking-tight
                   md:text-4xl
-
                   text-slate-900
                   dark:text-white
                 "
               >
-
                 Turn Your Business Into a{" "}
 
                 <span
                   className="
                     relative
                     inline-block
-
                     bg-gradient-to-r
                     from-indigo-600
                     via-violet-600
                     to-cyan-500
                     bg-clip-text
                     text-transparent
-
                     dark:from-cyan-300
                     dark:via-blue-400
                     dark:to-violet-400
                   "
                 >
-
                   Searchable Digital Brand
 
                   {/* ANIMATED UNDERLINE */}
@@ -412,12 +602,10 @@ export default function CompanyIntro() {
                         w-full
                         origin-left
                         rounded-full
-
                         bg-gradient-to-r
                         from-indigo-500
                         via-violet-500
                         to-transparent
-
                         dark:from-cyan-400
                         dark:via-blue-400
                         dark:to-transparent
@@ -434,17 +622,13 @@ export default function CompanyIntro() {
                       transition={{
                         duration: 0.7,
                         delay: 0.35,
-                        ease: [0.22, 1, 0.36, 1],
+                        ease: EASE,
                       }}
                     />
                   )}
-
                 </span>
-
               </h2>
-
             </motion.div>
-
           </ScrollReveal>
 
           {/* DESCRIPTION */}
@@ -453,7 +637,6 @@ export default function CompanyIntro() {
             direction="left"
             delay={0.08}
           >
-
             <p
               className="
                 mt-6
@@ -461,15 +644,12 @@ export default function CompanyIntro() {
                 text-[15px]
                 leading-relaxed
                 md:text-base
-
                 text-slate-600
-
                 dark:text-slate-300
               "
             >
               {vision}
             </p>
-
           </ScrollReveal>
 
           {/* =================================================
@@ -492,22 +672,19 @@ export default function CompanyIntro() {
               sm:grid-cols-3
             "
           >
-
             {foundationItems.map(
               (title, index) => (
-
                 <motion.div
                   key={title}
                   variants={foundationItem}
-
                   whileHover={
-                    shouldReduceMotion
+                    shouldReduceMotion ||
+                    !canUsePointerRef.current
                       ? undefined
                       : {
                           y: -5,
                         }
                   }
-
                   whileTap={
                     shouldReduceMotion
                       ? undefined
@@ -515,37 +692,30 @@ export default function CompanyIntro() {
                           scale: 0.98,
                         }
                   }
-
                   transition={{
                     type: "spring",
                     stiffness: 350,
                     damping: 25,
                   }}
-
                   className="
                     group
                     relative
                     overflow-hidden
                     rounded-xl
                     border
-
                     border-indigo-100
                     bg-white/70
-
                     px-4
                     py-4
                     text-center
-
                     backdrop-blur-sm
-
                     shadow-[0_8px_30px_rgba(79,70,229,0.05)]
-
                     dark:border-slate-800
                     dark:bg-slate-900/50
                     dark:shadow-none
+                    transform-gpu
                   "
                 >
-
                   {/* HOVER GRADIENT */}
 
                   <div
@@ -554,16 +724,13 @@ export default function CompanyIntro() {
                       pointer-events-none
                       absolute
                       inset-0
-
                       bg-gradient-to-br
                       from-indigo-500/[0.08]
                       via-transparent
                       to-cyan-400/[0.06]
-
                       opacity-0
                       transition-opacity
                       duration-300
-
                       group-hover:opacity-100
                     "
                   />
@@ -579,12 +746,10 @@ export default function CompanyIntro() {
                       h-px
                       w-10
                       -translate-x-1/2
-
                       bg-gradient-to-r
                       from-transparent
                       via-indigo-500/60
                       to-transparent
-
                       dark:via-cyan-400/70
                     "
                   />
@@ -598,9 +763,7 @@ export default function CompanyIntro() {
                       text-xs
                       font-mono
                       leading-snug
-
                       text-indigo-600
-
                       dark:text-cyan-300
                     "
                   >
@@ -616,22 +779,16 @@ export default function CompanyIntro() {
                       right-3
                       text-[9px]
                       font-mono
-
                       text-slate-400/40
-
                       dark:text-slate-500/40
                     "
                   >
                     0{index + 1}
                   </span>
-
                 </motion.div>
-
               )
             )}
-
           </motion.div>
-
         </div>
 
         {/* =================================================
@@ -641,17 +798,14 @@ export default function CompanyIntro() {
         <motion.div
           onPointerMove={handleMouseMove}
           onPointerLeave={handleMouseLeave}
-
           style={{
             perspective: 1200,
           }}
-
           className="
             relative
             min-w-0
           "
         >
-
           {/* =================================================
               OUTER GLOW
           ================================================= */}
@@ -664,9 +818,7 @@ export default function CompanyIntro() {
               -inset-5
               rounded-[2rem]
               blur-2xl
-
               bg-indigo-500/[0.05]
-
               dark:bg-cyan-400/[0.05]
             "
           />
@@ -680,22 +832,18 @@ export default function CompanyIntro() {
               opacity: 0,
               y: 25,
             }}
-
             whileInView={{
               opacity: 1,
               y: 0,
             }}
-
             viewport={{
               once: true,
               amount: 0.3,
             }}
-
             transition={{
               duration: 0.7,
-              ease: [0.22, 1, 0.36, 1],
+              ease: EASE,
             }}
-
             style={
               shouldReduceMotion
                 ? undefined
@@ -704,33 +852,28 @@ export default function CompanyIntro() {
                     rotateY,
                     x: cardX,
                     y: cardY,
-                    transformStyle: "preserve-3d",
+                    transformStyle:
+                      "preserve-3d",
                   }
             }
-
             className="
               group
               relative
               overflow-hidden
               rounded-3xl
               border
-
               border-indigo-100
               bg-white
-
               p-7
-
               shadow-[0_20px_60px_rgba(79,70,229,0.08)]
-
               transform-gpu
+              will-change-transform
               md:p-10
-
               dark:border-slate-800
               dark:bg-[#091321]
               dark:shadow-[0_20px_70px_rgba(0,0,0,0.35)]
             "
           >
-
             {/* =================================================
                 CARD BACKGROUND
             ================================================= */}
@@ -741,61 +884,58 @@ export default function CompanyIntro() {
                 pointer-events-none
                 absolute
                 inset-0
-
                 bg-[radial-gradient(circle_at_85%_15%,rgba(99,102,241,0.08),transparent_30%),radial-gradient(circle_at_15%_85%,rgba(139,92,246,0.06),transparent_28%)]
-
                 dark:bg-[radial-gradient(circle_at_85%_15%,rgba(34,211,238,0.09),transparent_30%),radial-gradient(circle_at_15%_85%,rgba(59,130,246,0.06),transparent_28%)]
               "
             />
 
             {/* =================================================
                 SHINE
+
+                Same animation.
+                Paused completely when section is off-screen.
             ================================================= */}
 
-            {!shouldReduceMotion && (
-              <motion.div
-                aria-hidden="true"
-                className="
-                  pointer-events-none
-                  absolute
-                  -left-[120%]
-                  top-0
-                  h-full
-                  w-[45%]
-                  skew-x-12
-
-                  bg-gradient-to-r
-                  from-transparent
-                  via-indigo-500/[0.06]
-                  to-transparent
-
-                  dark:via-white/[0.08]
-                "
-
-                animate={{
-                  x: ["0%", "480%"],
-                }}
-
-                transition={{
-                  duration: 7,
-                  repeat: Infinity,
-                  repeatDelay: 7,
-                  ease: "easeInOut",
-                }}
-              />
-            )}
+            {!shouldReduceMotion &&
+              sectionInView && (
+                <motion.div
+                  aria-hidden="true"
+                  className="
+                    pointer-events-none
+                    absolute
+                    -left-[120%]
+                    top-0
+                    h-full
+                    w-[45%]
+                    skew-x-12
+                    bg-gradient-to-r
+                    from-transparent
+                    via-indigo-500/[0.06]
+                    to-transparent
+                    dark:via-white/[0.08]
+                    transform-gpu
+                  "
+                  animate={{
+                    x: ["0%", "480%"],
+                  }}
+                  transition={{
+                    duration: 7,
+                    repeat: Infinity,
+                    repeatDelay: 7,
+                    ease: "easeInOut",
+                  }}
+                />
+              )}
 
             {/* =================================================
                 HEADER
             ================================================= */}
 
             <div className="relative z-10">
-
               <p
                 className="
                   eyebrow
                   mb-6
-
                   text-indigo-600
                   dark:text-cyan-300
                 "
@@ -817,28 +957,24 @@ export default function CompanyIntro() {
                 }}
                 className="space-y-5"
               >
-
                 {missionPoints.map(
                   (point, index) => (
-
                     <motion.li
                       key={`${point}-${index}`}
                       variants={missionItem}
-
                       whileHover={
-                        shouldReduceMotion
+                        shouldReduceMotion ||
+                        !canUsePointerRef.current
                           ? undefined
                           : {
                               x: 5,
                             }
                       }
-
                       transition={{
                         type: "spring",
                         stiffness: 350,
                         damping: 25,
                       }}
-
                       className="
                         group/item
                         flex
@@ -847,12 +983,10 @@ export default function CompanyIntro() {
                         text-sm
                         leading-relaxed
                         md:text-[15px]
-
                         text-slate-700
                         dark:text-slate-300
                       "
                     >
-
                       {/* DOT */}
 
                       <span
@@ -863,47 +997,44 @@ export default function CompanyIntro() {
                           w-2
                           shrink-0
                           rounded-full
-
                           bg-gradient-to-r
                           from-indigo-500
                           to-violet-500
-
                           dark:from-cyan-400
                           dark:to-blue-400
                         "
                       >
+                        {/* PULSE */}
 
-                        {!shouldReduceMotion && (
-                          <motion.span
-                            className="
-                              absolute
-                              inset-[-3px]
-                              rounded-full
-
-                              bg-indigo-400/20
-
-                              dark:bg-cyan-400/20
-                            "
-
-                            animate={{
-                              scale: [1, 1.5, 1],
-                              opacity: [
-                                0.5,
-                                0,
-                                0.5,
-                              ],
-                            }}
-
-                            transition={{
-                              duration: 2.8,
-                              repeat: Infinity,
-                              delay:
-                                index * 0.25,
-                              ease: "easeInOut",
-                            }}
-                          />
-                        )}
-
+                        {!shouldReduceMotion &&
+                          sectionInView && (
+                            <motion.span
+                              className="
+                                absolute
+                                inset-[-3px]
+                                rounded-full
+                                bg-indigo-400/20
+                                dark:bg-cyan-400/20
+                                transform-gpu
+                              "
+                              animate={{
+                                scale: [1, 1.5, 1],
+                                opacity: [
+                                  0.5,
+                                  0,
+                                  0.5,
+                                ],
+                              }}
+                              transition={{
+                                duration: 2.8,
+                                repeat: Infinity,
+                                delay:
+                                  index * 0.25,
+                                ease:
+                                  "easeInOut",
+                              }}
+                            />
+                          )}
                       </span>
 
                       {/* TEXT */}
@@ -911,20 +1042,15 @@ export default function CompanyIntro() {
                       <span
                         className="
                           text-slate-700
-
                           dark:text-slate-300
                         "
                       >
                         {point}
                       </span>
-
                     </motion.li>
-
                   )
                 )}
-
               </motion.ul>
-
             </div>
 
             {/* =================================================
@@ -941,12 +1067,9 @@ export default function CompanyIntro() {
                 h-10
                 w-10
                 rounded-tr-xl
-
                 border-r
                 border-t
-
                 border-indigo-400/30
-
                 dark:border-cyan-400/30
               "
             />
@@ -961,12 +1084,9 @@ export default function CompanyIntro() {
                 h-10
                 w-10
                 rounded-bl-xl
-
                 border-b
                 border-l
-
                 border-violet-400/20
-
                 dark:border-blue-400/20
               "
             />
@@ -983,26 +1103,19 @@ export default function CompanyIntro() {
                 flex
                 items-center
                 gap-2
-
                 border-t
                 border-indigo-100
-
                 pt-5
-
                 dark:border-slate-800
               "
             >
-
               <span
                 className="
                   h-1.5
                   w-1.5
                   rounded-full
-
                   bg-indigo-500
-
                   shadow-[0_0_8px_rgba(99,102,241,0.7)]
-
                   dark:bg-cyan-400
                   dark:shadow-[0_0_8px_rgba(34,211,238,0.7)]
                 "
@@ -1014,57 +1127,56 @@ export default function CompanyIntro() {
                   font-mono
                   uppercase
                   tracking-[0.18em]
-
                   text-slate-400
                   dark:text-slate-500
                 "
               >
                 Digital Transformation Active
               </span>
-
             </div>
 
             {/* =================================================
                 FLOATING ORB
+
+                Same animation.
+                Paused when the section is outside viewport.
             ================================================= */}
 
-            {!shouldReduceMotion && (
-              <motion.div
-                aria-hidden="true"
-                className="
-                  pointer-events-none
-                  absolute
-                  -bottom-3
-                  -left-3
-                  h-7
-                  w-7
-                  rounded-full
-                  blur-[2px]
-
-                  bg-indigo-500/15
-
-                  dark:bg-cyan-400/15
-                "
-
-                animate={{
-                  y: [0, -8, 0],
-                  opacity: [0.4, 0.8, 0.4],
-                }}
-
-                transition={{
-                  duration: 4,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-            )}
-
+            {!shouldReduceMotion &&
+              sectionInView && (
+                <motion.div
+                  aria-hidden="true"
+                  className="
+                    pointer-events-none
+                    absolute
+                    -bottom-3
+                    -left-3
+                    h-7
+                    w-7
+                    rounded-full
+                    blur-[2px]
+                    bg-indigo-500/15
+                    dark:bg-cyan-400/15
+                    transform-gpu
+                  "
+                  animate={{
+                    y: [0, -8, 0],
+                    opacity: [
+                      0.4,
+                      0.8,
+                      0.4,
+                    ],
+                  }}
+                  transition={{
+                    duration: 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                />
+              )}
           </motion.div>
-
         </motion.div>
-
       </div>
-
     </motion.section>
   );
 }

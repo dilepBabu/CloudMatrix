@@ -1,24 +1,18 @@
-import {
-  useEffect,
-  useRef,
-} from "react";
+import { useEffect, useRef } from "react";
 
 /* =========================================================
    LIGHTWEIGHT BIDIRECTIONAL SCROLL REVEAL
 
-   Features:
-   - Up
-   - Down
-   - Left
-   - Right
-   - Fade
-   - Scale
-   - Bidirectional
-   - Fast-scroll friendly
+   Optimized for:
+   - Fast scrolling
    - Desktop
    - Laptop
+   - iPad
    - Tablet
    - Mobile
+   - Bidirectional reveal
+   - Reduced motion
+   - No React state updates
 ========================================================= */
 
 export default function ScrollReveal({
@@ -40,23 +34,23 @@ export default function ScrollReveal({
       return undefined;
     }
 
-    /*
-     * Reduced motion.
-     */
-    const reducedMotion =
-      window.matchMedia(
-        "(prefers-reduced-motion: reduce)"
-      ).matches;
+    /* =====================================================
+       REDUCED MOTION
+    ===================================================== */
+
+    const reducedMotion = window
+      .matchMedia("(prefers-reduced-motion: reduce)")
+      .matches;
 
     if (reducedMotion) {
       element.dataset.revealVisible = "true";
-
       return undefined;
     }
 
-    /*
-     * Configure direction as CSS variables.
-     */
+    /* =====================================================
+       DIRECTION
+    ===================================================== */
+
     const directions = {
       up: {
         x: "0px",
@@ -96,8 +90,11 @@ export default function ScrollReveal({
     };
 
     const selected =
-      directions[direction] ||
-      directions.up;
+      directions[direction] || directions.up;
+
+    /* =====================================================
+       CSS VARIABLES
+    ===================================================== */
 
     element.style.setProperty(
       "--reveal-x",
@@ -124,75 +121,65 @@ export default function ScrollReveal({
       `${duration}s`
     );
 
-    /*
-     * Start hidden.
-     */
-    element.dataset.revealVisible =
-      "false";
+    /* =====================================================
+       INITIAL STATE
+    ===================================================== */
 
-    /*
-     * =======================================================
-     * INTERSECTION OBSERVER
-     * =======================================================
-     *
-     * Large rootMargin means the animation is triggered
-     * before the element is actually visible.
-     *
-     * This is especially important for FAST SCROLL.
-     */
-    const observer =
-      new IntersectionObserver(
-        (entries) => {
-          const entry = entries[0];
+    element.dataset.revealVisible = "false";
 
-          if (!entry) {
-            return;
+    /* =====================================================
+       INTERSECTION OBSERVER
+
+       IMPORTANT:
+       We don't use a huge 40% + 40% viewport area.
+
+       A moderate preload area gives fast-scroll support
+       without keeping many elements "active" at once.
+    ===================================================== */
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.target !== element) {
+            continue;
           }
 
           if (entry.isIntersecting) {
-            element.dataset.revealVisible =
-              "true";
+            element.dataset.revealVisible = "true";
 
             if (once) {
-              observer.unobserve(
-                element
-              );
+              observer.unobserve(element);
             }
 
-            return;
+            break;
           }
 
-          /*
-           * Bidirectional mode.
-           */
           if (!once) {
-            element.dataset.revealVisible =
-              "false";
+            element.dataset.revealVisible = "false";
           }
-        },
-        {
-          root: null,
 
-          /*
-           * Detect before/after the viewport.
-           */
-          rootMargin:
-            "40% 0px 40% 0px",
-
-          /*
-           * Very small threshold is intentional.
-           * This prevents fast-scroll jumps from skipping
-           * the trigger.
-           */
-          threshold: Math.max(
-            0,
-            Math.min(
-              1,
-              amount
-            )
-          ),
+          break;
         }
-      );
+      },
+      {
+        root: null,
+
+        /*
+         * Preload slightly before entering viewport.
+         * Enough for fast scrolling without activating
+         * too many elements simultaneously.
+         */
+        rootMargin: "25% 0px 25% 0px",
+
+        /*
+         * Keep your very small amount behavior.
+         */
+        threshold: Math.max(
+          0,
+          Math.min(1, amount)
+        ),
+      }
+    );
 
     observer.observe(element);
 

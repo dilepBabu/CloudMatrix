@@ -1,6 +1,8 @@
 import {
   memo,
   useCallback,
+  useEffect,
+  useState,
 } from "react";
 
 import { motion } from "framer-motion";
@@ -36,12 +38,47 @@ const images = {
 const smoothEase = [0.16, 1, 0.3, 1];
 
 /* =========================================================================
+   PERFORMANCE MODE
+=========================================================================== */
+
+function usePerformanceMode() {
+  const [mode, setMode] = useState("touch");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+
+    const getMode = () => {
+      const fine = window.matchMedia("(pointer: fine)").matches;
+      const width = window.innerWidth;
+      const cores = navigator.hardwareConcurrency || 4;
+      const memory = navigator.deviceMemory || 8;
+
+      if (!fine) return "touch";
+      if (width >= 1440 && cores >= 6 && memory >= 6) return "full";
+      return "light";
+    };
+
+    const update = () => setMode(getMode());
+    update();
+
+    window.addEventListener("resize", update, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  return mode;
+}
+
+/* =========================================================================
    SERVICE ROW
 =========================================================================== */
 
 const ServiceRow = memo(function ServiceRow({
   service,
   index,
+  performance = "light",
 }) {
   const fromLeft = index % 2 === 0;
 
@@ -87,6 +124,85 @@ const ServiceRow = memo(function ServiceRow({
 
   const imageSrc =
     images[service.id] || asserts.web;
+
+  if (performance !== "full") {
+    return (
+      <article
+        id={service.id}
+        className="relative min-h-[auto] border-b border-[#D9E8F0] dark:border-[#123A52] last:border-b-0 lg:min-h-[92vh]"
+      >
+        <div className="container-x grid min-h-[auto] w-full items-center gap-8 py-14 sm:py-16 md:py-20 lg:min-h-[92vh] lg:grid-cols-2 lg:gap-14 lg:py-0">
+          <motion.div
+            initial={{ opacity: 0, x: fromLeft ? -28 : 28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: false, amount: 0.1 }}
+            transition={{
+              x: { type: "spring", stiffness: 120, damping: 24, mass: 0.65 },
+              opacity: { duration: 0.24, ease: "easeOut" },
+            }}
+            className={`${fromLeft ? "lg:order-1" : "lg:order-2"} transform-gpu`}
+          >
+            <div className="group relative aspect-[4/3] w-full overflow-hidden rounded-[1.5rem] border border-[#D7E8F1] bg-[#EAF5FA] shadow-[0_18px_45px_rgba(2,132,199,0.08)] sm:rounded-[1.75rem] md:aspect-[16/10] lg:aspect-[4/3] lg:rounded-[2rem] dark:border-[#16445E] dark:bg-[#082132] dark:shadow-none">
+              <img
+                src={imageSrc}
+                alt={service.name}
+                loading={index < 2 ? "eager" : "lazy"}
+                decoding="async"
+                className="h-full w-full object-cover object-center grayscale-[10%]"
+              />
+              <div aria-hidden="true" className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#06263A]/65 via-[#0EA5E9]/[0.025] to-transparent dark:from-[#020F1A]/72 dark:via-[#0EA5E9]/[0.04] dark:to-transparent" />
+              <span className="pointer-events-none absolute bottom-4 left-4 z-20 font-mono text-[9px] uppercase tracking-[0.22em] text-white/90 sm:bottom-5 sm:left-5 sm:text-[10px]">
+                {service.tags?.[0] || service.name}
+              </span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: fromLeft ? 28 : -28 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: false, amount: 0.1 }}
+            transition={{
+              x: { type: "spring", stiffness: 120, damping: 24, mass: 0.65 },
+              opacity: { duration: 0.24, ease: "easeOut" },
+            }}
+            className={`${fromLeft ? "lg:order-2" : "lg:order-1"} transform-gpu`}
+          >
+            <div className="inline-flex items-center gap-3 font-mono text-xs tracking-[0.15em] text-[#0284C7] dark:text-[#38BDF8]">
+              <span className="h-px w-8 bg-[#0EA5E9]/60 dark:bg-[#38BDF8]/50" />
+              {String(index + 1).padStart(2, "0")}
+              <span className="opacity-40">/</span>
+              {String(services.length).padStart(2, "0")}
+            </div>
+
+            <h3 className="mt-4 max-w-2xl font-display text-3xl font-bold leading-[1.02] tracking-tight text-[#0B2533] dark:text-[#F4FBFF] sm:text-4xl md:text-5xl xl:text-6xl">
+              {service.name}
+            </h3>
+
+            <div className="mt-4 h-[2px] w-20 rounded-full bg-gradient-to-r from-[#0284C7] via-[#38BDF8] to-transparent dark:from-[#38BDF8] dark:via-[#22D3EE] dark:to-transparent" />
+
+            <p className="mt-5 max-w-xl text-[15px] leading-[1.8] text-[#506875] dark:text-[#A9C4D3] md:text-base">
+              {service.description}
+            </p>
+
+            <div className="relative mt-6 max-w-xl overflow-hidden rounded-2xl border border-[#CFE8F4] bg-[#EAF7FD]/90 px-4 py-3.5 dark:border-[#1B5875] dark:bg-[#0A2638]/80">
+              <div className="relative z-10 flex items-start gap-3">
+                <span className="mt-0.5 text-[#0284C7] dark:text-[#38BDF8]">◆</span>
+                <p className="text-sm font-medium leading-6 text-[#075985] dark:text-[#D7F4FF]">{service.value}</p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-2">
+              {service.tags.map((tag, tagIndex) => (
+                <span key={`${tag}-${tagIndex}`} className="rounded-full border border-[#D5E7EF] bg-white/60 px-3 py-1.5 font-mono text-xs text-[#526B77] dark:border-[#21475D] dark:bg-[#071D2B]/60 dark:text-[#AFC7D4]">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </article>
+    );
+  }
 
   return (
     <article
@@ -923,6 +1039,8 @@ const ServiceRow = memo(function ServiceRow({
 =========================================================================== */
 
 export default function Services() {
+  const performance = usePerformanceMode();
+
   return (
     <section
       id="services"
@@ -1190,6 +1308,7 @@ export default function Services() {
               key={service.id}
               service={service}
               index={index}
+              performance={performance}
             />
           )
         )}
