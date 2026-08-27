@@ -1,10 +1,16 @@
-import { motion, useScroll } from 'framer-motion'
+import {
+  motion,
+  useScroll,
+} from "framer-motion";
 
 export default function ScrollProgress() {
-  const { scrollYProgress } = useScroll()
+  const {
+    scrollYProgress,
+  } = useScroll();
 
   return (
     <div
+      aria-hidden="true"
       className="
         pointer-events-none
         fixed
@@ -14,15 +20,19 @@ export default function ScrollProgress() {
         z-[60]
         h-[2px]
       "
-      aria-hidden="true"
     >
       <motion.div
         style={{
           scaleX: scrollYProgress,
-          transformOrigin: '0% 50%',
+          transformOrigin:
+            "0% 50%",
         }}
-        className="h-full w-full bg-node-gradient"
+        className="
+          h-full
+          w-full
+          bg-node-gradient
+        "
       />
     </div>
-  )
+  );
 }

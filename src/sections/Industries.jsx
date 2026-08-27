@@ -8,6 +8,7 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
+import { asserts } from "../assets/asserts.mjs";
 
 import { useRef } from "react";
 
@@ -31,7 +32,7 @@ const businessSolutions = [
       "Branding",
     ],
     image:
-      "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=85",
+     `${asserts.startup}`,
   },
   {
     number: "02",

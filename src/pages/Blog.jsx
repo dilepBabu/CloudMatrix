@@ -3,7 +3,8 @@ import ScrollReveal from '../components/ScrollReveal'
 
 const posts = [
   {
-    title: 'Website Development Company in Salem: How to Build a High-Performing Business Website',
+    title:
+      'Website Development Company in Salem: How to Build a High-Performing Business Website',
     date: 'Web Development • Salem',
     excerpt:
       'Learn how professional website development, responsive design, website speed, security, and SEO can help Salem businesses build a stronger online presence and generate more leads.',
@@ -11,7 +12,8 @@ const posts = [
       'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
   },
   {
-    title: 'CRM & ERP Software for Businesses: Streamline Sales, Operations & Growth',
+    title:
+      'CRM & ERP Software for Businesses: Streamline Sales, Operations & Growth',
     date: 'CRM & ERP Solutions',
     excerpt:
       'Discover how customized CRM and ERP software can help businesses manage customers, sales, inventory, finance, employees, and daily operations from one connected system.',
@@ -19,7 +21,8 @@ const posts = [
       'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80',
   },
   {
-    title: 'Mobile App Development: Build Scalable Apps for Modern Businesses',
+    title:
+      'Mobile App Development: Build Scalable Apps for Modern Businesses',
     date: 'Mobile App Development',
     excerpt:
       'Explore how custom Android and iOS mobile app development can improve customer engagement, automate business processes, and create new digital opportunities.',
@@ -35,7 +38,8 @@ const posts = [
       'https://images.unsplash.com/photo-1533750349088-cd871a92f312?auto=format&fit=crop&w=1200&q=80',
   },
   {
-    title: 'Web Design & UI/UX: Create Websites That Convert Visitors Into Customers',
+    title:
+      'Web Design & UI/UX: Create Websites That Convert Visitors Into Customers',
     date: 'Web Design • UI/UX',
     excerpt:
       'Learn how modern web design, responsive layouts, user experience, visual hierarchy, and conversion-focused UI can improve engagement and business results.',
@@ -43,7 +47,8 @@ const posts = [
       'https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&w=1200&q=80',
   },
   {
-    title: 'Agentic AI for Business Automation: From AI Assistants to Autonomous Workflows',
+    title:
+      'Agentic AI for Business Automation: From AI Assistants to Autonomous Workflows',
     date: 'Agentic AI • Automation',
     excerpt:
       'Discover how Agentic AI can plan tasks, connect with business systems, automate workflows, and help companies improve productivity with intelligent AI-driven automation.',
@@ -55,44 +60,52 @@ const posts = [
 const ease = [0.16, 1, 0.3, 1]
 
 function BlogCard({ post, index, reduceMotion }) {
+  const shouldAnimate = !reduceMotion
+
   return (
     <motion.article
       initial={
-        reduceMotion
-          ? false
-          : {
+        shouldAnimate
+          ? {
               opacity: 0,
               y: 45,
             }
+          : false
       }
       whileInView={
-        reduceMotion
-          ? undefined
-          : {
+        shouldAnimate
+          ? {
               opacity: 1,
               y: 0,
             }
+          : undefined
       }
       viewport={{
-        once: true,
-        amount: 0.18,
+        once: false,
+        amount: 0.12,
+        margin: '0px 0px -8% 0px',
       }}
       transition={{
         duration: 0.7,
-        delay: index * 0.1,
+        delay: index * 0.08,
         ease,
       }}
       className="group relative"
+      style={{
+        willChange: shouldAnimate ? 'transform, opacity' : 'auto',
+      }}
     >
-      {/* CARD */}
+      {/* =====================================================
+          CARD
+      ===================================================== */}
 
       <motion.div
         whileHover={
-          reduceMotion
-            ? undefined
-            : {
+          shouldAnimate
+            ? {
                 y: -8,
               }
+            : undefined
         }
         transition={{
           duration: 0.45,
@@ -105,18 +118,24 @@ function BlogCard({ post, index, reduceMotion }) {
           rounded-[1.5rem]
           border
           border-[#D8E8EC]
-          dark:border-[#153F50]
           bg-[#F9FCFD]
-          dark:bg-[#071F2B]
           shadow-[0_10px_35px_rgba(10,65,85,0.06)]
-          dark:shadow-[0_15px_45px_rgba(0,0,0,0.22)]
           transition-shadow
           duration-500
           hover:shadow-[0_20px_55px_rgba(0,105,150,0.13)]
+          dark:border-[#153F50]
+          dark:bg-[#071F2B]
+          dark:shadow-[0_15px_45px_rgba(0,0,0,0.22)]
           dark:hover:shadow-[0_20px_55px_rgba(0,180,220,0.12)]
         "
+        style={{
+          transform: 'translateZ(0)',
+          backfaceVisibility: 'hidden',
+        }}
       >
-        {/* TOP INDEX */}
+        {/* =====================================================
+            TOP INDEX
+        ===================================================== */}
 
         <div
           className="
@@ -143,7 +162,9 @@ function BlogCard({ post, index, reduceMotion }) {
           {String(index + 1).padStart(2, '0')}
         </div>
 
-        {/* IMAGE */}
+        {/* =====================================================
+            IMAGE
+        ===================================================== */}
 
         <div className="relative aspect-[4/3] overflow-hidden">
           <motion.img
@@ -151,13 +172,25 @@ function BlogCard({ post, index, reduceMotion }) {
             alt={post.title}
             loading={index === 0 ? 'eager' : 'lazy'}
             decoding="async"
-            fetchPriority={index === 0 ? 'high' : 'auto'}
+
+            /*
+             * IMPORTANT:
+             * Do NOT use:
+             *
+             * fetchPriority={...}
+             *
+             * because Framer Motion can forward it to the DOM
+             * and React will warn.
+             *
+             * Lowercase HTML attribute avoids the React warning.
+             */
+            fetchpriority={index === 0 ? 'high' : 'auto'}
             whileHover={
-              reduceMotion
-                ? undefined
-                : {
+              shouldAnimate
+                ? {
                     scale: 1.07,
                   }
+                : undefined
             }
             transition={{
               duration: 0.9,
@@ -172,9 +205,16 @@ function BlogCard({ post, index, reduceMotion }) {
               duration-700
               group-hover:grayscale-0
             "
+            style={{
+              transform: 'translateZ(0)',
+              backfaceVisibility: 'hidden',
+              willChange: shouldAnimate ? 'transform' : 'auto',
+            }}
           />
 
-          {/* IMAGE DARK GRADIENT */}
+          {/* =====================================================
+              IMAGE DARK GRADIENT
+          ===================================================== */}
 
           <div
             className="
@@ -188,7 +228,9 @@ function BlogCard({ post, index, reduceMotion }) {
             "
           />
 
-          {/* BLUE COLOR WASH */}
+          {/* =====================================================
+              BLUE COLOR WASH
+          ===================================================== */}
 
           <div
             className="
@@ -206,9 +248,11 @@ function BlogCard({ post, index, reduceMotion }) {
             "
           />
 
-          {/* LIGHT SWEEP */}
+          {/* =====================================================
+              LIGHT SWEEP
+          ===================================================== */}
 
-          {!reduceMotion && (
+          {shouldAnimate && (
             <motion.div
               aria-hidden="true"
               className="
@@ -236,7 +280,9 @@ function BlogCard({ post, index, reduceMotion }) {
             />
           )}
 
-          {/* DATE */}
+          {/* =====================================================
+              DATE
+          ===================================================== */}
 
           <div
             className="
@@ -254,7 +300,9 @@ function BlogCard({ post, index, reduceMotion }) {
             {post.date}
           </div>
 
-          {/* ARROW */}
+          {/* =====================================================
+              ARROW
+          ===================================================== */}
 
           <motion.div
             className="
@@ -275,22 +323,25 @@ function BlogCard({ post, index, reduceMotion }) {
               backdrop-blur-md
             "
             whileHover={
-              reduceMotion
-                ? undefined
-                : {
+              shouldAnimate
+                ? {
                     scale: 1.1,
                     rotate: -45,
                   }
+                : undefined
             }
             transition={{
               duration: 0.25,
+              ease: 'easeOut',
             }}
           >
             ↗
           </motion.div>
         </div>
 
-        {/* CONTENT */}
+        {/* =====================================================
+            CONTENT
+        ===================================================== */}
 
         <div className="p-6 md:p-7">
           {/* SMALL LINE */}
@@ -308,13 +359,20 @@ function BlogCard({ post, index, reduceMotion }) {
             initial={{
               scaleX: 1,
             }}
-            whileHover={{
-              scaleX: 2.5,
-            }}
+            whileHover={
+              shouldAnimate
+                ? {
+                    scaleX: 2.5,
+                  }
+                : undefined
+            }
             transition={{
               duration: 0.35,
+              ease: 'easeOut',
             }}
           />
+
+          {/* TITLE */}
 
           <h2
             className="
@@ -324,15 +382,17 @@ function BlogCard({ post, index, reduceMotion }) {
               leading-tight
               tracking-tight
               text-[#123640]
-              dark:text-[#E9FBFF]
               transition-colors
               duration-300
               group-hover:text-[#007C9A]
+              dark:text-[#E9FBFF]
               dark:group-hover:text-[#62E4F4]
             "
           >
             {post.title}
           </h2>
+
+          {/* EXCERPT */}
 
           <p
             className="
@@ -346,8 +406,11 @@ function BlogCard({ post, index, reduceMotion }) {
             {post.excerpt}
           </p>
 
-          {/* READ MORE
+          {/* =====================================================
+              READ MORE
+          ===================================================== */}
 
+          {/*
           <div
             className="
               mt-6
@@ -366,11 +429,11 @@ function BlogCard({ post, index, reduceMotion }) {
 
             <motion.span
               animate={
-                reduceMotion
-                  ? undefined
-                  : {
+                shouldAnimate
+                  ? {
                       x: [0, 4, 0],
                     }
+                  : undefined
               }
               transition={{
                 duration: 1.6,
@@ -380,7 +443,8 @@ function BlogCard({ post, index, reduceMotion }) {
             >
               →
             </motion.span>
-          </div> */}
+          </div>
+          */}
         </div>
       </motion.div>
     </motion.article>
@@ -547,7 +611,9 @@ export default function Blog() {
             </div>
           </ScrollReveal>
 
-          {/* DECORATIVE LINE */}
+          {/* =====================================================
+              DECORATIVE LINE
+          ===================================================== */}
 
           <motion.div
             initial={
@@ -567,7 +633,8 @@ export default function Blog() {
                   }
             }
             viewport={{
-              once: true,
+              once: false,
+              amount: 0.15,
             }}
             transition={{
               duration: 1,
@@ -587,9 +654,14 @@ export default function Blog() {
               dark:via-[#155F78]
               dark:to-transparent
             "
+            style={{
+              willChange: reduceMotion ? 'auto' : 'transform, opacity',
+            }}
           />
 
-          {/* META */}
+          {/* =====================================================
+              META
+          ===================================================== */}
 
           <div
             className="
@@ -606,7 +678,10 @@ export default function Blog() {
             "
           >
             <span>Inside Cloud Matrix</span>
-            <span>{String(posts.length).padStart(2, '0')} Stories</span>
+
+            <span>
+              {String(posts.length).padStart(2, '0')} Stories
+            </span>
           </div>
         </div>
       </section>
@@ -678,6 +753,8 @@ export default function Blog() {
               "
             />
 
+            {/* LABEL */}
+
             <p
               className="
                 relative
@@ -691,6 +768,8 @@ export default function Blog() {
             >
               More stories coming soon
             </p>
+
+            {/* TITLE */}
 
             <h2
               className="
@@ -708,6 +787,8 @@ export default function Blog() {
             >
               Building, learning and growing together.
             </h2>
+
+            {/* DESCRIPTION */}
 
             <p
               className="

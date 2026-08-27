@@ -1,8 +1,9 @@
-import { memo, useCallback } from "react";
-
 import {
-  motion,
-} from "framer-motion";
+  memo,
+  useCallback,
+} from "react";
+
+import { motion } from "framer-motion";
 
 import ScrollReveal from "../components/ScrollReveal";
 import NodeSpine from "../components/NodeSpine";
@@ -84,16 +85,21 @@ const ServiceRow = memo(function ServiceRow({
     },
   };
 
+  const imageSrc =
+    images[service.id] || asserts.web;
+
   return (
     <article
       id={service.id}
       className="
         relative
-        min-h-[92vh]
+        min-h-[auto]
         border-b
         border-[#D9E8F0]
         dark:border-[#123A52]
         last:border-b-0
+
+        lg:min-h-[92vh]
       "
     >
       {/* ==================================================================
@@ -106,6 +112,7 @@ const ServiceRow = memo(function ServiceRow({
           pointer-events-none
           absolute
           top-1/2
+          hidden
           h-72
           w-72
           -translate-y-1/2
@@ -113,6 +120,9 @@ const ServiceRow = memo(function ServiceRow({
           bg-[#38BDF8]/[0.07]
           blur-3xl
           dark:bg-[#22D3EE]/[0.055]
+
+          lg:block
+
           ${
             fromLeft
               ? "left-[5%]"
@@ -129,11 +139,17 @@ const ServiceRow = memo(function ServiceRow({
         className="
           container-x
           grid
-          min-h-[92vh]
+          min-h-[auto]
           w-full
           items-center
           gap-10
-          py-16
+          py-14
+
+          sm:py-16
+
+          md:py-20
+
+          lg:min-h-[92vh]
           lg:grid-cols-2
           lg:gap-16
           lg:py-0
@@ -146,7 +162,7 @@ const ServiceRow = memo(function ServiceRow({
         <motion.div
           initial={{
             opacity: 0,
-            x: fromLeft ? -50 : 50,
+            x: fromLeft ? -45 : 45,
           }}
           whileInView={{
             opacity: 1,
@@ -154,7 +170,7 @@ const ServiceRow = memo(function ServiceRow({
           }}
           viewport={{
             once: false,
-            amount: 0.25,
+            amount: 0.15,
           }}
           transition={{
             duration: 0.7,
@@ -162,6 +178,8 @@ const ServiceRow = memo(function ServiceRow({
           }}
           className={`
             relative
+            w-full
+
             ${
               fromLeft
                 ? "lg:order-1"
@@ -176,8 +194,8 @@ const ServiceRow = memo(function ServiceRow({
           <motion.div
             aria-hidden="true"
             animate={{
-              scale: [1, 1.05, 1],
-              opacity: [0.45, 0.7, 0.45],
+              scale: [1, 1.04, 1],
+              opacity: [0.35, 0.55, 0.35],
             }}
             transition={{
               duration: 7,
@@ -187,25 +205,29 @@ const ServiceRow = memo(function ServiceRow({
             className="
               pointer-events-none
               absolute
-              -inset-5
-              rounded-[2.5rem]
+              -inset-4
+              rounded-[2rem]
               bg-gradient-to-r
               from-[#38BDF8]/10
               via-[#0EA5E9]/10
               to-[#2563EB]/10
               blur-2xl
-              dark:from-[#22D3EE]/12
+
+              dark:from-[#22D3EE]/10
               dark:via-[#0EA5E9]/8
               dark:to-[#2563EB]/10
+
+              sm:-inset-5
+              sm:rounded-[2.5rem]
             "
           />
 
           {/* ==============================================================
-              TILT IMAGE
+              IMAGE CARD
           ============================================================== */}
 
           <TiltCard
-            max={10}
+            max={8}
             spotlight
             onPointerEnter={handleImageEnter}
             onPointerLeave={handleImageLeave}
@@ -214,40 +236,75 @@ const ServiceRow = memo(function ServiceRow({
               relative
               aspect-[4/3]
               w-full
+              min-h-[230px]
               overflow-hidden
-              rounded-[2rem]
+              rounded-[1.5rem]
               border
               border-[#D7E8F1]
               bg-[#EAF5FA]
-              shadow-[0_30px_90px_rgba(2,132,199,0.10)]
+              shadow-[0_25px_70px_rgba(2,132,199,0.10)]
+
+              sm:min-h-[260px]
+              sm:rounded-[1.75rem]
+
+              md:aspect-[16/10]
+              md:min-h-[300px]
+
+              lg:aspect-[4/3]
+              lg:min-h-[340px]
+              lg:rounded-[2rem]
+
               dark:border-[#16445E]
               dark:bg-[#082132]
               dark:shadow-[0_30px_90px_rgba(0,0,0,0.28)]
-              md:rounded-[2.25rem]
             "
           >
-            {/* ==========================================================
-                IMAGE
+            {/* ============================================================
+                FALLBACK BACKGROUND
+            ============================================================= */}
 
-                NEW: swapped the plain <img> for ParallaxImageReveal.
-                It renders the same real <img> under the hood (same
-                src / alt / loading / decoding / draggable / object-cover
-                behavior) and layers a cursor-driven depth-parallax +
-                chromatic-split + HUD reticle on top. Everything below
-                (tint, blue glow, sweep, corner, tag, view indicator)
-                is untouched and keeps sitting above it via z-index.
-            =========================================================== */}
+            <div
+              aria-hidden="true"
+              className="
+                pointer-events-none
+                absolute
+                inset-0
+                z-0
+                bg-gradient-to-br
+                from-[#EAF7FD]
+                via-[#DDF3FB]
+                to-[#CFEAF6]
 
-            <ParallaxImageReveal
-              src={images[service.id]}
-              alt={service.name}
-              eager={index < 2}
-              imageClassName="grayscale-[10%] transition-[filter] duration-500 ease-out group-hover:grayscale-0"
+                dark:from-[#082132]
+                dark:via-[#0A2A3D]
+                dark:to-[#061A29]
+              "
             />
 
-            {/* ==========================================================
+            {/* ============================================================
+                IMAGE
+            ============================================================= */}
+
+            <ParallaxImageReveal
+              src={imageSrc}
+              alt={service.name}
+              eager={index < 2}
+              imageClassName="
+                h-full
+                w-full
+                object-cover
+                object-center
+                grayscale-[10%]
+                transition-[filter,transform]
+                duration-500
+                ease-out
+                group-hover:grayscale-0
+              "
+            />
+
+            {/* ============================================================
                 IMAGE TINT
-            =========================================================== */}
+            ============================================================= */}
 
             <div
               aria-hidden="true"
@@ -260,20 +317,21 @@ const ServiceRow = memo(function ServiceRow({
                 from-[#06263A]/65
                 via-[#0EA5E9]/[0.025]
                 to-transparent
+
                 dark:from-[#020F1A]/72
                 dark:via-[#0EA5E9]/[0.04]
                 dark:to-transparent
               "
             />
 
-            {/* ==========================================================
-                SECONDARY BLUE GLOW
-            =========================================================== */}
+            {/* ============================================================
+                BLUE GLOW
+            ============================================================= */}
 
             <motion.div
               aria-hidden="true"
               animate={{
-                opacity: [0.12, 0.28, 0.12],
+                opacity: [0.1, 0.22, 0.1],
               }}
               transition={{
                 duration: 5,
@@ -294,9 +352,9 @@ const ServiceRow = memo(function ServiceRow({
               "
             />
 
-            {/* ==========================================================
+            {/* ============================================================
                 LIGHT SWEEP
-            =========================================================== */}
+            ============================================================= */}
 
             <motion.div
               aria-hidden="true"
@@ -314,10 +372,7 @@ const ServiceRow = memo(function ServiceRow({
                 to-transparent
               "
               animate={{
-                x: [
-                  "0%",
-                  "430%",
-                ],
+                x: ["0%", "430%"],
               }}
               transition={{
                 duration: 3.8,
@@ -327,52 +382,61 @@ const ServiceRow = memo(function ServiceRow({
               }}
             />
 
-            {/* ==========================================================
+            {/* ============================================================
                 CORNER
-            =========================================================== */}
+            ============================================================= */}
 
             <div
               aria-hidden="true"
               className="
                 pointer-events-none
                 absolute
-                right-5
-                top-5
+                right-4
+                top-4
                 z-40
-                h-14
-                w-14
+                h-12
+                w-12
                 rounded-tr-xl
                 border-r
                 border-t
                 border-white/35
+
+                sm:right-5
+                sm:top-5
+                sm:h-14
+                sm:w-14
               "
             />
 
-            {/* ==========================================================
+            {/* ============================================================
                 TAG
-            =========================================================== */}
+            ============================================================= */}
 
             <span
               className="
                 pointer-events-none
                 absolute
-                bottom-5
-                left-5
+                bottom-4
+                left-4
                 z-40
                 font-mono
-                text-[10px]
+                text-[9px]
                 uppercase
                 tracking-[0.22em]
                 text-white/90
+
+                sm:bottom-5
+                sm:left-5
+                sm:text-[10px]
               "
             >
               {service.tags?.[0] ||
                 service.name}
             </span>
 
-            {/* ==========================================================
+            {/* ============================================================
                 VIEW INDICATOR
-            =========================================================== */}
+            ============================================================= */}
 
             <motion.div
               aria-hidden="true"
@@ -383,8 +447,8 @@ const ServiceRow = memo(function ServiceRow({
                 top-1/2
                 z-50
                 flex
-                h-16
-                w-16
+                h-14
+                w-14
                 -translate-x-1/2
                 -translate-y-1/2
                 items-center
@@ -393,7 +457,7 @@ const ServiceRow = memo(function ServiceRow({
                 border
                 border-white/40
                 bg-black/20
-                text-[9px]
+                text-[8px]
                 font-semibold
                 uppercase
                 tracking-[0.18em]
@@ -403,8 +467,13 @@ const ServiceRow = memo(function ServiceRow({
                 backdrop-blur-md
                 transition-all
                 duration-300
+
                 group-hover:scale-100
                 group-hover:opacity-100
+
+                sm:h-16
+                sm:w-16
+                sm:text-[9px]
               "
             >
               View
@@ -420,16 +489,22 @@ const ServiceRow = memo(function ServiceRow({
             className="
               pointer-events-none
               absolute
-              -left-6
-              -top-6
+              -left-5
+              -top-5
               -z-10
-              h-24
-              w-24
+              h-20
+              w-20
               rounded-full
               bg-gradient-to-br
               from-[#38BDF8]/20
               to-[#2563EB]/5
               blur-2xl
+
+              sm:-left-6
+              sm:-top-6
+              sm:h-24
+              sm:w-24
+
               dark:from-[#22D3EE]/15
               dark:to-[#2563EB]/5
             "
@@ -443,7 +518,7 @@ const ServiceRow = memo(function ServiceRow({
         <motion.div
           initial={{
             opacity: 0,
-            x: fromLeft ? 50 : -50,
+            x: fromLeft ? 45 : -45,
           }}
           whileInView={{
             opacity: 1,
@@ -451,11 +526,11 @@ const ServiceRow = memo(function ServiceRow({
           }}
           viewport={{
             once: false,
-            amount: 0.25,
+            amount: 0.15,
           }}
           transition={{
             duration: 0.7,
-            delay: 0.04,
+            delay: 0.03,
             ease: smoothEase,
           }}
           className={`
@@ -466,9 +541,9 @@ const ServiceRow = memo(function ServiceRow({
             }
           `}
         >
-          {/* ==========================================================
+          {/* ============================================================
               NUMBER
-          =========================================================== */}
+          ============================================================= */}
 
           <motion.div
             initial={{
@@ -481,7 +556,7 @@ const ServiceRow = memo(function ServiceRow({
             }}
             viewport={{
               once: false,
-              amount: 0.25,
+              amount: 0.15,
             }}
             transition={{
               duration: 0.45,
@@ -521,20 +596,19 @@ const ServiceRow = memo(function ServiceRow({
             ).padStart(2, "0")}
           </motion.div>
 
-          {/* ==========================================================
+          {/* ============================================================
               TITLE
-          =========================================================== */}
+          ============================================================= */}
 
           <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{
               once: false,
-              amount: 0.25,
+              amount: 0.15,
             }}
             variants={{
               hidden: {},
-
               visible: {
                 transition: {
                   staggerChildren: 0.035,
@@ -554,14 +628,18 @@ const ServiceRow = memo(function ServiceRow({
                 tracking-tight
                 text-[#0B2533]
                 dark:text-[#F4FBFF]
+
+                sm:text-4xl
+
                 md:text-5xl
+
                 xl:text-6xl
               "
             >
               {service.name}
             </motion.h3>
 
-            {/* underline */}
+            {/* UNDERLINE */}
 
             <motion.div
               initial={{
@@ -574,7 +652,7 @@ const ServiceRow = memo(function ServiceRow({
               }}
               viewport={{
                 once: false,
-                amount: 0.25,
+                amount: 0.15,
               }}
               transition={{
                 duration: 0.55,
@@ -591,6 +669,7 @@ const ServiceRow = memo(function ServiceRow({
                 from-[#0284C7]
                 via-[#38BDF8]
                 to-transparent
+
                 dark:from-[#38BDF8]
                 dark:via-[#22D3EE]
                 dark:to-transparent
@@ -598,9 +677,9 @@ const ServiceRow = memo(function ServiceRow({
             />
           </motion.div>
 
-          {/* ==========================================================
+          {/* ============================================================
               DESCRIPTION
-          =========================================================== */}
+          ============================================================= */}
 
           <motion.p
             initial={{
@@ -613,7 +692,7 @@ const ServiceRow = memo(function ServiceRow({
             }}
             viewport={{
               once: false,
-              amount: 0.25,
+              amount: 0.15,
             }}
             transition={{
               duration: 0.55,
@@ -627,15 +706,16 @@ const ServiceRow = memo(function ServiceRow({
               leading-[1.8]
               text-[#506875]
               dark:text-[#A9C4D3]
+
               md:text-base
             "
           >
             {service.description}
           </motion.p>
 
-          {/* ==========================================================
+          {/* ============================================================
               VALUE BOX
-          =========================================================== */}
+          ============================================================= */}
 
           <motion.div
             initial={{
@@ -648,7 +728,7 @@ const ServiceRow = memo(function ServiceRow({
             }}
             viewport={{
               once: false,
-              amount: 0.25,
+              amount: 0.15,
             }}
             transition={{
               duration: 0.55,
@@ -667,6 +747,7 @@ const ServiceRow = memo(function ServiceRow({
               px-4
               py-3.5
               shadow-[0_10px_30px_rgba(14,165,233,0.05)]
+
               dark:border-[#1B5875]
               dark:bg-[#0A2638]/80
               dark:shadow-[0_10px_30px_rgba(14,165,233,0.08)]
@@ -718,9 +799,9 @@ const ServiceRow = memo(function ServiceRow({
             </div>
           </motion.div>
 
-          {/* ==========================================================
+          {/* ============================================================
               TAGS
-          =========================================================== */}
+          ============================================================= */}
 
           <motion.div
             initial={{
@@ -733,7 +814,7 @@ const ServiceRow = memo(function ServiceRow({
             }}
             viewport={{
               once: false,
-              amount: 0.2,
+              amount: 0.12,
             }}
             transition={{
               duration: 0.5,
@@ -774,8 +855,10 @@ const ServiceRow = memo(function ServiceRow({
                     text-[#526B77]
                     transition-colors
                     duration-200
+
                     hover:border-[#0EA5E9]
                     hover:text-[#0284C7]
+
                     dark:border-[#21475D]
                     dark:bg-[#071D2B]/60
                     dark:text-[#AFC7D4]
@@ -795,55 +878,42 @@ const ServiceRow = memo(function ServiceRow({
           PARTICLES
       =================================================================== */}
 
-      {[0, 1, 2].map(
-        (particle) => (
-          <motion.span
-            key={particle}
-            aria-hidden="true"
-            className="
-              pointer-events-none
-              absolute
-              hidden
-              h-1
-              w-1
-              rounded-full
-              bg-[#38BDF8]/25
-              dark:bg-[#38BDF8]/30
-              lg:block
-            "
-            style={{
-              left: `${
-                20 +
-                particle * 25
-              }%`,
-              top: `${
-                25 +
-                particle * 20
-              }%`,
-            }}
-            animate={{
-              y: [
-                0,
-                -10,
-                0,
-              ],
-              opacity: [
-                0.15,
-                0.4,
-                0.15,
-              ],
-            }}
-            transition={{
-              duration:
-                6 + particle,
-              repeat: Infinity,
-              delay:
-                particle * 0.7,
-              ease: "easeInOut",
-            }}
-          />
-        )
-      )}
+      {[0, 1, 2].map((particle) => (
+        <motion.span
+          key={particle}
+          aria-hidden="true"
+          className="
+            pointer-events-none
+            absolute
+            hidden
+            h-1
+            w-1
+            rounded-full
+            bg-[#38BDF8]/25
+            dark:bg-[#38BDF8]/30
+
+            lg:block
+          "
+          style={{
+            left: `${20 + particle * 25}%`,
+            top: `${25 + particle * 20}%`,
+          }}
+          animate={{
+            y: [0, -10, 0],
+            opacity: [
+              0.15,
+              0.4,
+              0.15,
+            ],
+          }}
+          transition={{
+            duration: 6 + particle,
+            repeat: Infinity,
+            delay: particle * 0.7,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
     </article>
   );
 });
@@ -860,11 +930,15 @@ export default function Services() {
         relative
         overflow-hidden
         bg-[#F5FAFD]
-        py-24
+        py-20
         text-[#0B2533]
+
+        sm:py-24
+
+        md:py-28
+
         dark:bg-[#061B2A]
         dark:text-white
-        md:py-28
       "
     >
       {/* ==================================================================
@@ -888,11 +962,15 @@ export default function Services() {
           absolute
           -left-40
           top-1/4
-          h-96
-          w-96
+          h-72
+          w-72
           rounded-full
           bg-[#38BDF8]/[0.045]
           blur-3xl
+
+          md:h-96
+          md:w-96
+
           dark:bg-[#0EA5E9]/[0.045]
         "
       />
@@ -918,11 +996,15 @@ export default function Services() {
           absolute
           -right-40
           bottom-1/4
-          h-[30rem]
-          w-[30rem]
+          h-96
+          w-96
           rounded-full
           bg-[#0EA5E9]/[0.035]
           blur-3xl
+
+          md:h-[30rem]
+          md:w-[30rem]
+
           dark:bg-[#2563EB]/[0.04]
         "
       />
@@ -937,10 +1019,11 @@ export default function Services() {
           pointer-events-none
           absolute
           inset-0
-          opacity-[0.016]
+          opacity-[0.014]
           [background-image:linear-gradient(rgba(14,165,233,0.8)_1px,transparent_1px),linear-gradient(90deg,rgba(14,165,233,0.8)_1px,transparent_1px)]
           [background-size:60px_60px]
-          dark:opacity-[0.024]
+
+          dark:opacity-[0.022]
         "
       />
 
@@ -960,11 +1043,12 @@ export default function Services() {
           select-none
           whitespace-nowrap
           font-display
-          text-[16vw]
+          text-[18vw]
           font-bold
           leading-none
           tracking-tight
           text-[#0284C7]/[0.025]
+
           dark:text-[#38BDF8]/[0.028]
         "
       >
@@ -980,7 +1064,8 @@ export default function Services() {
           container-x
           relative
           z-10
-          mb-16
+          mb-14
+
           md:mb-20
         "
       >
@@ -999,13 +1084,17 @@ export default function Services() {
           <h2
             className="
               font-display
-              text-5xl
+              text-4xl
               font-bold
               leading-[1.05]
               tracking-tight
               text-[#0B2533]
               dark:text-[#F5FBFF]
+
+              sm:text-5xl
+
               md:text-6xl
+
               xl:text-7xl
             "
           >
@@ -1021,6 +1110,7 @@ export default function Services() {
                 to-[#2563EB]
                 bg-clip-text
                 text-transparent
+
                 dark:from-[#38BDF8]
                 dark:via-[#22D3EE]
                 dark:to-[#60A5FA]
@@ -1037,7 +1127,7 @@ export default function Services() {
                 }}
                 viewport={{
                   once: false,
-                  amount: 0.5,
+                  amount: 0.4,
                 }}
                 transition={{
                   duration: 0.65,
@@ -1047,7 +1137,7 @@ export default function Services() {
                   absolute
                   -bottom-2
                   left-0
-                  h-[5px]
+                  h-[4px]
                   w-full
                   origin-left
                   rounded-full
@@ -1055,9 +1145,12 @@ export default function Services() {
                   from-[#0284C7]
                   via-[#38BDF8]
                   to-transparent
+
                   dark:from-[#38BDF8]
                   dark:via-[#60A5FA]
                   dark:to-transparent
+
+                  md:h-[5px]
                 "
               />
             </span>
@@ -1066,18 +1159,18 @@ export default function Services() {
           <p
             className="
               mt-6
-              text-lg
+              text-base
               leading-relaxed
               text-[#536B77]
               dark:text-[#A9C5D5]
+
+              md:text-lg
             "
           >
-            Comprehensive technology
-            solutions to help your
-            business thrive in the digital
-            world. Scroll through — each
-            capability gets the room it
-            deserves.
+            Comprehensive technology solutions
+            to help your business thrive in the
+            digital world. Scroll through — each
+            capability gets the room it deserves.
           </p>
         </ScrollReveal>
       </div>

@@ -7,6 +7,7 @@ import ecommerce from './ecommerce.jpeg'
 import agentic from './agenticai.png'
 import app from './app.png'
 import webdesign from './webdesign.png'
+import startup from './startup.png'
 
 
 
@@ -19,4 +20,5 @@ export const asserts={
     ecommerce,
     agentic,app,
     webdesign,
+    startup,
 }

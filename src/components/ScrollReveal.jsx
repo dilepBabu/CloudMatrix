@@ -1,40 +1,221 @@
-// ScrollReveal.jsx
-import { motion } from 'framer-motion'
+import {
+  useEffect,
+  useRef,
+} from "react";
+
+/* =========================================================
+   LIGHTWEIGHT BIDIRECTIONAL SCROLL REVEAL
+
+   Features:
+   - Up
+   - Down
+   - Left
+   - Right
+   - Fade
+   - Scale
+   - Bidirectional
+   - Fast-scroll friendly
+   - Desktop
+   - Laptop
+   - Tablet
+   - Mobile
+========================================================= */
 
 export default function ScrollReveal({
   children,
-  direction = 'up',
+  direction = "up",
   delay = 0,
-  duration = 0.45,
-  className = '',
-  amount = 0.15,
-  as: Component = motion.div,
+  duration = 0.5,
+  className = "",
+  amount = 0.01,
+  once = false,
+  as: Component = "div",
 }) {
-  const offsets = {
-    up: { x: 0, y: 18 },
-    down: { x: 0, y: -18 },
-    left: { x: 18, y: 0 },
-    right: { x: -18, y: 0 },
-    fade: { x: 0, y: 0 },
-    scale: { x: 0, y: 0, scale: 0.985 },
-  }
+  const ref = useRef(null);
 
-  const offset = offsets[direction] || offsets.up
+  useEffect(() => {
+    const element = ref.current;
+
+    if (!element) {
+      return undefined;
+    }
+
+    /*
+     * Reduced motion.
+     */
+    const reducedMotion =
+      window.matchMedia(
+        "(prefers-reduced-motion: reduce)"
+      ).matches;
+
+    if (reducedMotion) {
+      element.dataset.revealVisible = "true";
+
+      return undefined;
+    }
+
+    /*
+     * Configure direction as CSS variables.
+     */
+    const directions = {
+      up: {
+        x: "0px",
+        y: "22px",
+        scale: "0.995",
+      },
+
+      down: {
+        x: "0px",
+        y: "-22px",
+        scale: "0.995",
+      },
+
+      left: {
+        x: "26px",
+        y: "0px",
+        scale: "0.995",
+      },
+
+      right: {
+        x: "-26px",
+        y: "0px",
+        scale: "0.995",
+      },
+
+      fade: {
+        x: "0px",
+        y: "0px",
+        scale: "1",
+      },
+
+      scale: {
+        x: "0px",
+        y: "8px",
+        scale: "0.96",
+      },
+    };
+
+    const selected =
+      directions[direction] ||
+      directions.up;
+
+    element.style.setProperty(
+      "--reveal-x",
+      selected.x
+    );
+
+    element.style.setProperty(
+      "--reveal-y",
+      selected.y
+    );
+
+    element.style.setProperty(
+      "--reveal-scale",
+      selected.scale
+    );
+
+    element.style.setProperty(
+      "--reveal-delay",
+      `${delay}s`
+    );
+
+    element.style.setProperty(
+      "--reveal-duration",
+      `${duration}s`
+    );
+
+    /*
+     * Start hidden.
+     */
+    element.dataset.revealVisible =
+      "false";
+
+    /*
+     * =======================================================
+     * INTERSECTION OBSERVER
+     * =======================================================
+     *
+     * Large rootMargin means the animation is triggered
+     * before the element is actually visible.
+     *
+     * This is especially important for FAST SCROLL.
+     */
+    const observer =
+      new IntersectionObserver(
+        (entries) => {
+          const entry = entries[0];
+
+          if (!entry) {
+            return;
+          }
+
+          if (entry.isIntersecting) {
+            element.dataset.revealVisible =
+              "true";
+
+            if (once) {
+              observer.unobserve(
+                element
+              );
+            }
+
+            return;
+          }
+
+          /*
+           * Bidirectional mode.
+           */
+          if (!once) {
+            element.dataset.revealVisible =
+              "false";
+          }
+        },
+        {
+          root: null,
+
+          /*
+           * Detect before/after the viewport.
+           */
+          rootMargin:
+            "40% 0px 40% 0px",
+
+          /*
+           * Very small threshold is intentional.
+           * This prevents fast-scroll jumps from skipping
+           * the trigger.
+           */
+          threshold: Math.max(
+            0,
+            Math.min(
+              1,
+              amount
+            )
+          ),
+        }
+      );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [
+    amount,
+    delay,
+    direction,
+    duration,
+    once,
+  ]);
 
   return (
     <Component
-      initial={{ opacity: 0, ...offset }}
-      whileInView={{ opacity: 1, x: 0, y: 0, scale: 1 }}
-      viewport={{
-        once: true,
-        amount,
-        margin: '0px 0px -10% 0px',
-      }}
-      transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
-      style={{ transform: 'translateZ(0)', willChange: 'opacity, transform' }}
+      ref={ref}
+      data-scroll-reveal="true"
+      data-reveal-direction={direction}
+      data-reveal-visible="false"
       className={className}
     >
       {children}
     </Component>
-  )
+  );
 }

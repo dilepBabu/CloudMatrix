@@ -25,33 +25,53 @@
 
 html {
   position: relative;
-  scroll-behavior: auto;
-  overflow-x: hidden;
+
+  /*
+   * Lenis controls smooth scrolling.
+   * Do not use browser smooth scrolling at the same time.
+   */
+  scroll-behavior: auto !important;
+
+  overflow-x: clip;
+
   background: #ffffff;
+
   overscroll-behavior-x: none;
 }
 
 body {
   position: relative;
-  overflow-x: hidden;
+
   width: 100%;
+
   margin: 0;
   padding: 0;
-  overscroll-behavior-y: none;
+
+  overflow-x: clip;
+
+  /*
+   * Do not disable normal vertical browser scrolling.
+   */
+  overscroll-behavior-x: none;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
   text-rendering: optimizeSpeed;
 }
 
 #root {
   width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
+  min-width: 0;
+
+  overflow-x: clip;
 }
 
 main,
 section {
   max-width: 100%;
+  min-width: 0;
 }
 
 /* =========================================================================
@@ -84,8 +104,10 @@ section {
 
 .signal-cursor-layer {
   transform: translate3d(0, 0, 0);
+
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+
   pointer-events: none;
 }
 
@@ -95,16 +117,21 @@ section {
 
 .motion-safe-transform {
   transform: translate3d(0, 0, 0);
+
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
 .gpu-accelerated {
   transform: translate3d(0, 0, 0);
+
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
+/*
+ * Do not force will-change on every reveal.
+ */
 [data-scroll-reveal] {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
@@ -117,18 +144,22 @@ section {
 @layer base {
   html {
     position: relative;
+
     scroll-behavior: auto !important;
-    overflow-x: hidden;
+
+    overflow-x: clip;
+
     background: #ffffff;
   }
 
   body {
     @apply bg-white text-slate-900 font-body antialiased;
 
-    overflow-x: hidden;
     width: 100%;
     margin: 0;
     padding: 0;
+
+    overflow-x: clip;
   }
 
   h1,
@@ -168,22 +199,30 @@ section {
   }
 
   .text-gradient {
-    background: linear-gradient(110deg, #00a9e0 0%, #0066b3 48%, #00a878 100%);
+    background:
+      linear-gradient(
+        110deg,
+        #00a9e0 0%,
+        #0066b3 48%,
+        #00a878 100%
+      );
 
     -webkit-background-clip: text;
     background-clip: text;
+
     color: transparent;
   }
 
   .hero-brand-gradient {
-    background: linear-gradient(
-      100deg,
-      #00a9e0 0%,
-      #00a9e0 35%,
-      #00a878 62%,
-      #f2b632 82%,
-      #f47b20 100%
-    );
+    background:
+      linear-gradient(
+        100deg,
+        #00a9e0 0%,
+        #00a9e0 35%,
+        #00a878 62%,
+        #f2b632 82%,
+        #f47b20 100%
+      );
 
     background-size: 220% 100%;
 
@@ -192,7 +231,11 @@ section {
 
     color: transparent;
 
-    animation: brand-gradient-flow 9s ease-in-out infinite;
+    animation:
+      brand-gradient-flow
+      9s
+      ease-in-out
+      infinite;
   }
 
   .cursor-interactive {
@@ -210,28 +253,41 @@ section {
   inset: 0;
 
   background-image:
-    linear-gradient(rgba(0, 169, 224, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 169, 224, 0.045) 1px, transparent 1px);
+    linear-gradient(
+      rgba(0, 169, 224, 0.045) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(0, 169, 224, 0.045) 1px,
+      transparent 1px
+    );
 
   background-size: 58px 58px;
 
-  mask-image: linear-gradient(
-    to bottom,
-    black 0%,
-    rgba(0, 0, 0, 0.7) 55%,
-    transparent 100%
-  );
+  mask-image:
+    linear-gradient(
+      to bottom,
+      black 0%,
+      rgba(0, 0, 0, 0.7) 55%,
+      transparent 100%
+    );
 
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    black 0%,
-    rgba(0, 0, 0, 0.7) 55%,
-    transparent 100%
-  );
+  -webkit-mask-image:
+    linear-gradient(
+      to bottom,
+      black 0%,
+      rgba(0, 0, 0, 0.7) 55%,
+      transparent 100%
+    );
 
   opacity: 0.75;
 
-  animation: heroGridMove 24s linear infinite;
+  animation:
+    heroGridMove
+    24s
+    linear
+    infinite;
 
   transform: translate3d(0, 0, 0);
 }
@@ -241,7 +297,11 @@ section {
 =========================================================================== */
 
 .cloud-visual {
-  filter: drop-shadow(0 0 25px rgba(0, 169, 224, 0.07));
+  filter:
+    drop-shadow(
+      0 0 25px
+      rgba(0, 169, 224, 0.07)
+    );
 
   transform: translateZ(0);
 
@@ -260,15 +320,24 @@ section {
 }
 
 .cloud-glass {
-  background: rgba(3, 27, 46, 0.78);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    rgba(3, 27, 46, 0.78);
 
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.1);
+
+  backdrop-filter:
+    blur(10px);
+
+  -webkit-backdrop-filter:
+    blur(10px);
 
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    0 20px 50px
+      rgba(0, 0, 0, 0.2),
+    inset 0 1px 0
+      rgba(255, 255, 255, 0.06);
 }
 
 /* =========================================================================
@@ -277,16 +346,22 @@ section {
 
 .shadow-cloud {
   box-shadow:
-    0 0 0 1px rgba(0, 169, 224, 0.08),
-    0 16px 45px rgba(0, 102, 179, 0.16);
+    0 0 0 1px
+      rgba(0, 169, 224, 0.08),
+    0 16px 45px
+      rgba(0, 102, 179, 0.16);
 }
 
 .shadow-teal {
-  box-shadow: 0 0 25px rgba(0, 168, 120, 0.14);
+  box-shadow:
+    0 0 25px
+      rgba(0, 168, 120, 0.14);
 }
 
 .shadow-blue {
-  box-shadow: 0 0 25px rgba(0, 102, 179, 0.16);
+  box-shadow:
+    0 0 25px
+      rgba(0, 102, 179, 0.16);
 }
 
 /* =========================================================================
@@ -301,7 +376,10 @@ section {
 
   opacity: 0.018;
 
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-image:
+    url(
+      "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"
+    );
 
   z-index: 0;
 }
@@ -319,13 +397,23 @@ section {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #0066b3, #00a9e0);
+  background:
+    linear-gradient(
+      to bottom,
+      #0066b3,
+      #00a9e0
+    );
 
   border-radius: 20px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #00a9e0, #00a878);
+  background:
+    linear-gradient(
+      to bottom,
+      #00a9e0,
+      #00a878
+    );
 }
 
 /* =========================================================================
@@ -333,7 +421,9 @@ section {
 =========================================================================== */
 
 .animate-transform {
-  transform: translate3d(0, 0, 0);
+  transform:
+    translate3d(0, 0, 0);
+
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
@@ -353,14 +443,15 @@ section {
 =========================================================================== */
 
 .animated-gradient-text {
-  background: linear-gradient(
-    110deg,
-    #ffffff 0%,
-    #00a9e0 25%,
-    #00a878 50%,
-    #00a9e0 75%,
-    #ffffff 100%
-  );
+  background:
+    linear-gradient(
+      110deg,
+      #ffffff 0%,
+      #00a9e0 25%,
+      #00a878 50%,
+      #00a9e0 75%,
+      #ffffff 100%
+    );
 
   background-size: 250% 100%;
 
@@ -369,7 +460,11 @@ section {
 
   -webkit-text-fill-color: transparent;
 
-  animation: heroGradientFlow 5s ease-in-out infinite;
+  animation:
+    heroGradientFlow
+    5s
+    ease-in-out
+    infinite;
 }
 
 /* =========================================================================
@@ -475,11 +570,6 @@ section {
 
 /* =========================================================================
    REDUCED MOTION
-
-   IMPORTANT:
-   Do NOT globally force every element to 0.001ms.
-
-   Framer Motion is controlled with MotionConfig.
 =========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
@@ -491,8 +581,10 @@ section {
   .hero-light-ribbon,
   .hero-signal-line,
   .hero-signal-line-two,
-  .hero-shine {
-    animation: none;
+  .hero-shine,
+  .hero-brand-gradient,
+  .animated-gradient-text {
+    animation: none !important;
   }
 
   .process-fold-face {
@@ -511,17 +603,19 @@ section {
 
   .shadow-cloud {
     box-shadow:
-      0 0 0 1px rgba(0, 169, 224, 0.06),
-      0 14px 40px rgba(0, 102, 179, 0.13);
+      0 0 0 1px
+        rgba(0, 169, 224, 0.06),
+      0 14px 40px
+        rgba(0, 102, 179, 0.13);
   }
 
   .cloud-glass {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
   }
 
   .grain-overlay {
-    opacity: 0.012;
+    opacity: 0.006;
   }
 }
 
@@ -529,20 +623,29 @@ section {
    MOBILE
 =========================================================================== */
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .cloud-visual {
     max-width: 430px;
   }
 
-  .hero-tech-grid {
-    background-size: 42px 42px;
-    animation-duration: 32s;
+  /*
+   * Make large effects cheaper.
+   */
+  .cloud-glass {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+
+  .grain-overlay {
+    opacity: 0.003;
   }
 
   .shadow-cloud {
     box-shadow:
-      0 0 0 1px rgba(0, 169, 224, 0.05),
-      0 10px 30px rgba(0, 102, 179, 0.11);
+      0 0 0 1px
+        rgba(0, 169, 224, 0.035),
+      0 8px 22px
+        rgba(0, 102, 179, 0.07);
   }
 
   .shadow-teal,
@@ -550,27 +653,22 @@ section {
     box-shadow: none;
   }
 
-  .cloud-glass {
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
-
-  .grain-overlay {
-    opacity: 0.008;
+  .hero-tech-grid {
+    background-size: 42px 42px;
+    animation-duration: 32s;
   }
 
   .hero-light-ribbon {
-    opacity: 0.28;
-    filter: blur(25px);
+    opacity: 0.18;
   }
 
   .hero-signal-line,
   .hero-signal-line-two {
-    opacity: 0.18;
+    opacity: 0.12;
   }
 
   .hero-shine {
-    opacity: 0.45;
+    opacity: 0.35;
   }
 }
 
@@ -590,7 +688,9 @@ section {
   .cloud-glass {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    background: rgba(3, 27, 46, 0.88);
+
+    background:
+      rgba(3, 27, 46, 0.88);
   }
 
   .hero-light-ribbon,
@@ -600,14 +700,12 @@ section {
 
   .hero-signal-line,
   .hero-signal-line-two {
-    opacity: 0.1;
+    opacity: 0.08;
   }
 }
 
 /* =========================================================================
    LOW DATA
-
-   Keep this separate from motion preference.
 =========================================================================== */
 
 @media (prefers-reduced-data: reduce) {
@@ -617,7 +715,9 @@ section {
 
   .hero-brand-gradient {
     animation: none;
-    background-position: 0% 50%;
+
+    background-position:
+      0% 50%;
   }
 
   .cloud-glass {
@@ -634,40 +734,444 @@ section {
   }
 }
 /* =========================================================
-   FAQ ONLY
+   LIGHTWEIGHT SCROLL REVEAL
 ========================================================= */
 
-.faq-item {
+[data-scroll-reveal="true"] {
+  /*
+   * Defaults.
+   */
+  --reveal-x: 0px;
+  --reveal-y: 22px;
+  --reveal-scale: 0.995;
+
+  --reveal-delay: 0s;
+  --reveal-duration: 0.5s;
+
+  opacity: 0;
+
+  transform:
+    translate3d(
+      var(--reveal-x),
+      var(--reveal-y),
+      0
+    )
+    scale(
+      var(--reveal-scale)
+    );
+
+  /*
+   * Only transform and opacity are animated.
+   */
+  transition:
+    opacity
+      var(--reveal-duration)
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      )
+      var(--reveal-delay),
+    transform
+      var(--reveal-duration)
+      cubic-bezier(
+        0.22,
+        1,
+        0.36,
+        1
+      )
+      var(--reveal-delay);
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+[data-scroll-reveal="true"][data-reveal-visible="true"] {
+  opacity: 1;
+
+  transform:
+    translate3d(
+      0,
+      0,
+      0
+    )
+    scale(1);
+}
+
+/* =========================================================
+   DIRECTIONS
+========================================================= */
+
+[data-scroll-reveal="true"][data-reveal-direction="up"] {
+  --reveal-x: 0px;
+  --reveal-y: 22px;
+  --reveal-scale: 0.995;
+}
+
+[data-scroll-reveal="true"][data-reveal-direction="down"] {
+  --reveal-x: 0px;
+  --reveal-y: -22px;
+  --reveal-scale: 0.995;
+}
+
+[data-scroll-reveal="true"][data-reveal-direction="left"] {
+  --reveal-x: 26px;
+  --reveal-y: 0px;
+  --reveal-scale: 0.995;
+}
+
+[data-scroll-reveal="true"][data-reveal-direction="right"] {
+  --reveal-x: -26px;
+  --reveal-y: 0px;
+  --reveal-scale: 0.995;
+}
+
+[data-scroll-reveal="true"][data-reveal-direction="fade"] {
+  --reveal-x: 0px;
+  --reveal-y: 0px;
+  --reveal-scale: 1;
+}
+
+[data-scroll-reveal="true"][data-reveal-direction="scale"] {
+  --reveal-x: 0px;
+  --reveal-y: 8px;
+  --reveal-scale: 0.96;
+}
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 1024px) {
+  [data-scroll-reveal="true"] {
+    --reveal-y: 17px;
+  }
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 768px) {
+  [data-scroll-reveal="true"] {
+    --reveal-y: 14px;
+    --reveal-duration: 0.42s;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+  [data-scroll-reveal="true"] {
+    --reveal-y: 12px;
+    --reveal-duration: 0.38s;
+  }
+}
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  [data-scroll-reveal="true"] {
+    opacity: 1 !important;
+
+    transform: none !important;
+
+    transition: none !important;
+  }
+}
+
+/* =========================================================
+   SERVICE PAGE
+========================================================= */
+
+.service-page {
   position: relative;
+
+  width: 100%;
+
+  min-width: 0;
+
+  overflow-x: clip;
 }
 
-.faq-question-button {
-  position: relative !important;
-  z-index: 20 !important;
-
-  width: 100% !important;
-
-  pointer-events: auto !important;
-  cursor: pointer !important;
-
-  touch-action: manipulation !important;
-
-  -webkit-user-select: none !important;
-  user-select: none !important;
-
-  -webkit-tap-highlight-color: transparent;
+.service-page section {
+  min-width: 0;
 }
 
-.faq-question-button > * {
-  pointer-events: none !important;
+.service-card {
+  position: relative;
+
+  min-width: 0;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
-.faq-question-button::before,
-.faq-question-button::after {
-  pointer-events: none !important;
+/* =========================================================
+   SERVICE SHINE
+========================================================= */
+
+.service-shine {
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+
+  overflow: hidden;
+
+  transform:
+    translate3d(
+      -120%,
+      0,
+      0
+    );
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  background:
+    linear-gradient(
+      110deg,
+      transparent 35%,
+      rgba(
+        255,
+        255,
+        255,
+        0.16
+      ) 50%,
+      transparent 65%
+    );
 }
 
-[data-faq-trigger="true"] {
-  pointer-events: auto !important;
-  cursor: pointer !important;
+.service-card:hover .service-shine {
+  animation:
+    serviceShine
+    1.15s
+    cubic-bezier(
+      0.22,
+      1,
+      0.36,
+      1
+    );
+}
+
+@keyframes serviceShine {
+  0% {
+    transform:
+      translate3d(
+        -120%,
+        0,
+        0
+      );
+  }
+
+  100% {
+    transform:
+      translate3d(
+        120%,
+        0,
+        0
+      );
+  }
+}
+
+/* =========================================================
+   SERVICE GLOW
+========================================================= */
+
+.service-glow {
+  pointer-events: none;
+
+  transform:
+    translate3d(
+      0,
+      0,
+      0
+    );
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* =========================================================
+   TABLET SERVICE
+========================================================= */
+
+@media (max-width: 1024px) {
+  .service-card {
+    box-shadow:
+      0 10px 30px
+      rgba(
+        0,
+        102,
+        179,
+        0.08
+      );
+  }
+
+  .service-shine {
+    opacity: 0.7;
+  }
+
+  .service-page .blur-3xl {
+    opacity: 0.65;
+  }
+
+  .service-page .blur-2xl {
+    opacity: 0.7;
+  }
+}
+
+/* =========================================================
+   MOBILE SERVICE
+========================================================= */
+
+@media (max-width: 768px) {
+  .service-card {
+    box-shadow:
+      0 7px 22px
+      rgba(
+        0,
+        102,
+        179,
+        0.07
+      );
+  }
+
+  .service-shine {
+    opacity: 0.38;
+  }
+
+  .service-page .blur-3xl {
+    opacity: 0.5;
+  }
+
+  .service-page .blur-2xl {
+    opacity: 0.55;
+  }
+}
+
+/* =========================================================
+   SMALL MOBILE
+========================================================= */
+
+@media (max-width: 480px) {
+  .service-shine {
+    opacity: 0.24;
+  }
+}
+
+/* =========================================================
+   GLOBAL SCROLL PERFORMANCE
+========================================================= */
+
+html {
+  position: relative;
+
+  scroll-behavior: auto !important;
+
+  overflow-x: clip;
+
+  background: #ffffff;
+
+  overscroll-behavior-x: none;
+}
+
+body {
+  position: relative;
+
+  width: 100%;
+
+  margin: 0;
+  padding: 0;
+
+  overflow-x: clip;
+
+  overscroll-behavior-x: none;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+
+  min-width: 0;
+
+  min-height: 100vh;
+
+  overflow-x: clip;
+}
+
+main,
+section {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* =========================================================
+   DON'T CREATE GPU LAYERS EVERYWHERE
+========================================================= */
+
+.motion-safe-transform {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.gpu-accelerated {
+  transform:
+    translate3d(
+      0,
+      0,
+      0
+    );
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/*
+ * Important:
+ * Don't put will-change on every scroll reveal.
+ */
+[data-scroll-reveal] {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* =========================================================
+   MOBILE PERFORMANCE
+========================================================= */
+
+@media (max-width: 768px) {
+  .shadow-teal,
+  .shadow-blue {
+    box-shadow: none;
+  }
+
+  .grain-overlay {
+    opacity: 0.003;
+  }
+
+  .cloud-glass {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+  }
+}
+
+@media (max-width: 480px) {
+  .cloud-glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .grain-overlay {
+    display: none;
+  }
 }
