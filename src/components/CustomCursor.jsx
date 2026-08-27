@@ -1,264 +1,156 @@
 import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
-import {
+  AnimatePresence,
   motion,
   useMotionValue,
+  useReducedMotion,
   useSpring,
 } from "framer-motion";
-
+import { useEffect, useState } from "react";
 import { useCursor } from "../context/CursorContext";
 
 /* =========================================================================
-   SOCIAL ICON
-   ========================================================================= */
-
-function SocialIcon({ label }) {
-  const name = String(label || "").toLowerCase();
-
-  /* -----------------------------------------------------------------------
-     LINKEDIN
-  ----------------------------------------------------------------------- */
-
-  if (name.includes("linkedin")) {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-4 w-4"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d="M6.94 8.54H3.56V20h3.38V8.54ZM5.25 3A2 2 0 1 0 5.2 7a2 2 0 0 0 .05-4ZM20.44 13.43c0-3.45-1.84-5.05-4.3-5.05a3.72 3.72 0 0 0-3.36 1.84h-.05V8.54H9.5V20h3.23v-5.68c0-1.5.28-2.95 2.14-2.95 1.83 0 1.85 1.72 1.85 3.05V20H20v-6.57Z" />
-      </svg>
-    );
-  }
-
-  /* -----------------------------------------------------------------------
-     INSTAGRAM
-  ----------------------------------------------------------------------- */
-
-  if (name.includes("instagram")) {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-4 w-4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        aria-hidden="true"
-      >
-        <rect
-          x="3"
-          y="3"
-          width="18"
-          height="18"
-          rx="5"
-        />
-
-        <circle
-          cx="12"
-          cy="12"
-          r="4"
-        />
-
-        <circle
-          cx="17.4"
-          cy="6.6"
-          r="1"
-          fill="currentColor"
-          stroke="none"
-        />
-      </svg>
-    );
-  }
-
-  /* -----------------------------------------------------------------------
-     YOUTUBE
-  ----------------------------------------------------------------------- */
-
-  if (name.includes("youtube")) {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-4 w-4"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path
-          d="M21.58 7.19a2.96 2.96 0 0 0-2.08-2.09C17.66 4.6 12 4.6 12 4.6s-5.66 0-7.5.5a2.96 2.96 0 0 0-2.08 2.09C1.92 9.04 1.92 12 1.92 12s0 2.96.5 4.81a2.96 2.96 0 0 0 2.08 2.09c1.84.5 7.5.5 7.5.5s5.66 0 7.5-.5a2.96 2.96 0 0 0 2.08-2.09c.5-1.85.5-4.81.5-4.81s0-2.96-.5-4.81ZM9.92 15.6V8.4L16.08 12l-6.16 3.6Z"
-        />
-      </svg>
-    );
-  }
-
-  /* -----------------------------------------------------------------------
-     FACEBOOK
-  ----------------------------------------------------------------------- */
-
-  if (name.includes("facebook")) {
-    return (
-      <svg
-        viewBox="0 0 24 24"
-        className="h-4 w-4"
-        fill="currentColor"
-        aria-hidden="true"
-      >
-        <path d="M13.6 21v-8h2.7l.4-3h-3.1V8.08c0-.87.24-1.46 1.5-1.46h1.6V3.94c-.28-.04-1.23-.12-2.34-.12-2.32 0-3.91 1.42-3.91 4.03V10H7.82v3h2.62v8h3.16Z" />
-      </svg>
-    );
-  }
-
-  return (
-    <span className="text-xs font-bold">
-      ↗
-    </span>
-  );
-}
-
-/* =========================================================================
-   CUSTOM CURSOR
+   PREMIUM DIRECTION CURSOR
+   =========================================================================
+   Concept:
+   - No circles
+   - No rings
+   - No orbit
+   - No ripple
+   - No oversized cursor
+   - Sharp directional arrow
+   - Small trailing accent
+   - Compact interaction label
+   - High contrast in light + dark mode
    ========================================================================= */
 
 export default function CustomCursor() {
   const { cursor } = useCursor() || {};
+
+  const reducedMotion = useReducedMotion();
 
   const [enabled, setEnabled] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [pressed, setPressed] = useState(false);
 
   /* =========================================================================
-     POINTER POSITION
-  ========================================================================= */
+     RAW POINTER
+     ========================================================================= */
 
-  const x = useMotionValue(-100);
-  const y = useMotionValue(-100);
-
-  /* =========================================================================
-     MAIN CURSOR
-  ========================================================================= */
-
-  const mainX = useSpring(x, {
-    stiffness: 1800,
-    damping: 85,
-    mass: 0.035,
-  });
-
-  const mainY = useSpring(y, {
-    stiffness: 1800,
-    damping: 85,
-    mass: 0.035,
-  });
+  const mouseX = useMotionValue(-100);
+  const mouseY = useMotionValue(-100);
 
   /* =========================================================================
-     OUTER CURSOR
-  ========================================================================= */
+     MAIN CURSOR SPRING
 
-  const ringX = useSpring(x, {
-    stiffness: 520,
-    damping: 42,
-    mass: 0.08,
+     Fast enough to feel attached to the mouse.
+     ========================================================================= */
+
+  const x = useSpring(mouseX, {
+    stiffness: 1600,
+    damping: 80,
+    mass: 0.025,
   });
 
-  const ringY = useSpring(y, {
-    stiffness: 520,
-    damping: 42,
-    mass: 0.08,
+  const y = useSpring(mouseY, {
+    stiffness: 1600,
+    damping: 80,
+    mass: 0.025,
+  });
+
+  /* =========================================================================
+     TRAIL SPRING
+
+     Slightly slower than the main arrow.
+     ========================================================================= */
+
+  const trailX = useSpring(mouseX, {
+    stiffness: 480,
+    damping: 48,
+    mass: 0.06,
+  });
+
+  const trailY = useSpring(mouseY, {
+    stiffness: 480,
+    damping: 48,
+    mass: 0.06,
   });
 
   /* =========================================================================
      CURSOR STATE
-  ========================================================================= */
+     ========================================================================= */
 
   const label = cursor?.label || "";
   const variant = cursor?.variant || "default";
-  const color = cursor?.color;
+  const customColor = cursor?.color;
 
+  const hasLabel = Boolean(label);
   const isSocial = variant === "social";
-  const isLabel = Boolean(label);
 
   /* =========================================================================
-     COLORS
-  ========================================================================= */
+     HIGH CONTRAST COLORS
 
-  const brandColor =
-    color ||
-    (isDark
-      ? "#67E8F9"
-      : "#0E7C86");
+     These are deliberately different between themes.
 
-  const primaryColor = isSocial
-    ? brandColor
-    : isDark
-      ? "#DFFFFB"
-      : "#0E7C86";
+     LIGHT:
+       Arrow      -> almost black
+       Accent     -> strong blue
+       Label      -> white
 
-  const ringColor = isSocial
-    ? brandColor
-    : isDark
-      ? "#79F2E5"
-      : "#0E7C86";
+     DARK:
+       Arrow      -> white
+       Accent     -> cyan
+       Label      -> dark navy
 
-  /* =========================================================================
-     CURSOR SIZE
-  ========================================================================= */
+     This prevents the cursor from disappearing against the background.
+     ========================================================================= */
 
-  const cursorSize = useMemo(() => {
-    if (isSocial) {
-      return {
-        width: 142,
-        height: 52,
-      };
-    }
+  const arrowColor =
+    customColor ||
+    (isDark ? "#FFFFFF" : "#0B1220");
 
-    if (isLabel) {
-      return {
-        width: 118,
-        height: 46,
-      };
-    }
+  const accentColor =
+    customColor ||
+    (isDark ? "#22D3EE" : "#2563EB");
 
-    return {
-      width: 10,
-      height: 10,
-    };
-  }, [isSocial, isLabel]);
+  const labelBg =
+    isDark
+      ? "#07131C"
+      : "#FFFFFF";
+
+  const labelColor =
+    isDark
+      ? "#FFFFFF"
+      : "#0B1220";
+
+  const labelBorder =
+    isDark
+      ? "#22D3EE"
+      : "#2563EB";
 
   /* =========================================================================
-     INITIALIZE
-  ========================================================================= */
+     POINTER INITIALIZATION
+     ========================================================================= */
 
   useEffect(() => {
-    if (
-      typeof window === "undefined"
-    ) {
+    if (typeof window === "undefined") {
       return undefined;
     }
 
-    const pointerFine =
-      window.matchMedia(
-        "(pointer: fine)"
-      );
+    const finePointer = window.matchMedia(
+      "(pointer: fine)"
+    );
 
-    /*
-     * Do not render custom cursor
-     * on touch devices.
-     */
-
-    if (!pointerFine.matches) {
+    if (!finePointer.matches) {
       return undefined;
     }
 
     setEnabled(true);
 
-    const root =
-      document.documentElement;
+    const root = document.documentElement;
 
     /* -----------------------------------------------------------------------
-       THEME
-    ----------------------------------------------------------------------- */
+       THEME DETECTION
+       ----------------------------------------------------------------------- */
 
     const updateTheme = () => {
       setIsDark(
@@ -268,25 +160,21 @@ export default function CustomCursor() {
 
     updateTheme();
 
-    const observer =
-      new MutationObserver(
-        updateTheme
-      );
+    const themeObserver =
+      new MutationObserver(updateTheme);
 
-    observer.observe(root, {
+    themeObserver.observe(root, {
       attributes: true,
       attributeFilter: ["class"],
     });
 
     /* -----------------------------------------------------------------------
        POINTER
-    ----------------------------------------------------------------------- */
+       ----------------------------------------------------------------------- */
 
-    const handlePointerMove = (
-      event
-    ) => {
-      x.set(event.clientX);
-      y.set(event.clientY);
+    const handlePointerMove = (event) => {
+      mouseX.set(event.clientX);
+      mouseY.set(event.clientY);
     };
 
     const handlePointerDown = () => {
@@ -321,9 +209,9 @@ export default function CustomCursor() {
       }
     );
 
-    /*
-     * Hide native cursor.
-     */
+    /* -----------------------------------------------------------------------
+       HIDE NATIVE CURSOR
+       ----------------------------------------------------------------------- */
 
     root.classList.add(
       "signal-cursor-active"
@@ -345,27 +233,89 @@ export default function CustomCursor() {
         handlePointerUp
       );
 
-      observer.disconnect();
+      themeObserver.disconnect();
 
       root.classList.remove(
         "signal-cursor-active"
       );
     };
-  }, [x, y]);
+  }, [mouseX, mouseY]);
+
+  /* =========================================================================
+     TOUCH DEVICES
+     ========================================================================= */
 
   if (!enabled) {
     return null;
   }
 
   /* =========================================================================
-     RENDER
-  ========================================================================= */
+     ARROW DIMENSIONS
+     ========================================================================= */
+
+  const arrowWidth = hasLabel || isSocial
+    ? 30
+    : 25;
+
+  const arrowHeight = hasLabel || isSocial
+    ? 36
+    : 30;
 
   return (
     <>
       {/* =====================================================================
+          TRAILING ACCENT
+
+          Small directional stroke.
+          Not a circle.
+          ===================================================================== */}
+
+      <motion.div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          fixed
+          left-0
+          top-0
+          z-[99996]
+        "
+        style={{
+          x: trailX,
+          y: trailY,
+          translateX: "-2px",
+          translateY: "-1px",
+          willChange: "transform",
+        }}
+      >
+        <motion.div
+          animate={{
+            width: hasLabel ? 25 : 16,
+            opacity: hasLabel ? 0.85 : 0.5,
+            scaleX: pressed ? 0.75 : 1,
+          }}
+          transition={{
+            type: "spring",
+            stiffness: 500,
+            damping: 35,
+          }}
+          className="
+            h-[2px]
+            origin-left
+            rounded-full
+          "
+          style={{
+            backgroundColor: accentColor,
+            transform:
+              "translate(-7px, 8px) rotate(-45deg)",
+            boxShadow:
+              `0 0 8px ${accentColor}55`,
+          }}
+        />
+      </motion.div>
+
+      {/* =====================================================================
           MAIN CURSOR
-      ====================================================================== */}
+          ===================================================================== */}
 
       <motion.div
         aria-hidden="true"
@@ -377,793 +327,281 @@ export default function CustomCursor() {
           z-[99999]
         "
         style={{
-          x: mainX,
-          y: mainY,
-          translateX: "-50%",
-          translateY: "-50%",
+          x,
+          y,
+          translateX: "-2px",
+          translateY: "-2px",
           willChange: "transform",
         }}
       >
+        {/* ===================================================================
+            ARROW
+            =================================================================== */}
+
         <motion.div
-          initial={false}
           animate={{
-            width: cursorSize.width,
-            height: cursorSize.height,
-
-            borderRadius: isSocial
-              ? 18
-              : isLabel
-                ? 14
-                : 999,
-
             scale: pressed
-              ? 0.88
-              : 1,
-
-            backgroundColor:
-              isSocial || isLabel
-                ? primaryColor
-                : primaryColor,
-
-            boxShadow: isSocial
-              ? `
-                0 0 25px ${brandColor}55,
-                0 0 65px ${brandColor}22
-              `
-              : isLabel
-                ? `
-                  0 0 20px ${primaryColor}44,
-                  0 0 45px ${primaryColor}18
-                `
-                : `
-                  0 0 18px ${primaryColor}55
-                `,
+              ? 0.84
+              : hasLabel || isSocial
+                ? 1.08
+                : 1,
           }}
-          transition={{
-            type: "spring",
-            stiffness: 480,
-            damping: 28,
-            mass: 0.16,
-          }}
+          transition={
+            reducedMotion
+              ? { duration: 0 }
+              : {
+                  type: "spring",
+                  stiffness: 650,
+                  damping: 30,
+                  mass: 0.12,
+                }
+          }
           className="
             relative
             flex
-            items-center
-            justify-center
-            overflow-hidden
+            items-start
+            justify-start
           "
+          style={{
+            width: arrowWidth,
+            height: arrowHeight,
+          }}
         >
           {/* ===============================================================
-              NORMAL DOT
-          ================================================================ */}
+              OUTER ARROW
+              =============================================================== */}
 
-          {!isLabel &&
-            !isSocial && (
-              <>
-                <motion.span
-                  className="
-                    absolute
-                    h-[3px]
-                    w-[3px]
-                    rounded-full
-                  "
-                  animate={{
-                    scale: [
-                      1,
-                      1.7,
-                      1,
-                    ],
-                  }}
-                  transition={{
-                    duration: 1.2,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  style={{
-                    backgroundColor:
-                      isDark
-                        ? "#063F45"
-                        : "#FFFFFF",
-                  }}
-                />
+          <svg
+            width={arrowWidth}
+            height={arrowHeight}
+            viewBox="0 0 30 36"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            style={{
+              overflow: "visible",
+              filter:
+                `drop-shadow(0 2px 4px ${arrowColor}45)`,
+            }}
+          >
+            {/* -------------------------------------------------------------
+                MAIN ARROW BODY
 
-                <motion.span
-                  className="
-                    absolute
-                    inset-0
-                    rounded-full
-                    border
-                  "
-                  style={{
-                    borderColor:
-                      isDark
-                        ? "#DFFFFB55"
-                        : "#FFFFFF55",
-                  }}
-                  animate={{
-                    scale: [
-                      1,
-                      1.5,
-                      1,
-                    ],
-                    opacity: [
-                      0.5,
-                      0,
-                      0.5,
-                    ],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "easeOut",
-                  }}
-                />
-              </>
-            )}
+                Slightly custom pointer shape rather than a normal CSS
+                triangle.
+                ------------------------------------------------------------- */}
 
-          {/* ===============================================================
-              NORMAL LABEL
-          ================================================================ */}
+            <path
+              d="
+                M3 2
+                L27 17
+                L17.5 18.8
+                L23 30
+                L18.8 32
+                L13.2 20.5
+                L6.2 27
+                Z
+              "
+              fill={arrowColor}
+            />
 
-          {isLabel &&
-            !isSocial && (
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  scale: 0.8,
-                  y: 5,
-                }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  y: 0,
-                }}
-                transition={{
-                  duration: 0.2,
-                  ease: [0.16, 1, 0.3, 1],
-                }}
+            {/* -------------------------------------------------------------
+                INTERNAL CUT
+
+                Creates a refined outlined/navigation appearance.
+                ------------------------------------------------------------- */}
+
+            <path
+              d="
+                M7.1 7
+                L21.5 16.1
+                L15.3 17.2
+                L18.9 24.7
+                L16.7 25.8
+                L12.7 17.9
+                L8.3 21.8
+                Z
+              "
+              fill={
+                isDark
+                  ? "#07131C"
+                  : "#FFFFFF"
+              }
+            />
+
+            {/* -------------------------------------------------------------
+                ACCENT EDGE
+                ------------------------------------------------------------- */}
+
+            <path
+              d="
+                M3 2
+                L27 17
+                L17.5 18.8
+              "
+              stroke={accentColor}
+              strokeWidth="1.4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              opacity="0.95"
+            />
+          </svg>
+        </motion.div>
+
+        {/* ===================================================================
+            INTERACTION LABEL
+
+            Compact and clean.
+            =================================================================== */}
+
+        <AnimatePresence mode="wait">
+          {(hasLabel || isSocial) && (
+            <motion.div
+              key={label || "social"}
+              initial={{
+                opacity: 0,
+                x: -5,
+                scale: 0.94,
+              }}
+              animate={{
+                opacity: 1,
+                x: 12,
+                scale: 1,
+              }}
+              exit={{
+                opacity: 0,
+                x: -4,
+                scale: 0.94,
+              }}
+              transition={{
+                duration: reducedMotion
+                  ? 0
+                  : 0.18,
+                ease: [0.16, 1, 0.3, 1],
+              }}
+              className="
+                absolute
+                left-full
+                top-[4px]
+                whitespace-nowrap
+                rounded-md
+                border
+                px-3
+                py-2
+                backdrop-blur-xl
+              "
+              style={{
+                backgroundColor: labelBg,
+                color: labelColor,
+                borderColor:
+                  `${labelBorder}45`,
+                boxShadow: `
+                  0 8px 25px rgba(0,0,0,0.10),
+                  0 0 0 1px ${labelBorder}10
+                `,
+              }}
+            >
+              <span
                 className="
                   flex
                   items-center
                   gap-2
-                  whitespace-nowrap
-                  px-4
                   font-mono
                   text-[9px]
-                  font-bold
+                  font-semibold
                   uppercase
-                  tracking-[0.18em]
+                  tracking-[0.14em]
                 "
-                style={{
-                  color: isDark
-                    ? "#063F45"
-                    : "#FFFFFF",
-                }}
               >
+                {/* Small accent indicator */}
+
                 <span
                   className="
+                    block
                     h-1.5
                     w-1.5
+                    shrink-0
                     rounded-full
-                    bg-current
                   "
+                  style={{
+                    backgroundColor:
+                      accentColor,
+                    boxShadow:
+                      `0 0 7px ${accentColor}80`,
+                  }}
                 />
 
                 <span>
-                  {label}
+                  {label || "Social"}
                 </span>
 
                 <span
                   className="
-                    text-[11px]
-                    opacity-60
+                    text-[12px]
+                    font-normal
                   "
+                  style={{
+                    color: accentColor,
+                  }}
                 >
                   ↗
                 </span>
-              </motion.div>
-            )}
-
-          {/* ===============================================================
-              SOCIAL LABEL
-          ================================================================ */}
-
-          {isSocial && (
-            <motion.div
-              initial={{
-                opacity: 0,
-                scale: 0.82,
-                x: -5,
-              }}
-              animate={{
-                opacity: 1,
-                scale: 1,
-                x: 0,
-              }}
-              transition={{
-                duration: 0.22,
-                ease: [0.16, 1, 0.3, 1],
-              }}
-              className="
-                relative
-                flex
-                items-center
-                gap-2.5
-                whitespace-nowrap
-                px-4
-                font-mono
-                text-[9px]
-                font-bold
-                uppercase
-                tracking-[0.16em]
-                text-white
-              "
-            >
-              {/* Social icon */}
-
-              <motion.span
-                className="
-                  relative
-                  flex
-                  h-7
-                  w-7
-                  items-center
-                  justify-center
-                  rounded-full
-                  bg-white/15
-                  backdrop-blur-sm
-                "
-                animate={{
-                  scale: [
-                    1,
-                    1.08,
-                    1,
-                  ],
-                }}
-                transition={{
-                  duration: 1.6,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                <SocialIcon
-                  label={label}
-                />
-
-                {/* tiny glow */}
-
-                <span
-                  className="
-                    pointer-events-none
-                    absolute
-                    inset-0
-                    rounded-full
-                    border
-                    border-white/20
-                  "
-                />
-              </motion.span>
-
-              <span>
-                {label || "Social"}
               </span>
-
-              <motion.span
-                animate={{
-                  x: [0, 3, 0],
-                }}
-                transition={{
-                  duration: 1.2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-                className="
-                  text-white/60
-                "
-              >
-                ↗
-              </motion.span>
             </motion.div>
           )}
-
-          {/* ===============================================================
-              SOCIAL SHINE
-          ================================================================ */}
-
-          {isSocial && (
-            <motion.span
-              aria-hidden="true"
-              className="
-                pointer-events-none
-                absolute
-                inset-0
-                -translate-x-full
-                skew-x-[-20deg]
-                bg-white/20
-              "
-              animate={{
-                x: [
-                  "-120%",
-                  "180%",
-                ],
-              }}
-              transition={{
-                duration: 2.4,
-                repeat: Infinity,
-                repeatDelay: 1.5,
-                ease: "easeInOut",
-              }}
-            />
-          )}
-
-          {/* ===============================================================
-              LABEL BORDER
-          ================================================================ */}
-
-          {(isLabel || isSocial) && (
-            <motion.span
-              aria-hidden="true"
-              className="
-                pointer-events-none
-                absolute
-                inset-0
-                rounded-[inherit]
-                border
-              "
-              style={{
-                borderColor:
-                  isSocial
-                    ? `${brandColor}99`
-                    : `${primaryColor}66`,
-              }}
-              animate={{
-                opacity: [
-                  0.7,
-                  1,
-                  0.7,
-                ],
-              }}
-              transition={{
-                duration: 1.8,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            />
-          )}
-        </motion.div>
+        </AnimatePresence>
       </motion.div>
 
       {/* =====================================================================
-          LARGE FLUID RING
-      ====================================================================== */}
+          SECONDARY ACCENT POINT
 
-      <motion.div
-        aria-hidden="true"
-        className="
-          pointer-events-none
-          fixed
-          left-0
-          top-0
-          z-[99998]
-        "
-        style={{
-          x: ringX,
-          y: ringY,
-          translateX: "-50%",
-          translateY: "-50%",
-          willChange: "transform",
-        }}
-      >
+          Only a tiny square, NOT a circle.
+          Gives the cursor a unique visual identity.
+          ===================================================================== */}
+
+      {!reducedMotion && (
         <motion.div
-          initial={false}
-          animate={{
-            width: isSocial
-              ? 76
-              : isLabel
-                ? 62
-                : 36,
-
-            height: isSocial
-              ? 76
-              : isLabel
-                ? 62
-                : 36,
-
-            borderRadius: isSocial
-              ? 24
-              : isLabel
-                ? 20
-                : 999,
-
-            scale: pressed
-              ? 1.25
-              : 1,
-
-            rotate: isSocial
-              ? [0, 360]
-              : 0,
-          }}
-          transition={{
-            width: {
-              type: "spring",
-              stiffness: 360,
-              damping: 28,
-            },
-
-            height: {
-              type: "spring",
-              stiffness: 360,
-              damping: 28,
-            },
-
-            scale: {
-              type: "spring",
-              stiffness: 420,
-              damping: 25,
-            },
-
-            rotate: {
-              duration: 8,
-              repeat: Infinity,
-              ease: "linear",
-            },
-          }}
+          aria-hidden="true"
           className="
-            relative
-            border
+            pointer-events-none
+            fixed
+            left-0
+            top-0
+            z-[99997]
           "
           style={{
-            borderColor:
-              `${ringColor}99`,
-
-            boxShadow: isSocial
-              ? `
-                0 0 25px ${brandColor}25,
-                inset 0 0 20px ${brandColor}10
-              `
-              : `
-                0 0 14px ${ringColor}22
-              `,
+            x,
+            y,
+            translateX: 18,
+            translateY: 19,
           }}
         >
-          {/* ===============================================================
-              ROTATING DASH
-          ================================================================ */}
-
           <motion.span
+            animate={{
+              opacity: hasLabel
+                ? 1
+                : 0.55,
+              scale: pressed
+                ? 0.7
+                : 1,
+            }}
+            transition={{
+              duration: 0.15,
+            }}
             className="
-              absolute
-              left-1/2
-              top-[-3px]
-              h-2
-              w-2
-              -translate-x-1/2
-              rounded-full
+              block
+              h-1
+              w-1
+              rotate-45
             "
             style={{
               backgroundColor:
-                ringColor,
-
+                accentColor,
               boxShadow:
-                `0 0 12px ${ringColor}`,
-            }}
-            animate={{
-              rotate: 360,
-              scale: [
-                1,
-                1.35,
-                1,
-              ],
-            }}
-            transition={{
-              rotate: {
-                duration: 3,
-                repeat: Infinity,
-                ease: "linear",
-              },
-
-              scale: {
-                duration: 1.2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              },
+                `0 0 8px ${accentColor}88`,
             }}
           />
-
-          {/* ===============================================================
-              INNER CIRCLE
-          ================================================================ */}
-
-          <motion.span
-            className="
-              absolute
-              left-1/2
-              top-1/2
-              h-1.5
-              w-1.5
-              -translate-x-1/2
-              -translate-y-1/2
-              rounded-full
-            "
-            style={{
-              backgroundColor:
-                ringColor,
-            }}
-            animate={{
-              scale: [
-                0.8,
-                1.5,
-                0.8,
-              ],
-              opacity: [
-                0.3,
-                0.8,
-                0.3,
-              ],
-            }}
-            transition={{
-              duration: 1.8,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-
-          {/* ===============================================================
-              SOCIAL EXTRA MARKERS
-          ================================================================ */}
-
-          {isSocial && (
-            <>
-              <motion.span
-                className="
-                  absolute
-                  bottom-[-4px]
-                  left-1/2
-                  h-1.5
-                  w-1.5
-                  -translate-x-1/2
-                  rounded-full
-                  bg-white
-                "
-                animate={{
-                  opacity: [
-                    0.2,
-                    1,
-                    0.2,
-                  ],
-                  scale: [
-                    1,
-                    1.5,
-                    1,
-                  ],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              />
-
-              <motion.span
-                className="
-                  absolute
-                  left-[-4px]
-                  top-1/2
-                  h-1
-                  w-1
-                  -translate-y-1/2
-                  rounded-full
-                  bg-white/70
-                "
-                animate={{
-                  opacity: [
-                    0.2,
-                    0.9,
-                    0.2,
-                  ],
-                }}
-                transition={{
-                  duration: 1.4,
-                  repeat: Infinity,
-                }}
-              />
-
-              <motion.span
-                className="
-                  absolute
-                  right-[-4px]
-                  top-1/2
-                  h-1
-                  w-1
-                  -translate-y-1/2
-                  rounded-full
-                  bg-white/70
-                "
-                animate={{
-                  opacity: [
-                    0.2,
-                    0.9,
-                    0.2,
-                  ],
-                }}
-                transition={{
-                  duration: 1.4,
-                  repeat: Infinity,
-                  delay: 0.4,
-                }}
-              />
-            </>
-          )}
         </motion.div>
-      </motion.div>
-
-      {/* =====================================================================
-          TRAILING GLOW
-      ====================================================================== */}
-
-      <motion.div
-        aria-hidden="true"
-        className="
-          pointer-events-none
-          fixed
-          left-0
-          top-0
-          z-[99997]
-        "
-        style={{
-          x: ringX,
-          y: ringY,
-          translateX: "-50%",
-          translateY: "-50%",
-          willChange: "transform",
-        }}
-      >
-        <motion.span
-          className="
-            block
-            rounded-full
-            blur-md
-          "
-          animate={{
-            width: isSocial
-              ? 90
-              : isLabel
-                ? 70
-                : 42,
-
-            height: isSocial
-              ? 90
-              : isLabel
-                ? 70
-                : 42,
-
-            opacity:
-              isSocial
-                ? 0.14
-                : isLabel
-                  ? 0.1
-                  : 0.06,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 30,
-          }}
-          style={{
-            backgroundColor:
-              ringColor,
-          }}
-        />
-      </motion.div>
-
-      {/* =====================================================================
-          CLICK RIPPLE
-      ====================================================================== */}
-
-      <motion.div
-        aria-hidden="true"
-        className="
-          pointer-events-none
-          fixed
-          left-0
-          top-0
-          z-[99996]
-          rounded-full
-          border
-        "
-        style={{
-          x,
-          y,
-          translateX: "-50%",
-          translateY: "-50%",
-          borderColor: ringColor,
-        }}
-        animate={{
-          width: pressed
-            ? 58
-            : 20,
-
-          height: pressed
-            ? 58
-            : 20,
-
-          scale: pressed
-            ? 1.35
-            : 0.6,
-
-          opacity: pressed
-            ? 0.8
-            : 0,
-        }}
-        transition={{
-          duration: 0.35,
-          ease: [0.16, 1, 0.3, 1],
-        }}
-      />
-
-      {/* =====================================================================
-          CLICK CROSSHAIR
-      ====================================================================== */}
-
-      <motion.div
-        aria-hidden="true"
-        className="
-          pointer-events-none
-          fixed
-          left-0
-          top-0
-          z-[99995]
-        "
-        style={{
-          x,
-          y,
-          translateX: "-50%",
-          translateY: "-50%",
-        }}
-        animate={{
-          opacity: pressed
-            ? 1
-            : 0,
-          scale: pressed
-            ? 1
-            : 0.6,
-        }}
-        transition={{
-          duration: 0.18,
-        }}
-      >
-        <span
-          className="
-            absolute
-            left-1/2
-            top-1/2
-            h-px
-            w-10
-            -translate-x-1/2
-            -translate-y-1/2
-          "
-          style={{
-            backgroundColor:
-              ringColor,
-          }}
-        />
-
-        <span
-          className="
-            absolute
-            left-1/2
-            top-1/2
-            h-10
-            w-px
-            -translate-x-1/2
-            -translate-y-1/2
-          "
-          style={{
-            backgroundColor:
-              ringColor,
-          }}
-        />
-      </motion.div>
+      )}
     </>
   );
 }

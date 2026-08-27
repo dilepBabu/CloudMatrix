@@ -1126,3 +1126,36 @@ section {
     display: none !important;
   }
 }
+/* =========================================================================
+   PREMIUM ARROW CURSOR
+   ========================================================================= */
+
+@media (pointer: fine) {
+  html.signal-cursor-active,
+  html.signal-cursor-active body,
+  html.signal-cursor-active a,
+  html.signal-cursor-active button,
+  html.signal-cursor-active [role="button"],
+  html.signal-cursor-active * {
+    cursor: none !important;
+  }
+
+  /* Keep text editing natural */
+  html.signal-cursor-active input,
+  html.signal-cursor-active textarea,
+  html.signal-cursor-active [contenteditable="true"] {
+    cursor: text !important;
+  }
+}
+
+/* =========================================================================
+   PREVENT CURSOR ELEMENTS FROM AFFECTING LAYOUT
+   ========================================================================= */
+
+.signal-cursor-active {
+  cursor: none;
+}
+
+.signal-cursor-active body {
+  cursor: none;
+}

@@ -53,7 +53,7 @@ const NavItem = memo(function NavItem({
   hovered,
   setHovered,
   onClick,
-  isTop,
+  isDark,
 }) {
   const itemRef = useRef(null);
 
@@ -80,9 +80,7 @@ const NavItem = memo(function NavItem({
     (event) => {
       const el = itemRef.current;
 
-      if (!el) {
-        return;
-      }
+      if (!el) return;
 
       const rect = el.getBoundingClientRect();
 
@@ -114,7 +112,6 @@ const NavItem = memo(function NavItem({
 
   const handleMouseLeave = useCallback(() => {
     setHovered(null);
-
     mouseX.set(0);
     mouseY.set(0);
   }, [mouseX, mouseY, setHovered]);
@@ -151,8 +148,8 @@ const NavItem = memo(function NavItem({
       className="
         relative
         group
-        h-10
-        px-3
+        h-11
+        px-3.5
         flex
         items-center
         justify-center
@@ -192,9 +189,9 @@ const NavItem = memo(function NavItem({
               pointer-events-none
               transform-gpu
               ${
-                isTop
-                  ? "bg-white/[0.09]"
-                  : "bg-[#00A9E0]/[0.055] dark:bg-[#00A9E0]/[0.08]"
+                isDark
+                  ? "bg-white/[0.08]"
+                  : "bg-[#0066B3]/[0.055]"
               }
             `}
           />
@@ -211,16 +208,22 @@ const NavItem = memo(function NavItem({
           z-10
           overflow-hidden
           leading-none
+          text-[14px]
+          font-semibold
+          tracking-[-0.01em]
           ${
-            isTop
-              ? "text-white"
+            isDark
+              ? active
+                ? "text-[#58D9FF]"
+                : "text-white/90"
               : active
-                ? "text-[#0066B3] dark:text-[#00A9E0]"
-                : "text-slate-600 dark:text-white/65"
+                ? "text-[#005A9C]"
+                : "text-[#08263D]"
           }
         `}
       >
         {/* Current text */}
+
         <motion.span
           className="block"
           animate={{
@@ -238,6 +241,7 @@ const NavItem = memo(function NavItem({
         </motion.span>
 
         {/* Hover text */}
+
         <motion.span
           className={`
             absolute
@@ -245,9 +249,9 @@ const NavItem = memo(function NavItem({
             top-[18px]
             block
             ${
-              isTop
-                ? "text-white"
-                : "text-[#0066B3] dark:text-[#00A9E0]"
+              isDark
+                ? "text-[#58D9FF]"
+                : "text-[#0066B3]"
             }
           `}
           animate={{
@@ -276,7 +280,7 @@ const NavItem = memo(function NavItem({
             width: 0,
           }}
           animate={{
-            width: 18,
+            width: 22,
           }}
           transition={{
             type: "spring",
@@ -328,7 +332,7 @@ const ShineCTA = memo(function ShineCTA({
         ${
           mobile
             ? "w-full min-h-[52px] px-5 rounded-2xl"
-            : "min-w-[175px] min-h-[42px] px-5 rounded-full"
+            : "min-w-[175px] min-h-[44px] px-5 rounded-full"
         }
         bg-gradient-to-r
         from-[#031B2E]
@@ -344,9 +348,7 @@ const ShineCTA = memo(function ShineCTA({
         transform-gpu
       `}
     >
-      {/* ===================================================
-          BASE GLOW
-      =================================================== */}
+      {/* BASE GLOW */}
 
       <motion.span
         className="
@@ -366,9 +368,7 @@ const ShineCTA = memo(function ShineCTA({
         }}
       />
 
-      {/* ===================================================
-          MAIN SHINE
-      =================================================== */}
+      {/* MAIN SHINE */}
 
       <motion.span
         className="
@@ -428,9 +428,7 @@ const ShineCTA = memo(function ShineCTA({
         }}
       />
 
-      {/* ===================================================
-          SOFT GLOW
-      =================================================== */}
+      {/* SOFT GLOW */}
 
       <motion.span
         className="
@@ -487,9 +485,7 @@ const ShineCTA = memo(function ShineCTA({
         }}
       />
 
-      {/* ===================================================
-          BORDER
-      =================================================== */}
+      {/* BORDER */}
 
       <motion.span
         className="
@@ -516,9 +512,7 @@ const ShineCTA = memo(function ShineCTA({
         }}
       />
 
-      {/* ===================================================
-          TEXT
-      =================================================== */}
+      {/* TEXT */}
 
       <span
         className="
@@ -530,9 +524,7 @@ const ShineCTA = memo(function ShineCTA({
         Talk to Our Expert
       </span>
 
-      {/* ===================================================
-          ARROW
-      =================================================== */}
+      {/* ARROW */}
 
       <motion.span
         className="
@@ -564,21 +556,77 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [scrolled, setScrolled] =
-    useState(false);
-
+  const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
-
   const [activeSection, setActiveSection] =
     useState("home");
 
-  const [hovered, setHovered] =
-    useState(null);
+  const [hovered, setHovered] = useState(null);
+
+  /*
+   * IMPORTANT:
+   * This state tracks the actual ThemeToggle state.
+   * It prevents the navbar from forcing white text
+   * when the page is in light mode.
+   */
+
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof document === "undefined") {
+      return false;
+    }
+
+    return document.documentElement.classList.contains(
+      "dark"
+    );
+  });
 
   const navRef = useRef(null);
 
   /* =======================================================
-     TOP OF HOME PAGE
+     WATCH THEME CHANGES
+  ======================================================= */
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    const root = document.documentElement;
+
+    const updateTheme = () => {
+      setIsDark(
+        root.classList.contains("dark")
+      );
+    };
+
+    updateTheme();
+
+    const observer = new MutationObserver(
+      (mutations) => {
+        for (const mutation of mutations) {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "class"
+          ) {
+            updateTheme();
+            break;
+          }
+        }
+      }
+    );
+
+    observer.observe(root, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  /* =======================================================
+     PAGE TYPE
   ======================================================= */
 
   const isInnerPage =
@@ -840,18 +888,14 @@ export default function Navbar() {
     (link) => {
       setOpen(false);
 
-      /* ---------------------------------------------------
-         INNER PAGE
-      --------------------------------------------------- */
+      /* INNER PAGE */
 
       if (!link.hash) {
         navigate(link.to);
         return;
       }
 
-      /* ---------------------------------------------------
-         HOME
-      --------------------------------------------------- */
+      /* HOME */
 
       if (link.label === "Home") {
         setActiveSection("home");
@@ -875,9 +919,7 @@ export default function Navbar() {
         return;
       }
 
-      /* ---------------------------------------------------
-         SECTION
-      --------------------------------------------------- */
+      /* SECTION */
 
       const targetId =
         link.hash.replace("#", "");
@@ -926,20 +968,19 @@ export default function Navbar() {
   ======================================================= */
 
   const getPageColors = () => {
-    /* ---------------------------------------------------
-       BLOG
-    --------------------------------------------------- */
+    /* BLOG */
 
     if (location.pathname === "/blog") {
       return {
-        bg: "rgba(255,255,255,0.58)",
+        bg: "rgba(255,255,255,0.72)",
         darkBg:
-          "rgba(15,23,42,0.72)",
+          "rgba(15,23,42,0.78)",
 
         scrolled:
-          "rgba(255,255,255,0.88)",
+          "rgba(255,255,255,0.94)",
+
         darkScrolled:
-          "rgba(15,23,42,0.92)",
+          "rgba(15,23,42,0.95)",
 
         border:
           "rgba(99,102,241,0.16)",
@@ -952,22 +993,20 @@ export default function Navbar() {
       };
     }
 
-    /* ---------------------------------------------------
-       CAREER
-    --------------------------------------------------- */
+    /* CAREER */
 
-    if (
-      location.pathname === "/career"
-    ) {
+    if (location.pathname === "/career") {
       return {
-        bg: "rgba(255,255,255,0.58)",
+        bg: "rgba(255,255,255,0.72)",
+
         darkBg:
-          "rgba(3,27,46,0.72)",
+          "rgba(3,27,46,0.78)",
 
         scrolled:
-          "rgba(255,255,255,0.88)",
+          "rgba(255,255,255,0.94)",
+
         darkScrolled:
-          "rgba(3,27,46,0.92)",
+          "rgba(3,27,46,0.95)",
 
         border:
           "rgba(0,169,224,0.16)",
@@ -980,21 +1019,21 @@ export default function Navbar() {
       };
     }
 
-    /* ---------------------------------------------------
-       SERVICES
-    --------------------------------------------------- */
+    /* SERVICES */
 
     if (activeSection === "services") {
       return {
         bg:
-          "rgba(235,248,255,0.62)",
+          "rgba(235,248,255,0.76)",
+
         darkBg:
-          "rgba(3,35,55,0.74)",
+          "rgba(3,35,55,0.80)",
 
         scrolled:
-          "rgba(235,248,255,0.90)",
+          "rgba(235,248,255,0.94)",
+
         darkScrolled:
-          "rgba(3,35,55,0.93)",
+          "rgba(3,35,55,0.96)",
 
         border:
           "rgba(0,169,224,0.18)",
@@ -1007,21 +1046,21 @@ export default function Navbar() {
       };
     }
 
-    /* ---------------------------------------------------
-       WHY US
-    --------------------------------------------------- */
+    /* WHY US */
 
     if (activeSection === "why-us") {
       return {
         bg:
-          "rgba(245,240,255,0.64)",
+          "rgba(245,240,255,0.76)",
+
         darkBg:
-          "rgba(30,20,50,0.74)",
+          "rgba(30,20,50,0.80)",
 
         scrolled:
-          "rgba(245,240,255,0.90)",
+          "rgba(245,240,255,0.94)",
+
         darkScrolled:
-          "rgba(30,20,50,0.93)",
+          "rgba(30,20,50,0.96)",
 
         border:
           "rgba(139,92,246,0.18)",
@@ -1034,23 +1073,23 @@ export default function Navbar() {
       };
     }
 
-    /* ---------------------------------------------------
-       INDUSTRIES
-    --------------------------------------------------- */
+    /* INDUSTRIES */
 
     if (
       activeSection === "industries"
     ) {
       return {
         bg:
-          "rgba(232,245,250,0.64)",
+          "rgba(232,245,250,0.76)",
+
         darkBg:
-          "rgba(4,30,42,0.76)",
+          "rgba(4,30,42,0.82)",
 
         scrolled:
-          "rgba(232,245,250,0.90)",
+          "rgba(232,245,250,0.94)",
+
         darkScrolled:
-          "rgba(4,30,42,0.93)",
+          "rgba(4,30,42,0.96)",
 
         border:
           "rgba(0,128,160,0.18)",
@@ -1063,28 +1102,43 @@ export default function Navbar() {
       };
     }
 
-    /* ---------------------------------------------------
-       HERO / HOME
-    --------------------------------------------------- */
+    /* HERO / HOME */
 
     return {
+      /*
+       * LIGHT STATIC NAVBAR
+       * Dark enough so the logo/text is visible.
+       */
+
       bg:
-        "rgba(255,255,255,0.42)",
+        "rgba(255,255,255,0.76)",
+
+      /*
+       * DARK STATIC NAVBAR
+       */
 
       darkBg:
-        "rgba(3,27,46,0.40)",
+        "rgba(3,27,46,0.78)",
+
+      /*
+       * LIGHT SCROLLED
+       */
 
       scrolled:
-        "rgba(255,255,255,0.82)",
+        "rgba(255,255,255,0.94)",
+
+      /*
+       * DARK SCROLLED
+       */
 
       darkScrolled:
-        "rgba(3,27,46,0.88)",
+        "rgba(3,27,46,0.96)",
 
       border:
-        "rgba(0,169,224,0.12)",
+        "rgba(0,169,224,0.18)",
 
       shadow:
-        "rgba(0,102,179,0.12)",
+        "rgba(0,102,179,0.14)",
 
       glow:
         "rgba(0,169,224,0.10)",
@@ -1093,6 +1147,30 @@ export default function Navbar() {
 
   const pageColors =
     getPageColors();
+
+  /* =======================================================
+     THEME-AWARE TEXT COLORS
+  ======================================================= */
+
+  /*
+   * IMPORTANT:
+   *
+   * Do NOT use isTopOfHome here.
+   *
+   * Previously:
+   *
+   * isTopOfHome ? "text-white" : ...
+   *
+   * caused white text in light static mode.
+   */
+
+  const logoTitleClass = isDark
+    ? "text-white"
+    : "text-[#062B49]";
+
+  const logoSubtitleClass = isDark
+    ? "text-white/70"
+    : "text-[#174B6D]";
 
   /* =======================================================
      RENDER
@@ -1257,7 +1335,7 @@ export default function Navbar() {
           className="
             relative
             z-20
-            h-[68px]
+            h-[72px]
             px-4
             md:px-5
             flex
@@ -1278,29 +1356,36 @@ export default function Navbar() {
             className="
               flex
               items-center
-              gap-2.5
+              gap-3
               shrink-0
+              min-w-0
             "
           >
             <motion.div
               whileHover={{
-                scale: 1.08,
-                rotate: -3,
+                scale: 1.06,
+                rotate: -2,
               }}
               whileTap={{
-                scale: 0.9,
+                scale: 0.94,
               }}
               className="
                 relative
-                h-10
-                w-10
+                h-12
+                w-12
+                md:h-14
+                md:w-14
+                lg:h-16
+                lg:w-16
                 flex
                 items-center
                 justify-center
+                shrink-0
                 transform-gpu
               "
             >
               {/* Logo glow */}
+
               <div
                 className={`
                   absolute
@@ -1308,13 +1393,16 @@ export default function Navbar() {
                   rounded-full
                   blur-xl
                   pointer-events-none
+
                   ${
-                    isTopOfHome
-                      ? "bg-white/15"
-                      : "bg-[#00A9E0]/15"
+                    isDark
+                      ? "bg-[#00A9E0]/20"
+                      : "bg-[#00A9E0]/16"
                   }
                 `}
               />
+
+              {/* LOGO */}
 
               <motion.img
                 src={logo}
@@ -1322,8 +1410,12 @@ export default function Navbar() {
                 className="
                   relative
                   z-10
-                  h-9
-                  w-9
+                  h-14
+                  w-14
+                  md:h-[68px]
+                  md:w-[68px]
+                  lg:h-[76px]
+                  lg:w-[76px]
                   object-contain
                 "
                 animate={{
@@ -1344,40 +1436,46 @@ export default function Navbar() {
                 LOGO TEXT
             ================================================= */}
 
-            <div className="hidden sm:block">
+            <div
+              className="
+                hidden
+                sm:block
+                min-w-0
+              "
+            >
               <p
                 className={`
-                  text-[13px]
-                  md:text-sm
-                  font-semibold
-                  tracking-tight
+                  text-[17px]
+                  md:text-[20px]
+                  lg:text-[22px]
+                  font-extrabold
+                  tracking-[-0.025em]
+                  leading-none
+                  whitespace-nowrap
                   transition-colors
                   duration-500
-
-                  ${
-                    isTopOfHome
-                      ? "text-white"
-                      : "text-[#031B2E] dark:text-white"
-                  }
+                  ${logoTitleClass}
                 `}
               >
-                CLOUD MATRIX
+                CLOUD{" "}
+                <span className="text-[#00A9E0]">
+                  MATRIX
+                </span>
               </p>
 
               <p
                 className={`
+                  mt-1.5
                   text-[8px]
                   md:text-[9px]
-                  tracking-[0.28em]
+                  lg:text-[10px]
+                  tracking-[0.30em]
+                  font-bold
                   font-mono
+                  whitespace-nowrap
                   transition-colors
                   duration-500
-
-                  ${
-                    isTopOfHome
-                      ? "text-white/70"
-                      : "text-black dark:text-white/45"
-                  }
+                  ${logoSubtitleClass}
                 `}
               >
                 TECHNOLOGIES
@@ -1401,7 +1499,7 @@ export default function Navbar() {
               bg-black/[0.025]
               dark:bg-white/[0.025]
               border
-              border-black/[0.04]
+              border-black/[0.05]
               dark:border-white/[0.05]
             "
           >
@@ -1417,7 +1515,7 @@ export default function Navbar() {
                   onClick={() =>
                     go(link)
                   }
-                  isTop={isTopOfHome}
+                  isDark={isDark}
                 />
               )
             )}
@@ -1550,9 +1648,7 @@ export default function Navbar() {
       <AnimatePresence>
         {open && (
           <>
-            {/* =================================================
-                BACKDROP
-            ================================================= */}
+            {/* BACKDROP */}
 
             <motion.div
               initial={{
@@ -1582,9 +1678,7 @@ export default function Navbar() {
               }
             />
 
-            {/* =================================================
-                DRAWER
-            ================================================= */}
+            {/* DRAWER */}
 
             <motion.div
               initial={{
@@ -1627,6 +1721,7 @@ export default function Navbar() {
               "
             >
               {/* Drawer top line */}
+
               <motion.div
                 initial={{
                   scaleX: 0,
@@ -1651,9 +1746,7 @@ export default function Navbar() {
               />
 
               <div className="p-4">
-                {/* =================================================
-                    MOBILE NAV LINKS
-                ================================================= */}
+                {/* MOBILE NAV LINKS */}
 
                 {navLinks.map(
                   (link, index) => {
@@ -1708,15 +1801,15 @@ export default function Navbar() {
                                 border-[#00A9E0]/10
                               `
                               : `
-                                text-slate-700
-                                dark:text-white/70
+                                text-[#18384F]
+                                dark:text-white/80
                                 border
                                 border-transparent
                               `
                           }
                         `}
                       >
-                        <span>
+                        <span className="font-semibold">
                           {link.label}
                         </span>
 
@@ -1725,6 +1818,7 @@ export default function Navbar() {
                             x: active
                               ? 0
                               : 3,
+
                             opacity: active
                               ? 1
                               : 0.35,
@@ -1740,9 +1834,7 @@ export default function Navbar() {
                   }
                 )}
 
-                {/* =================================================
-                    MOBILE CTA
-                ================================================= */}
+                {/* MOBILE CTA */}
 
                 <motion.div
                   initial={{

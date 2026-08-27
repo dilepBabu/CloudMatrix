@@ -1,1168 +1,1960 @@
 import {
   motion,
-  useMotionValueEvent,
+  useInView,
   useReducedMotion,
   useScroll,
-  useSpring,
   useTransform,
 } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+
+import {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 import ScrollReveal from "../components/ScrollReveal";
 import { process } from "../data/content";
 
+/* ============================================================================
+   CONFIG
+============================================================================ */
+
 const EASE = [0.16, 1, 0.3, 1];
 
-/* =========================================================================
-   MOBILE DETECTION
-=========================================================================== */
+/* ============================================================================
+   DEVICE DETECTION
+============================================================================ */
 
-function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false);
+function useDeviceType() {
+  const [device, setDevice] = useState(
+    "desktop"
+  );
 
   useEffect(() => {
-    const media = window.matchMedia("(max-width: 767px)");
+    if (typeof window === "undefined") {
+      return undefined;
+    }
+
+    const mobileQuery =
+      window.matchMedia(
+        "(max-width: 639px)"
+      );
+
+    const tabletQuery =
+      window.matchMedia(
+        "(min-width: 640px) and (max-width: 1024px)"
+      );
+
+    const coarseQuery =
+      window.matchMedia(
+        "(pointer: coarse)"
+      );
 
     const update = () => {
-      setIsMobile(media.matches);
+      if (
+        mobileQuery.matches
+      ) {
+        setDevice("mobile");
+        return;
+      }
+
+      if (
+        tabletQuery.matches ||
+        coarseQuery.matches
+      ) {
+        setDevice("tablet");
+        return;
+      }
+
+      setDevice("desktop");
     };
 
     update();
 
-    media.addEventListener("change", update);
+    mobileQuery.addEventListener(
+      "change",
+      update
+    );
+
+    tabletQuery.addEventListener(
+      "change",
+      update
+    );
+
+    coarseQuery.addEventListener(
+      "change",
+      update
+    );
 
     return () => {
-      media.removeEventListener("change", update);
+      mobileQuery.removeEventListener(
+        "change",
+        update
+      );
+
+      tabletQuery.removeEventListener(
+        "change",
+        update
+      );
+
+      coarseQuery.removeEventListener(
+        "change",
+        update
+      );
     };
   }, []);
 
-  return isMobile;
+  return device;
 }
 
-/* =========================================================================
-   PROCESS SECTION
-=========================================================================== */
+/* ============================================================================
+   MAIN PROCESS
+============================================================================ */
 
 export default function Process() {
   const sectionRef = useRef(null);
 
-  const reduceMotion = useReducedMotion();
-  const isMobile = useIsMobile();
+  const reduceMotion =
+    useReducedMotion();
 
-  const count = Math.max(process.length, 1);
+  const device =
+    useDeviceType();
 
-  const [active, setActive] = useState(0);
+  const items = Array.isArray(process)
+    ? process
+    : [];
 
-  /* =======================================================================
-     SCROLL PROGRESS
+  const count = items.length;
 
-     Every process item receives one viewport of scrolling.
-  ======================================================================= */
+  const { scrollYProgress } =
+    useScroll({
+      target: sectionRef,
+      offset: [
+        "start start",
+        "end end",
+      ],
+    });
 
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start start", "end end"],
-  });
-
-  const progress = useSpring(scrollYProgress, {
-    stiffness: 140,
-    damping: 32,
-    mass: 0.25,
-  });
-
-  /* =======================================================================
-     ACTIVE STEP
-  ======================================================================= */
-
-  useMotionValueEvent(progress, "change", (value) => {
-    const next =
-      count <= 1
-        ? 0
-        : Math.round(value * (count - 1));
-
-    const safeIndex = Math.max(
-      0,
-      Math.min(count - 1, next)
-    );
-
-    setActive((current) =>
-      current === safeIndex ? current : safeIndex
-    );
-  });
-
-  /* =======================================================================
-     REDUCED MOTION
-  ======================================================================= */
+  if (!count) {
+    return null;
+  }
 
   if (reduceMotion) {
-    return <ReducedProcess />;
+    return (
+      <ReducedProcess items={items} />
+    );
   }
 
   return (
     <section
       ref={sectionRef}
+      id="process"
       className="
         relative
         w-full
-        bg-[#F5F7FA]
-        text-[#071827]
+        scroll-mt-[150px]
+        overflow-hidden
+        bg-[#F1F7FB]
+        text-[#061725]
         dark:bg-[#07131F]
         dark:text-white
       "
-      style={{
-        height: `${count * 100}vh`,
-      }}
     >
-      <ProcessViewport
-        progress={progress}
-        active={active}
-        count={count}
-        isMobile={isMobile}
-      />
+      <ProcessBackground />
+
+      <ProcessHeader count={count} />
+
+      {device === "desktop" ? (
+        <DesktopProcess
+          items={items}
+          count={count}
+          progress={scrollYProgress}
+        />
+      ) : device === "tablet" ? (
+        <TabletProcess
+          items={items}
+          count={count}
+        />
+      ) : (
+        <MobileProcess
+          items={items}
+          count={count}
+        />
+      )}
     </section>
   );
 }
 
-/* =========================================================================
-   FIXED FULLSCREEN VIEWPORT
-=========================================================================== */
-
-function ProcessViewport({
-  progress,
-  active,
-  count,
-  isMobile,
-}) {
-  const opacity = useTransform(
-    progress,
-    [0, 0.012, 0.988, 1],
-    [0, 1, 1, 0]
-  );
-
-  const scale = useTransform(
-    progress,
-    [0, 0.02, 0.98, 1],
-    [0.985, 1, 1, 0.985]
-  );
-
-  return (
-    <motion.div
-      style={{
-        opacity,
-        scale,
-      }}
-      className="
-        pointer-events-none
-        fixed
-        inset-0
-        z-[50]
-        h-[100dvh]
-        min-h-[100dvh]
-        w-full
-        overflow-hidden
-        bg-[#F5F7FA]
-        dark:bg-[#07131F]
-      "
-    >
-      {/* ================================================================
-          BACKGROUND
-      ================================================================= */}
-
-      <ProcessBackground progress={progress} />
-
-      {/* ================================================================
-          HEADER
-      ================================================================= */}
-
-      <ProcessHeader
-        active={active}
-        count={count}
-      />
-
-      {/* ================================================================
-          MAIN CONTENT
-      ================================================================= */}
-
-      <ProcessStage
-        progress={progress}
-        count={count}
-        isMobile={isMobile}
-      />
-
-      {/* ================================================================
-          BOTTOM PROGRESS ONLY
-
-          No left-side rail.
-      ================================================================= */}
-
-      <ProcessFooter
-        progress={progress}
-        active={active}
-        count={count}
-      />
-    </motion.div>
-  );
-}
-
-/* =========================================================================
-   BACKGROUND
-=========================================================================== */
-
-function ProcessBackground({ progress }) {
-  const x = useTransform(
-    progress,
-    [0, 0.5, 1],
-    ["-10%", "0%", "10%"]
-  );
-
-  const y = useTransform(
-    progress,
-    [0, 0.5, 1],
-    ["5%", "-5%", "5%"]
-  );
-
-  const scale = useTransform(
-    progress,
-    [0, 0.5, 1],
-    [0.84, 1.08, 0.9]
-  );
-
-  const opacity = useTransform(
-    progress,
-    [0, 0.2, 0.5, 0.8, 1],
-    [0.25, 0.45, 0.35, 0.45, 0.25]
-  );
-
-  return (
-    <>
-      {/* Main glow */}
-
-      <motion.div
-        aria-hidden
-        style={{
-          x,
-          y,
-          scale,
-          opacity,
-        }}
-        className="
-          pointer-events-none
-          absolute
-          left-1/2
-          top-1/2
-          z-0
-          h-[70vh]
-          w-[70vh]
-          min-h-[480px]
-          min-w-[480px]
-          -translate-x-1/2
-          -translate-y-1/2
-          rounded-full
-          bg-[#00A9E0]/[0.045]
-          blur-[130px]
-          dark:bg-[#00D9FF]/[0.035]
-        "
-      />
-
-      {/* Secondary glow */}
-
-      <motion.div
-        aria-hidden
-        style={{
-          x: useTransform(
-            progress,
-            [0, 1],
-            ["15%", "-15%"]
-          ),
-        }}
-        className="
-          pointer-events-none
-          absolute
-          bottom-[-20%]
-          right-[-10%]
-          z-0
-          h-[480px]
-          w-[480px]
-          rounded-full
-          bg-[#00A878]/[0.025]
-          blur-[130px]
-        "
-      />
-
-      {/* Subtle grid */}
-
-      <div
-        aria-hidden
-        className="
-          pointer-events-none
-          absolute
-          inset-0
-          z-0
-          opacity-[0.018]
-          [background-image:linear-gradient(#0089BA_1px,transparent_1px),linear-gradient(90deg,#0089BA_1px,transparent_1px)]
-          [background-size:48px_48px]
-          dark:opacity-[0.028]
-        "
-      />
-
-      {/* Top line */}
-
-      <div
-        aria-hidden
-        className="
-          pointer-events-none
-          absolute
-          left-0
-          right-0
-          top-0
-          z-0
-          h-px
-          bg-gradient-to-r
-          from-transparent
-          via-[#00A9E0]/20
-          to-transparent
-          dark:via-[#5DDBFF]/20
-        "
-      />
-    </>
-  );
-}
-
-/* =========================================================================
+/* ============================================================================
    HEADER
-=========================================================================== */
+============================================================================ */
 
-function ProcessHeader({
-  active,
-  count,
-}) {
-  return (
-    <header
-      className="
-        pointer-events-none
-        absolute
-        left-5
-        right-5
-        top-0
-        z-[100]
-        pt-7
-        md:left-[6vw]
-        md:right-[6vw]
-        md:pt-9
-      "
-    >
-      <div className="flex items-start justify-between">
-        {/* Left */}
-
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: -15,
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-          }}
-          transition={{
-            duration: 0.7,
-            ease: EASE,
-          }}
-        >
-          <div className="flex items-center gap-3">
-            <span
-              className="
-                h-px
-                w-8
-                bg-[#00A9E0]
-                dark:bg-[#5DDBFF]
-              "
-            />
-
-            <span
-              className="
-                text-[9px]
-                font-semibold
-                uppercase
-                tracking-[0.28em]
-                text-[#0089BA]
-                dark:text-[#5DDBFF]
-                md:text-[10px]
-              "
-            >
-              How We Work
-            </span>
-          </div>
-
-          <h2
-            className="
-              mt-4
-              font-display
-              text-3xl
-              font-semibold
-              leading-[0.95]
-              tracking-[-0.055em]
-              text-[#071827]
-              dark:text-white
-              md:text-5xl
-            "
-          >
-            Our process
-          </h2>
-        </motion.div>
-
-        {/* Counter */}
-
-        <div
-          className="
-            pt-1
-            font-mono
-            text-[10px]
-            tracking-[0.2em]
-            text-[#0089BA]
-            dark:text-[#8BEAFF]
-            md:text-xs
-          "
-        >
-          {String(active + 1).padStart(2, "0")}
-
-          <span className="mx-2 opacity-30">
-            /
-          </span>
-
-          {String(count).padStart(2, "0")}
-        </div>
-      </div>
-    </header>
-  );
-}
-
-/* =========================================================================
-   PROCESS STAGE
-=========================================================================== */
-
-function ProcessStage({
-  progress,
-  count,
-  isMobile,
-}) {
+function ProcessHeader({ count }) {
   return (
     <div
       className="
-        pointer-events-none
-        absolute
-        inset-0
+        relative
         z-20
+        mx-auto
+        w-[91%]
+        max-w-[1500px]
+        pt-8
+        sm:pt-10
+        md:w-[88%]
+        md:pt-12
+        lg:w-[86%]
+        lg:pt-16
       "
     >
-      {process.map((item, index) => (
-        <ProcessScene
-          key={item.step ?? index}
-          item={item}
-          index={index}
-          count={count}
-          progress={progress}
-          isMobile={isMobile}
-        />
-      ))}
-    </div>
-  );
-}
-
-/* =========================================================================
-   PROCESS SCENE
-=========================================================================== */
-
-function ProcessScene({
-  item,
-  index,
-  count,
-  progress,
-  isMobile,
-}) {
-  const total = Math.max(count - 1, 1);
-
-  const center = index / total;
-
-  const before = Math.max(
-    0,
-    (index - 1) / total
-  );
-
-  const after = Math.min(
-    1,
-    (index + 1) / total
-  );
-
-  /* =======================================================================
-     LOCAL STEP PROGRESS
-
-     -1 = before
-      0 = active
-     +1 = after
-  ======================================================================= */
-
-  const local = useTransform(
-    progress,
-    [before, center, after],
-    [-1, 0, 1]
-  );
-
-  /*
-   * Alternating vertical direction.
-   */
-  const direction =
-    index % 2 === 0 ? 1 : -1;
-
-  /* =======================================================================
-     VERTICAL MOVEMENT
-  ======================================================================= */
-
-  const y = useTransform(
-    local,
-    [-1, -0.5, 0, 0.5, 1],
-    [
-      `${-direction * 90}%`,
-      `${-direction * 35}%`,
-      "0%",
-      `${direction * 35}%`,
-      `${direction * 90}%`,
-    ]
-  );
-
-  /* =======================================================================
-     SCALE
-  ======================================================================= */
-
-  const scale = useTransform(
-    local,
-    [-1, -0.5, 0, 0.5, 1],
-    [0.96, 0.985, 1, 0.985, 0.96]
-  );
-
-  /* =======================================================================
-     OPACITY
-  ======================================================================= */
-
-  const opacity = useTransform(
-    local,
-    [
-      -1,
-      -0.7,
-      -0.2,
-      0,
-      0.2,
-      0.7,
-      1,
-    ],
-    [
-      0,
-      0.12,
-      0.82,
-      1,
-      0.82,
-      0.12,
-      0,
-    ]
-  );
-
-  /* =======================================================================
-     BLUR
-  ======================================================================= */
-
-  const blur = useTransform(
-    local,
-    [-1, -0.45, 0, 0.45, 1],
-    [6, 1.5, 0, 1.5, 6]
-  );
-
-  const filter = useTransform(
-    blur,
-    (value) => `blur(${value}px)`
-  );
-
-  /* =======================================================================
-     CONTENT PARALLAX
-  ======================================================================= */
-
-  const contentY = useTransform(
-    local,
-    [-1, 0, 1],
-    [
-      direction * -18,
-      0,
-      direction * 18,
-    ]
-  );
-
-  /* =======================================================================
-     BACKGROUND NUMBER
-  ======================================================================= */
-
-  const numberY = useTransform(
-    local,
-    [-1, 0, 1],
-    [
-      direction * 110,
-      0,
-      direction * -110,
-    ]
-  );
-
-  const numberOpacity = useTransform(
-    local,
-    [-1, -0.3, 0, 0.3, 1],
-    [0, 0.008, 0.018, 0.008, 0]
-  );
-
-  return (
-    <motion.article
-      style={{
-        y,
-        opacity,
-        scale,
-        filter,
-      }}
-      className="
-        absolute
-        inset-0
-        h-full
-        w-full
-        overflow-hidden
-      "
-    >
-      {/* ==================================================================
-          BACKGROUND NUMBER
-
-          Almost invisible.
-      =================================================================== */}
-
-      <motion.div
-        aria-hidden
-        style={{
-          y: numberY,
-          opacity: numberOpacity,
-        }}
+      <div
         className="
-          pointer-events-none
-          absolute
-          right-[-1vw]
-          top-1/2
-          z-0
-          -translate-y-1/2
-          select-none
-          font-display
-          text-[30vw]
-          font-bold
-          leading-none
-          tracking-[-0.1em]
-          text-[#00A9E0]
-          dark:text-[#5DDBFF]
-          md:text-[22vw]
+          flex
+          items-end
+          justify-between
+          gap-7
         "
       >
-        {String(index + 1).padStart(2, "0")}
-      </motion.div>
-
-      {/* ==================================================================
-          CONTENT
-
-          NO SIDE RAIL.
-          NO SIDE DOT.
-          NO EXTRA CROSS LINE.
-      =================================================================== */}
-
-      <motion.div
-        style={{
-          y: contentY,
-        }}
-        className="
-          pointer-events-none
-          absolute
-          inset-0
-          z-[60]
-        "
-      >
-        <div
-          className="
-            container-x
-            relative
-            z-[70]
-            flex
-            h-full
-            min-h-0
-            flex-col
-            pt-[108px]
-            pb-[82px]
-            md:pt-[118px]
-            md:pb-[88px]
-          "
-        >
-          {/* ==============================================================
-              STEP META
-          ============================================================== */}
-
-          <div className="flex items-center gap-3">
-            <span
-              className="
-                font-mono
-                text-[10px]
-                font-semibold
-                tracking-[0.2em]
-                text-[#00A9E0]
-                dark:text-[#8BEAFF]
-                md:text-xs
-              "
-            >
-              {String(index + 1).padStart(2, "0")}
-            </span>
-
+        <div className="min-w-0">
+          <motion.div
+            initial={{
+              opacity: 0,
+              y: 14,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            viewport={{
+              once: true,
+              amount: 0.3,
+            }}
+            transition={{
+              duration: 0.65,
+              ease: EASE,
+            }}
+            className="
+              flex
+              items-center
+              gap-3
+            "
+          >
             <span
               className="
                 h-px
                 w-8
-                bg-[#00A9E0]/40
-                dark:bg-[#8BEAFF]/40
-                md:w-12
+                bg-[#007EAF]
+                dark:bg-[#5DDBFF]
+                sm:w-9
               "
             />
 
             <span
               className="
                 text-[8px]
-                font-semibold
+                font-bold
+                uppercase
+                tracking-[0.3em]
+                text-[#005F8A]
+                dark:text-[#5DDBFF]
+                sm:text-[9px]
+                md:text-[10px]
+              "
+            >
+              How We Work
+            </span>
+          </motion.div>
+
+          <motion.h2
+            initial={{
+              opacity: 0,
+              y: 18,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            viewport={{
+              once: true,
+              amount: 0.3,
+            }}
+            transition={{
+              duration: 0.75,
+              delay: 0.04,
+              ease: EASE,
+            }}
+            className="
+              mt-3
+              max-w-4xl
+              font-display
+              text-[clamp(2.2rem,5.5vw,5.5rem)]
+              font-semibold
+              leading-[0.88]
+              tracking-[-0.065em]
+              text-[#061725]
+              dark:text-white
+            "
+          >
+            From idea to{" "}
+            <span
+              className="
+                bg-gradient-to-r
+                from-[#0066B3]
+                via-[#00A9E0]
+                to-[#00A878]
+                bg-clip-text
+                text-transparent
+              "
+            >
+              reality
+            </span>
+          </motion.h2>
+
+          <motion.p
+            initial={{
+              opacity: 0,
+              y: 12,
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+            }}
+            viewport={{
+              once: true,
+              amount: 0.25,
+            }}
+            transition={{
+              duration: 0.65,
+              delay: 0.1,
+              ease: EASE,
+            }}
+            className="
+              mt-3
+              max-w-2xl
+              text-[14px]
+              font-medium
+              leading-[1.72]
+              text-[#36566B]
+              dark:text-[#AFC2CF]
+              sm:text-[15px]
+              md:text-base
+              lg:text-lg
+            "
+          >
+            A clear, collaborative process that
+            turns complex requirements into
+            scalable digital products.
+          </motion.p>
+        </div>
+
+        <div
+          className="
+            hidden
+            shrink-0
+            pt-1
+            font-mono
+            text-[9px]
+            font-semibold
+            tracking-[0.2em]
+            text-[#006B98]
+            dark:text-[#5DDBFF]
+            sm:block
+            md:text-[10px]
+          "
+        >
+          {String(count).padStart(
+            2,
+            "0"
+          )}
+          {" / "}
+          STEPS
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================================
+   DESKTOP PROCESS
+============================================================================ */
+
+function DesktopProcess({
+  items,
+  count,
+  progress,
+}) {
+  const railScale = useTransform(
+    progress,
+    [0, 1],
+    [0, 1]
+  );
+
+  return (
+    <div
+      className="
+        relative
+        z-10
+        mx-auto
+        mt-8
+        w-[90%]
+        max-w-[1500px]
+        pb-8
+        lg:w-[86%]
+      "
+    >
+      {/* Base rail */}
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          bottom-0
+          left-1/2
+          top-0
+          z-[4]
+          w-px
+          -translate-x-1/2
+          bg-[#173A4E]/[0.10]
+          dark:bg-white/[0.08]
+        "
+      />
+
+      {/* Active rail */}
+      <motion.div
+        aria-hidden="true"
+        style={{
+          scaleY: railScale,
+        }}
+        className="
+          pointer-events-none
+          absolute
+          bottom-0
+          left-1/2
+          top-0
+          z-[5]
+          w-[2px]
+          origin-top
+          -translate-x-1/2
+          bg-gradient-to-b
+          from-[#0066B3]
+          via-[#00A9E0]
+          to-[#00A878]
+        "
+      />
+
+      <div className="relative">
+        {items.map((item, index) => (
+          <DesktopProcessStep
+            key={
+              item.step ??
+              item.title ??
+              index
+            }
+            item={item}
+            index={index}
+            count={count}
+            progress={progress}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================================
+   DESKTOP STEP
+============================================================================ */
+
+function DesktopProcessStep({
+  item,
+  index,
+  count,
+  progress,
+}) {
+  const total = Math.max(
+    count - 1,
+    1
+  );
+
+  const center =
+    index / total;
+
+  const before =
+    index === 0
+      ? 0
+      : (index - 1) / total;
+
+  const after =
+    index === count - 1
+      ? 1
+      : (index + 1) / total;
+
+  const local = useTransform(
+    progress,
+    [
+      before,
+      center,
+      after,
+    ],
+    [-1, 0, 1]
+  );
+
+  const isEven =
+    index % 2 === 0;
+
+  const contentX =
+    useTransform(
+      local,
+      [
+        -1,
+        -0.6,
+        -0.25,
+        0,
+        0.25,
+        0.6,
+        1,
+      ],
+      [
+        65,
+        32,
+        9,
+        0,
+        -9,
+        -32,
+        -65,
+      ]
+    );
+
+  const contentY =
+    useTransform(
+      local,
+      [
+        -1,
+        -0.5,
+        0,
+        0.5,
+        1,
+      ],
+      [
+        28,
+        12,
+        0,
+        -12,
+        -28,
+      ]
+    );
+
+  const contentOpacity =
+    useTransform(
+      local,
+      [
+        -1,
+        -0.7,
+        -0.38,
+        -0.12,
+        0,
+        0.12,
+        0.38,
+        0.7,
+        1,
+      ],
+      [
+        0,
+        0.14,
+        0.52,
+        0.88,
+        1,
+        0.88,
+        0.52,
+        0.14,
+        0,
+      ]
+    );
+
+  const contentScale =
+    useTransform(
+      local,
+      [
+        -1,
+        -0.4,
+        0,
+        0.4,
+        1,
+      ],
+      [
+        0.97,
+        0.99,
+        1,
+        0.99,
+        0.97,
+      ]
+    );
+
+  const visualX =
+    useTransform(
+      local,
+      [
+        -1,
+        -0.5,
+        0,
+        0.5,
+        1,
+      ],
+      [
+        -25,
+        -11,
+        0,
+        11,
+        25,
+      ]
+    );
+
+  const visualY =
+    useTransform(
+      local,
+      [-1, 0, 1],
+      [18, 0, -18]
+    );
+
+  const visualScale =
+    useTransform(
+      local,
+      [
+        -1,
+        -0.4,
+        0,
+        0.4,
+        1,
+      ],
+      [
+        0.9,
+        0.96,
+        1,
+        0.96,
+        0.9,
+      ]
+    );
+
+  const visualOpacity =
+    useTransform(
+      local,
+      [
+        -1,
+        -0.55,
+        -0.2,
+        0,
+        0.2,
+        0.55,
+        1,
+      ],
+      [
+        0,
+        0.16,
+        0.72,
+        1,
+        0.72,
+        0.16,
+        0,
+      ]
+    );
+
+  const nodeScale =
+    useTransform(
+      local,
+      [
+        -1,
+        -0.4,
+        -0.1,
+        0,
+        0.1,
+        0.4,
+        1,
+      ],
+      [
+        0.78,
+        0.9,
+        1,
+        1.16,
+        1,
+        0.9,
+        0.78,
+      ]
+    );
+
+  const nodeOpacity =
+    useTransform(
+      local,
+      [
+        -1,
+        -0.35,
+        0,
+        0.35,
+        1,
+      ],
+      [
+        0.22,
+        0.62,
+        1,
+        0.62,
+        0.22,
+      ]
+    );
+
+  return (
+    <article
+      className="
+        relative
+        min-h-[600px]
+        py-10
+        lg:grid
+        lg:min-h-[640px]
+        lg:grid-cols-2
+        lg:items-center
+        lg:py-12
+      "
+    >
+      {/* Center node */}
+      <motion.div
+        style={{
+          scale: nodeScale,
+          opacity: nodeOpacity,
+        }}
+        className="
+          absolute
+          left-1/2
+          top-1/2
+          z-40
+          hidden
+          h-10
+          w-10
+          -translate-x-1/2
+          -translate-y-1/2
+          items-center
+          justify-center
+          rounded-full
+          border
+          border-[#008FC5]/35
+          bg-[#F1F7FB]
+          font-mono
+          text-[8px]
+          font-bold
+          text-[#006B9C]
+          shadow-[0_0_24px_rgba(0,143,197,0.14)]
+          dark:border-[#5DDBFF]/30
+          dark:bg-[#07131F]
+          dark:text-[#5DDBFF]
+          lg:flex
+        "
+      >
+        {String(index + 1).padStart(
+          2,
+          "0"
+        )}
+      </motion.div>
+
+      {/* Content */}
+      <motion.div
+        style={{
+          x: contentX,
+          y: contentY,
+          scale: contentScale,
+          opacity: contentOpacity,
+        }}
+        className={`
+          relative
+          z-30
+          self-center
+
+          ${
+            isEven
+              ? `
+                lg:col-start-1
+                lg:row-start-1
+                lg:justify-self-end
+                lg:pr-20
+                lg:text-right
+              `
+              : `
+                lg:col-start-2
+                lg:row-start-1
+                lg:justify-self-start
+                lg:pl-20
+                lg:text-left
+              `
+          }
+        `}
+      >
+        <div className="w-full max-w-[620px]">
+          <div
+            className={`
+              flex
+              items-center
+              gap-3
+              ${
+                isEven
+                  ? "lg:justify-end"
+                  : "lg:justify-start"
+              }
+            `}
+          >
+            <span
+              className="
+                font-mono
+                text-[10px]
+                font-bold
+                tracking-[0.2em]
+                text-[#006B9C]
+                dark:text-[#5DDBFF]
+                sm:text-xs
+              "
+            >
+              {String(index + 1).padStart(
+                2,
+                "0"
+              )}
+            </span>
+
+            <span
+              className="
+                h-px
+                w-8
+                bg-[#008FC5]/45
+                dark:bg-[#5DDBFF]/35
+                sm:w-10
+              "
+            />
+
+            <span
+              className="
+                text-[8px]
+                font-bold
                 uppercase
                 tracking-[0.28em]
-                text-[#0089BA]
+                text-[#176A8A]
                 dark:text-[#5DDBFF]
-                md:text-[10px]
+                sm:text-[9px]
               "
             >
               {item.step}
             </span>
           </div>
 
-          {/* ==============================================================
-              MAIN CONTENT GRID
-          ============================================================== */}
-
-          <div
+          <h3
             className="
-              mt-12
-              grid
-              min-h-0
-              flex-1
-              grid-cols-1
-              lg:grid-cols-[minmax(0,1fr)_260px]
-              lg:gap-16
+              mt-5
+              font-display
+              text-[clamp(2.8rem,4.8vw,6rem)]
+              font-semibold
+              leading-[0.83]
+              tracking-[-0.07em]
+              text-[#061725]
+              dark:text-white
             "
           >
-            {/* ==========================================================
-                LEFT CONTENT
-            =========================================================== */}
+            {item.title}
+          </h3>
 
-            <div
+          <p
+            className={`
+              mt-6
+              max-w-xl
+              text-[17px]
+              font-medium
+              leading-[1.78]
+              text-[#385469]
+              dark:text-[#AFC2CF]
+              md:text-lg
+              lg:text-xl
+              ${
+                isEven
+                  ? "lg:ml-auto"
+                  : ""
+              }
+            `}
+          >
+            {item.description}
+          </p>
+
+          <div
+            className={`
+              mt-7
+              flex
+              items-center
+              gap-3
+              ${
+                isEven
+                  ? "lg:justify-end"
+                  : "lg:justify-start"
+              }
+            `}
+          >
+            <span
               className="
-                flex
-                min-w-0
-                flex-col
-                justify-center
-                pb-6
-                lg:pb-10
-              "
-            >
-              {/* ========================================================
-                  TITLE
-              ========================================================= */}
-
-              <h3
-                className="
-                  relative
-                  z-[80]
-                  max-w-[940px]
-                  font-display
-                  text-[clamp(3.1rem,6.5vw,7rem)]
-                  font-semibold
-                  leading-[0.88]
-                  tracking-[-0.06em]
-                  text-[#071827]
-                  dark:text-white
-                "
-              >
-                {item.title}
-              </h3>
-
-              {/* ========================================================
-                  DESCRIPTION
-              ========================================================= */}
-
-              <p
-                className="
-                  relative
-                  z-[80]
-                  mt-7
-                  max-w-[620px]
-                  text-[13px]
-                  leading-[1.75]
-                  text-[#526477]
-                  dark:text-[#A8BAC8]
-                  sm:text-sm
-                  md:mt-8
-                  md:text-base
-                  lg:text-lg
-                "
-              >
-                {item.description}
-              </p>
-
-              {/* ========================================================
-                  PHASE
-              ========================================================= */}
-
-              <div
-                className="
-                  relative
-                  z-[80]
-                  mt-7
-                  flex
-                  items-center
-                  gap-3
-                "
-              >
-                <span
-                  className="
-                    h-2
-                    w-2
-                    rounded-full
-                    bg-[#00A9E0]
-                    shadow-[0_0_14px_rgba(0,169,224,.65)]
-                    dark:bg-[#5DDBFF]
-                  "
-                />
-
-                <span
-                  className="
-                    text-[8px]
-                    font-medium
-                    uppercase
-                    tracking-[0.22em]
-                    text-[#637587]
-                    dark:text-[#8198A8]
-                    md:text-[9px]
-                  "
-                >
-                  Phase {String(index + 1).padStart(2, "0")}
-                </span>
-              </div>
-            </div>
-
-            {/* ==========================================================
-                RIGHT PHASE VISUAL
-
-                Kept subtle and away from the text.
-            =========================================================== */}
-
-            <div
-              className="
-                pointer-events-none
-                hidden
-                items-center
-                justify-end
-                lg:flex
-              "
-            >
-              <div
-                className="
-                  relative
-                  flex
-                  h-44
-                  w-44
-                  items-center
-                  justify-center
-                  rounded-full
-                  border
-                  border-[#00A9E0]/15
-                  bg-[#00A9E0]/[0.012]
-                  dark:border-[#5DDBFF]/15
-                  dark:bg-[#5DDBFF]/[0.012]
-                  xl:h-48
-                  xl:w-48
-                "
-              >
-                <div
-                  className="
-                    absolute
-                    inset-3
-                    rounded-full
-                    border
-                    border-dashed
-                    border-[#00A9E0]/10
-                    dark:border-[#5DDBFF]/10
-                  "
-                />
-
-                <div className="relative z-10 text-center">
-                  <span
-                    className="
-                      block
-                      text-[8px]
-                      font-semibold
-                      uppercase
-                      tracking-[0.3em]
-                      text-[#0089BA]
-                      dark:text-[#5DDBFF]
-                    "
-                  >
-                    Phase
-                  </span>
-
-                  <span
-                    className="
-                      mt-2
-                      block
-                      font-mono
-                      text-5xl
-                      font-semibold
-                      leading-none
-                      tracking-[-0.08em]
-                      text-[#071827]
-                      dark:text-white
-                    "
-                  >
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-
-                  <span
-                    className="
-                      mt-2
-                      block
-                      text-[8px]
-                      uppercase
-                      tracking-[0.25em]
-                      text-[#78909F]
-                      dark:text-[#8198A8]
-                    "
-                  >
-                    Process
-                  </span>
-                </div>
-
-                <span
-                  className="
-                    absolute
-                    right-1
-                    top-1/2
-                    h-2
-                    w-2
-                    -translate-y-1/2
-                    rounded-full
-                    bg-[#00A9E0]
-                    shadow-[0_0_14px_rgba(0,169,224,.65)]
-                    dark:bg-[#5DDBFF]
-                  "
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* ==============================================================
-              BOTTOM INFORMATION
-          ============================================================== */}
-
-          <div className="mt-8">
-            <div
-              className="
-                h-px
-                w-full
-                bg-black/[0.07]
-                dark:bg-white/[0.07]
+                h-1.5
+                w-1.5
+                rounded-full
+                bg-[#00A878]
+                shadow-[0_0_10px_rgba(0,168,120,0.42)]
               "
             />
 
-            <div
+            <span
               className="
-                mt-3
-                flex
-                items-center
-                justify-between
+                text-[8px]
+                font-bold
+                uppercase
+                tracking-[0.24em]
+                text-[#476274]
+                dark:text-[#8198A8]
               "
             >
-              <span
-                className="
-                  text-[8px]
-                  font-medium
-                  uppercase
-                  tracking-[0.28em]
-                  text-[#78909F]
-                  dark:text-[#8198A8]
-                  md:text-[9px]
-                "
-              >
-                Process /{" "}
-                {String(index + 1).padStart(2, "0")}
-              </span>
-
-              <span
-                className="
-                  text-[8px]
-                  font-medium
-                  uppercase
-                  tracking-[0.28em]
-                  text-[#78909F]
-                  dark:text-[#8198A8]
-                  md:text-[9px]
-                "
-              >
-                {index === count - 1
-                  ? "Process complete"
-                  : "Continue"}
-              </span>
-            </div>
+              {index === count - 1
+                ? "Ready to launch"
+                : "Next phase"}
+            </span>
           </div>
         </div>
       </motion.div>
-    </motion.article>
+
+      {/* Visual */}
+      <motion.div
+        style={{
+          x: visualX,
+          y: visualY,
+          scale: visualScale,
+          opacity: visualOpacity,
+        }}
+        className={`
+          pointer-events-none
+          relative
+          hidden
+          h-[245px]
+          w-[245px]
+          self-center
+          justify-self-center
+          lg:row-start-1
+          lg:block
+
+          ${
+            isEven
+              ? "lg:col-start-2"
+              : "lg:col-start-1"
+          }
+        `}
+      >
+        <ProcessVisual
+          index={index}
+          step={item.step}
+        />
+      </motion.div>
+    </article>
   );
 }
 
-/* =========================================================================
-   BOTTOM PROGRESS
+/* ============================================================================
+   SHARED PROCESS VISUAL
+============================================================================ */
 
-   This is the only process navigation remaining.
-=========================================================================== */
-
-function ProcessFooter({
-  progress,
-  active,
-  count,
+function ProcessVisual({
+  index,
+  step,
 }) {
-  const width = useTransform(
-    progress,
-    [0, 1],
-    ["0%", "100%"]
-  );
-
   return (
-    <div
-      className="
-        pointer-events-none
-        absolute
-        bottom-4
-        left-5
-        right-5
-        z-[100]
-        md:bottom-5
-        md:left-[6vw]
-        md:right-[6vw]
-      "
-    >
-      <div className="flex items-center justify-between">
-        {/* Dots */}
-
-        <div className="flex items-center gap-2">
-          {Array.from({ length: count }).map(
-            (_, index) => (
-              <motion.span
-                key={index}
-                animate={{
-                  width:
-                    active === index
-                      ? 38
-                      : 6,
-                  opacity:
-                    active === index
-                      ? 1
-                      : 0.25,
-                }}
-                transition={{
-                  duration: 0.25,
-                  ease: EASE,
-                }}
-                className="
-                  h-1.5
-                  rounded-full
-                  bg-[#00A9E0]
-                  dark:bg-[#5DDBFF]
-                "
-              />
-            )
-          )}
-        </div>
-
-        {/* Status */}
-
-        <span
-          className="
-            hidden
-            text-[8px]
-            uppercase
-            tracking-[0.28em]
-            text-[#78909F]
-            dark:text-white/30
-            md:block
-          "
-        >
-          {active === count - 1
-            ? "Process complete"
-            : "Scroll to continue"}
-        </span>
-      </div>
-
-      {/* Progress bar */}
-
+    <div className="relative h-full w-full">
+      {/* Outer ring */}
       <div
         className="
-          mt-3
-          h-[2px]
-          w-full
-          overflow-hidden
+          absolute
+          inset-0
           rounded-full
-          bg-black/[0.07]
-          dark:bg-white/[0.07]
+          border
+          border-[#007AAE]/28
+          bg-[#007AAE]/[0.008]
+          dark:border-[#5DDBFF]/14
+          dark:bg-transparent
+        "
+      />
+
+      {/* Middle ring */}
+      <div
+        className="
+          absolute
+          inset-6
+          rounded-full
+          border
+          border-dashed
+          border-[#007AAE]/30
+          dark:border-[#5DDBFF]/16
+        "
+      />
+
+      {/* Inner ring */}
+      <div
+        className="
+          absolute
+          inset-12
+          rounded-full
+          border
+          border-[#007AAE]/22
+          bg-[#007AAE]/[0.012]
+          dark:border-[#5DDBFF]/10
+          dark:bg-[#5DDBFF]/[0.012]
+        "
+      />
+
+      {/* Horizontal */}
+      <div
+        className="
+          absolute
+          left-0
+          right-0
+          top-1/2
+          h-px
+          -translate-y-1/2
+          bg-[#007AAE]/25
+          dark:bg-[#5DDBFF]/18
+        "
+      />
+
+      {/* Vertical */}
+      <div
+        className="
+          absolute
+          bottom-0
+          left-1/2
+          top-0
+          w-px
+          -translate-x-1/2
+          bg-[#007AAE]/25
+          dark:bg-[#5DDBFF]/18
+        "
+      />
+
+      {/* Center */}
+      <div
+        className="
+          absolute
+          left-1/2
+          top-1/2
+          flex
+          h-24
+          w-24
+          -translate-x-1/2
+          -translate-y-1/2
+          items-center
+          justify-center
+          rounded-full
+          border
+          border-[#007AAE]/32
+          bg-[#F1F7FB]
+          shadow-[0_0_18px_rgba(0,143,197,0.05)]
+          dark:border-[#5DDBFF]/20
+          dark:bg-[#07131F]
         "
       >
-        <motion.div
-          style={{
-            width,
-          }}
-          className="
-            h-full
-            rounded-full
-            bg-gradient-to-r
-            from-[#0066B3]
-            via-[#00A9E0]
-            to-[#00A878]
-          "
-        />
+        <div className="text-center">
+          <span
+            className="
+              block
+              text-[7px]
+              font-bold
+              uppercase
+              tracking-[0.28em]
+              text-[#006B9C]
+              dark:text-[#5DDBFF]
+            "
+          >
+            Phase
+          </span>
+
+          <span
+            className="
+              mt-2
+              block
+              font-mono
+              text-3xl
+              font-semibold
+              leading-none
+              tracking-[-0.08em]
+              text-[#061725]
+              dark:text-white
+            "
+          >
+            {String(index + 1).padStart(
+              2,
+              "0"
+            )}
+          </span>
+
+          <span
+            className="
+              mx-auto
+              mt-2
+              block
+              max-w-[70px]
+              truncate
+              text-[6px]
+              uppercase
+              tracking-[0.2em]
+              text-[#587184]
+              dark:text-[#8198A8]
+            "
+          >
+            {step}
+          </span>
+        </div>
       </div>
+
+      {/* Top */}
+      <span
+        className="
+          absolute
+          left-1/2
+          top-0
+          h-2
+          w-2
+          -translate-x-1/2
+          -translate-y-1/2
+          rounded-full
+          bg-[#008FC5]
+          shadow-[0_0_12px_rgba(0,143,197,0.5)]
+          dark:bg-[#5DDBFF]
+        "
+      />
+
+      {/* Bottom */}
+      <span
+        className="
+          absolute
+          bottom-0
+          left-1/2
+          h-1.5
+          w-1.5
+          -translate-x-1/2
+          translate-y-1/2
+          rounded-full
+          bg-[#00A878]
+        "
+      />
     </div>
   );
 }
 
-/* =========================================================================
-   REDUCED MOTION
-=========================================================================== */
+/* ============================================================================
+   TABLET / IPAD
 
-function ReducedProcess() {
+   Dedicated layout:
+   - fixed left timeline
+   - text occupies the larger area
+   - visual has controlled width
+   - no excessive phone-like spacing
+============================================================================ */
+
+function TabletProcess({
+  items,
+  count,
+}) {
   return (
-    <section
+    <div
       className="
-        bg-[#F5F7FA]
-        px-5
-        py-24
-        text-[#071827]
-        dark:bg-[#07131F]
-        dark:text-white
-        md:py-32
+        relative
+        z-10
+        mx-auto
+        mt-8
+        w-[88%]
+        max-w-[1100px]
+        pb-8
       "
     >
-      <div className="container-x">
+      {/* Timeline */}
+      <div
+        aria-hidden="true"
+        className="
+          absolute
+          bottom-5
+          left-[19px]
+          top-0
+          w-px
+          bg-[#1B485E]/[0.15]
+          dark:bg-white/[0.09]
+        "
+      />
+
+      <div
+        aria-hidden="true"
+        className="
+          absolute
+          bottom-5
+          left-[19px]
+          top-0
+          z-10
+          w-[2px]
+          bg-gradient-to-b
+          from-[#0066B3]
+          via-[#00A9E0]
+          to-[#00A878]
+        "
+      />
+
+      {items.map((item, index) => (
+        <TabletProcessStep
+          key={
+            item.step ??
+            item.title ??
+            index
+          }
+          item={item}
+          index={index}
+          count={count}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ============================================================================
+   TABLET STEP
+============================================================================ */
+
+function TabletProcessStep({
+  item,
+  index,
+  count,
+}) {
+  const stepRef = useRef(null);
+
+  const isInView = useInView(
+    stepRef,
+    {
+      amount: 0.3,
+      margin: "-12% 0px -18% 0px",
+    }
+  );
+
+  const contentVariants = {
+    hidden: {
+      opacity: 0,
+      y: 30,
+      x: 18,
+      scale: 0.985,
+    },
+
+    visible: {
+      opacity: 1,
+      y: 0,
+      x: 0,
+      scale: 1,
+    },
+  };
+
+  const visualVariants = {
+    hidden: {
+      opacity: 0.18,
+      scale: 0.9,
+      y: 18,
+    },
+
+    visible: {
+      opacity: 1,
+      scale: 1,
+      y: 0,
+    },
+  };
+
+  return (
+    <article
+      ref={stepRef}
+      className="
+        relative
+        min-h-[365px]
+        pb-8
+      "
+    >
+      {/* ======================================================================
+          NODE
+      ====================================================================== */}
+
+      <motion.div
+        initial={{
+          scale: 0.78,
+          opacity: 0.35,
+        }}
+        animate={{
+          scale: isInView ? 1.12 : 0.84,
+          opacity: isInView ? 1 : 0.38,
+        }}
+        transition={{
+          duration: 0.52,
+          ease: EASE,
+        }}
+        className="
+          absolute
+          left-[19px]
+          top-[34px]
+          z-40
+          flex
+          h-9
+          w-9
+          -translate-x-1/2
+          items-center
+          justify-center
+          rounded-full
+          border
+          border-[#007AAE]/38
+          bg-[#F1F7FB]
+          font-mono
+          text-[8px]
+          font-bold
+          text-[#006B9C]
+          shadow-[0_0_18px_rgba(0,143,197,0.13)]
+          dark:border-[#5DDBFF]/28
+          dark:bg-[#07131F]
+          dark:text-[#5DDBFF]
+        "
+      >
+        {String(index + 1).padStart(
+          2,
+          "0"
+        )}
+      </motion.div>
+
+      {/* ======================================================================
+          MAIN CONTENT AREA
+      ====================================================================== */}
+
+      <motion.div
+        variants={contentVariants}
+        initial="hidden"
+        animate={
+          isInView
+            ? "visible"
+            : "hidden"
+        }
+        transition={{
+          duration: 0.7,
+          ease: EASE,
+        }}
+        className="
+          relative
+          z-20
+          pl-12
+          pr-2
+          pt-5
+        "
+      >
+        {/* Meta */}
+        <div
+          className="
+            flex
+            items-center
+            gap-3
+          "
+        >
+          <span
+            className="
+              font-mono
+              text-[10px]
+              font-bold
+              tracking-[0.18em]
+              text-[#006B9C]
+              dark:text-[#5DDBFF]
+            "
+          >
+            {String(index + 1).padStart(
+              2,
+              "0"
+            )}
+          </span>
+
+          <span
+            className="
+              h-px
+              w-9
+              bg-[#007AAE]/45
+              dark:bg-[#5DDBFF]/32
+            "
+          />
+
+          <span
+            className="
+              text-[8px]
+              font-bold
+              uppercase
+              tracking-[0.28em]
+              text-[#176A8A]
+              dark:text-[#5DDBFF]
+            "
+          >
+            {item.step}
+          </span>
+        </div>
+
+        {/* ====================================================================
+            TABLET CONTENT GRID
+        ==================================================================== */}
+
+        <div
+          className="
+            mt-5
+            grid
+            grid-cols-[minmax(0,1fr)_150px]
+            items-center
+            gap-8
+            md:grid-cols-[minmax(0,1fr)_170px]
+            md:gap-10
+          "
+        >
+          {/* Text */}
+          <div className="min-w-0">
+            <h3
+              className="
+                max-w-[720px]
+                font-display
+                text-[clamp(2.65rem,5.8vw,4.8rem)]
+                font-semibold
+                leading-[0.85]
+                tracking-[-0.07em]
+                text-[#061725]
+                dark:text-white
+              "
+            >
+              {item.title}
+            </h3>
+
+            <p
+              className="
+                mt-5
+                max-w-[700px]
+                text-[16px]
+                font-medium
+                leading-[1.78]
+                text-[#334F63]
+                dark:text-[#AFC2CF]
+                md:text-[17px]
+              "
+            >
+              {item.description}
+            </p>
+
+            <div
+              className="
+                mt-5
+                flex
+                items-center
+                gap-2.5
+              "
+            >
+              <span
+                className="
+                  h-1.5
+                  w-1.5
+                  rounded-full
+                  bg-[#00A878]
+                  shadow-[0_0_9px_rgba(0,168,120,0.42)]
+                "
+              />
+
+              <span
+                className="
+                  text-[7px]
+                  font-bold
+                  uppercase
+                  tracking-[0.24em]
+                  text-[#476274]
+                  dark:text-[#8198A8]
+                "
+              >
+                {index === count - 1
+                  ? "Ready to launch"
+                  : "Next phase"}
+              </span>
+            </div>
+          </div>
+
+          {/* Visual */}
+          <motion.div
+            variants={visualVariants}
+            initial="hidden"
+            animate={
+              isInView
+                ? "visible"
+                : "hidden"
+            }
+            transition={{
+              duration: 0.72,
+              delay: 0.05,
+              ease: EASE,
+            }}
+            className="
+              relative
+              h-[145px]
+              w-[145px]
+              justify-self-center
+              md:h-[160px]
+              md:w-[160px]
+            "
+          >
+            <ProcessVisual
+              index={index}
+              step={item.step}
+            />
+          </motion.div>
+        </div>
+      </motion.div>
+    </article>
+  );
+}
+
+/* ============================================================================
+   MOBILE
+============================================================================ */
+
+function MobileProcess({
+  items,
+  count,
+}) {
+  return (
+    <div
+      className="
+        relative
+        z-10
+        mx-auto
+        mt-7
+        w-[92%]
+        max-w-[640px]
+        pb-4
+      "
+    >
+      {/* Rail */}
+      <div
+        aria-hidden="true"
+        className="
+          absolute
+          bottom-5
+          left-[14px]
+          top-0
+          w-px
+          bg-[#193E53]/[0.16]
+          dark:bg-white/[0.09]
+        "
+      />
+
+      <div
+        aria-hidden="true"
+        className="
+          absolute
+          bottom-5
+          left-[14px]
+          top-0
+          z-10
+          w-[2px]
+          bg-gradient-to-b
+          from-[#0066B3]
+          via-[#00A9E0]
+          to-[#00A878]
+        "
+      />
+
+      {items.map((item, index) => (
+        <MobileProcessStep
+          key={
+            item.step ??
+            item.title ??
+            index
+          }
+          item={item}
+          index={index}
+          count={count}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ============================================================================
+   MOBILE STEP
+============================================================================ */
+
+function MobileProcessStep({
+  item,
+  index,
+  count,
+}) {
+  const stepRef = useRef(null);
+
+  const isInView = useInView(
+    stepRef,
+    {
+      amount: 0.28,
+      margin: "-14% 0px -18% 0px",
+    }
+  );
+
+  return (
+    <article
+      ref={stepRef}
+      className="
+        relative
+        min-h-[315px]
+        pb-5
+        sm:min-h-[330px]
+      "
+    >
+      {/* Node */}
+      <motion.div
+        initial={{
+          scale: 0.78,
+          opacity: 0.3,
+        }}
+        animate={{
+          scale: isInView ? 1.1 : 0.84,
+          opacity: isInView ? 1 : 0.38,
+        }}
+        transition={{
+          duration: 0.5,
+          ease: EASE,
+        }}
+        className="
+          absolute
+          left-[14px]
+          top-[30px]
+          z-40
+          flex
+          h-8
+          w-8
+          -translate-x-1/2
+          items-center
+          justify-center
+          rounded-full
+          border
+          border-[#007AAE]/40
+          bg-[#F1F7FB]
+          font-mono
+          text-[7px]
+          font-bold
+          text-[#006B9C]
+          shadow-[0_0_16px_rgba(0,143,197,0.13)]
+          dark:border-[#5DDBFF]/28
+          dark:bg-[#07131F]
+          dark:text-[#5DDBFF]
+        "
+      >
+        {String(index + 1).padStart(
+          2,
+          "0"
+        )}
+      </motion.div>
+
+      <motion.div
+        initial={{
+          opacity: 0,
+          y: 28,
+          x: 12,
+          scale: 0.98,
+        }}
+        animate={{
+          opacity: isInView ? 1 : 0.2,
+          y: isInView ? 0 : 28,
+          x: isInView ? 0 : 12,
+          scale: isInView
+            ? 1
+            : 0.98,
+        }}
+        transition={{
+          duration: 0.68,
+          ease: EASE,
+        }}
+        className="
+          relative
+          z-20
+          pl-10
+          pr-1
+          pt-5
+        "
+      >
+        {/* Meta */}
+        <div className="flex items-center gap-2.5">
+          <span
+            className="
+              font-mono
+              text-[8px]
+              font-bold
+              tracking-[0.18em]
+              text-[#006B9C]
+              dark:text-[#5DDBFF]
+            "
+          >
+            {String(index + 1).padStart(
+              2,
+              "0"
+            )}
+          </span>
+
+          <span
+            className="
+              h-px
+              w-7
+              bg-[#007AAE]/45
+              dark:bg-[#5DDBFF]/32
+            "
+          />
+
+          <span
+            className="
+              text-[7px]
+              font-bold
+              uppercase
+              tracking-[0.24em]
+              text-[#176A8A]
+              dark:text-[#5DDBFF]
+            "
+          >
+            {item.step}
+          </span>
+        </div>
+
+        {/* Text */}
+        <h3
+          className="
+            mt-4
+            max-w-[300px]
+            font-display
+            text-[clamp(2.1rem,9vw,3.6rem)]
+            font-semibold
+            leading-[0.84]
+            tracking-[-0.07em]
+            text-[#061725]
+            dark:text-white
+          "
+        >
+          {item.title}
+        </h3>
+
+        <p
+          className="
+            mt-4
+            max-w-[580px]
+            text-[14px]
+            font-medium
+            leading-[1.75]
+            text-[#334F63]
+            dark:text-[#AFC2CF]
+            sm:text-[15px]
+          "
+        >
+          {item.description}
+        </p>
+
+        <div
+          className="
+            mt-5
+            flex
+            items-center
+            gap-2.5
+          "
+        >
+          <span
+            className="
+              h-1.5
+              w-1.5
+              rounded-full
+              bg-[#00A878]
+              shadow-[0_0_8px_rgba(0,168,120,0.42)]
+            "
+          />
+
+          <span
+            className="
+              text-[7px]
+              font-bold
+              uppercase
+              tracking-[0.22em]
+              text-[#476274]
+              dark:text-[#8198A8]
+            "
+          >
+            {index === count - 1
+              ? "Ready to launch"
+              : "Next phase"}
+          </span>
+        </div>
+
+        {/* Small visual */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            scale: 0.86,
+            y: 15,
+          }}
+          animate={{
+            opacity: isInView ? 1 : 0.12,
+            scale: isInView ? 1 : 0.86,
+            y: isInView ? 0 : 15,
+          }}
+          transition={{
+            duration: 0.65,
+            delay: 0.05,
+            ease: EASE,
+          }}
+          className="
+            relative
+            mt-5
+            h-[82px]
+            w-[82px]
+            sm:hidden
+          "
+        >
+          <ProcessVisual
+            index={index}
+            small
+          />
+        </motion.div>
+
+        {/* Larger phone visual */}
+        <motion.div
+          initial={{
+            opacity: 0,
+            scale: 0.86,
+            y: 15,
+          }}
+          animate={{
+            opacity: isInView ? 1 : 0.12,
+            scale: isInView ? 1 : 0.86,
+            y: isInView ? 0 : 15,
+          }}
+          transition={{
+            duration: 0.65,
+            delay: 0.05,
+            ease: EASE,
+          }}
+          className="
+            relative
+            mt-5
+            hidden
+            h-[105px]
+            w-[105px]
+            sm:block
+          "
+        >
+          <ProcessVisual
+            index={index}
+            small
+          />
+        </motion.div>
+      </motion.div>
+    </article>
+  );
+}
+
+/* ============================================================================
+   BACKGROUND
+============================================================================ */
+
+function ProcessBackground() {
+  return (
+    <>
+      {/* Ambient glow */}
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          left-1/2
+          top-[46%]
+          h-[540px]
+          w-[540px]
+          -translate-x-1/2
+          -translate-y-1/2
+          rounded-full
+          bg-[radial-gradient(circle,rgba(0,169,224,0.035),transparent_68%)]
+          blur-[18px]
+          dark:bg-[radial-gradient(circle,rgba(0,217,255,0.035),transparent_68%)]
+        "
+      />
+
+      {/* Grid */}
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          inset-0
+          opacity-[0.02]
+          [background-image:linear-gradient(#0A759C_1px,transparent_1px),linear-gradient(90deg,#0A759C_1px,transparent_1px)]
+          [background-size:64px_64px]
+          dark:opacity-[0.028]
+        "
+      />
+
+      {/* Top fade */}
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          inset-x-0
+          top-0
+          h-24
+          bg-gradient-to-b
+          from-[#F1F7FB]
+          to-transparent
+          dark:from-[#07131F]
+        "
+      />
+
+      {/* Bottom fade */}
+      <div
+        aria-hidden="true"
+        className="
+          pointer-events-none
+          absolute
+          bottom-0
+          left-0
+          right-0
+          h-20
+          bg-gradient-to-t
+          from-[#F1F7FB]
+          to-transparent
+          dark:from-[#07131F]
+        "
+      />
+    </>
+  );
+}
+
+/* ============================================================================
+   REDUCED MOTION
+============================================================================ */
+
+function ReducedProcess({
+  items,
+}) {
+  return (
+    <section
+      id="process"
+      className="
+        bg-[#F1F7FB]
+        px-5
+        py-20
+        text-[#061725]
+        dark:bg-[#07131F]
+        dark:text-white
+        md:py-28
+      "
+    >
+      <div
+        className="
+          mx-auto
+          w-full
+          max-w-[1380px]
+        "
+      >
         <ScrollReveal>
           <div className="flex items-center gap-3">
             <span
               className="
                 h-px
                 w-8
-                bg-[#00A9E0]
+                bg-[#007CB5]
                 dark:bg-[#5DDBFF]
               "
             />
@@ -1170,10 +1962,10 @@ function ReducedProcess() {
             <span
               className="
                 text-[9px]
-                font-semibold
+                font-bold
                 uppercase
                 tracking-[0.28em]
-                text-[#0089BA]
+                text-[#006A98]
                 dark:text-[#5DDBFF]
               "
             >
@@ -1184,102 +1976,127 @@ function ReducedProcess() {
           <h2
             className="
               mt-4
+              max-w-4xl
               font-display
               text-4xl
               font-semibold
-              tracking-tight
+              leading-[0.88]
+              tracking-[-0.06em]
+              text-[#061725]
+              dark:text-white
               md:text-6xl
             "
           >
-            Our development process
+            From idea to{" "}
+            <span
+              className="
+                bg-gradient-to-r
+                from-[#0066B3]
+                via-[#00A9E0]
+                to-[#00A878]
+                bg-clip-text
+                text-transparent
+              "
+            >
+              reality
+            </span>
           </h2>
 
           <p
             className="
               mt-5
               max-w-2xl
-              text-sm
-              leading-relaxed
-              text-[#526477]
-              dark:text-[#A8BAC8]
-              md:text-base
+              text-[16px]
+              font-medium
+              leading-[1.8]
+              text-[#385469]
+              dark:text-[#AFC2CF]
+              md:text-lg
             "
           >
-            From the first idea to the final product,
-            we turn complex requirements into elegant,
-            scalable digital experiences.
+            A clear, collaborative process that
+            turns complex requirements into
+            scalable digital products.
           </p>
         </ScrollReveal>
 
-        <div className="mt-16">
-          {process.map((item, index) => (
+        <div className="mt-12">
+          {items.map((item, index) => (
             <article
-              key={item.step ?? index}
+              key={
+                item.step ??
+                item.title ??
+                index
+              }
               className="
-                flex
-                min-h-[70vh]
-                flex-col
-                justify-center
-                border-l
-                border-[#00A9E0]/25
-                pl-6
-                md:pl-10
+                border-t
+                border-[#14384D]/10
+                py-10
+                dark:border-white/10
               "
             >
-              <span
-                className="
-                  font-mono
-                  text-sm
-                  text-[#00A9E0]
-                  dark:text-[#8BEAFF]
-                "
-              >
-                {String(index + 1).padStart(2, "0")}
-              </span>
+              <div className="flex gap-5">
+                <span
+                  className="
+                    font-mono
+                    text-xs
+                    font-bold
+                    text-[#006B9C]
+                    dark:text-[#5DDBFF]
+                  "
+                >
+                  {String(index + 1).padStart(
+                    2,
+                    "0"
+                  )}
+                </span>
 
-              <span
-                className="
-                  mt-4
-                  text-[9px]
-                  font-semibold
-                  uppercase
-                  tracking-[0.25em]
-                  text-[#0089BA]
-                  dark:text-[#5DDBFF]
-                "
-              >
-                {item.step}
-              </span>
+                <div>
+                  <span
+                    className="
+                      text-[8px]
+                      font-bold
+                      uppercase
+                      tracking-[0.25em]
+                      text-[#176A8A]
+                      dark:text-[#5DDBFF]
+                    "
+                  >
+                    {item.step}
+                  </span>
 
-              <h3
-                className="
-                  mt-3
-                  max-w-5xl
-                  font-display
-                  text-4xl
-                  font-semibold
-                  leading-[0.9]
-                  tracking-[-0.05em]
-                  md:text-6xl
-                  lg:text-7xl
-                "
-              >
-                {item.title}
-              </h3>
+                  <h3
+                    className="
+                      mt-3
+                      font-display
+                      text-4xl
+                      font-semibold
+                      leading-[0.9]
+                      tracking-[-0.05em]
+                      text-[#061725]
+                      dark:text-white
+                      md:text-6xl
+                    "
+                  >
+                    {item.title}
+                  </h3>
 
-              <p
-                className="
-                  mt-6
-                  max-w-2xl
-                  text-sm
-                  leading-[1.8]
-                  text-[#526477]
-                  dark:text-[#9FB1BF]
-                  md:text-base
-                "
-              >
-                {item.description}
-              </p>
+                  <p
+                    className="
+                      mt-5
+                      max-w-2xl
+                      text-[16px]
+                      font-medium
+                      leading-[1.8]
+                      text-[#385469]
+                      dark:text-[#AFC2CF]
+                      md:text-lg
+                    "
+                  >
+                    {item.description}
+                  </p>
+                </div>
+              </div>
             </article>
           ))}
         </div>

@@ -8,15 +8,25 @@ import {
   useSpring,
   useTransform,
 } from "framer-motion";
+
 import { asserts } from "../assets/asserts.mjs";
 
-import { useRef } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
+/* ============================================================================
+   CONFIG
+============================================================================ */
 
 const EASE = [0.16, 1, 0.3, 1];
 
-/* =========================================================================
+/* ============================================================================
    BUSINESS DATA
-=========================================================================== */
+============================================================================ */
 
 const businessSolutions = [
   {
@@ -31,9 +41,9 @@ const businessSolutions = [
       "MVP",
       "Branding",
     ],
-    image:
-     `${asserts.startup}`,
+    image: `${asserts.startup}`,
   },
+
   {
     number: "02",
     eyebrow: "SMALL & MEDIUM BUSINESSES",
@@ -49,6 +59,7 @@ const businessSolutions = [
     image:
       "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=85",
   },
+
   {
     number: "03",
     eyebrow: "GROWING ENTERPRISES",
@@ -64,6 +75,7 @@ const businessSolutions = [
     image:
       "https://images.unsplash.com/photo-1553877522-43269d4ea984?auto=format&fit=crop&w=1200&q=85",
   },
+
   {
     number: "04",
     eyebrow: "PROFESSIONAL SERVICES",
@@ -79,6 +91,7 @@ const businessSolutions = [
     image:
       "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1200&q=85",
   },
+
   {
     number: "05",
     eyebrow: "RETAIL & COMMERCE",
@@ -94,6 +107,7 @@ const businessSolutions = [
     image:
       "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1200&q=85",
   },
+
   {
     number: "06",
     eyebrow: "EDUCATION & INSTITUTIONS",
@@ -111,9 +125,53 @@ const businessSolutions = [
   },
 ];
 
-/* =========================================================================
+/* ============================================================================
+   FINE POINTER DETECTION
+
+   No require().
+   Uses normal React ES module import.
+============================================================================ */
+
+function useHasFinePointer() {
+  const [isFine, setIsFine] = useState(false);
+
+  useEffect(() => {
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
+      return undefined;
+    }
+
+    const query = window.matchMedia(
+      "(pointer: fine)"
+    );
+
+    const update = () => {
+      setIsFine(query.matches);
+    };
+
+    update();
+
+    query.addEventListener(
+      "change",
+      update
+    );
+
+    return () => {
+      query.removeEventListener(
+        "change",
+        update
+      );
+    };
+  }, []);
+
+  return isFine;
+}
+
+/* ============================================================================
    FLOATING ORB
-=========================================================================== */
+============================================================================ */
 
 function FloatingOrb({
   className = "",
@@ -121,16 +179,22 @@ function FloatingOrb({
 }) {
   return (
     <motion.div
-      aria-hidden
+      aria-hidden="true"
       style={style}
-      className={`pointer-events-none absolute rounded-full blur-[90px] ${className}`}
+      className={`
+        pointer-events-none
+        absolute
+        rounded-full
+        blur-[90px]
+        ${className}
+      `}
     />
   );
 }
 
-/* =========================================================================
+/* ============================================================================
    ARROW ICON
-=========================================================================== */
+============================================================================ */
 
 function ArrowIcon() {
   return (
@@ -140,6 +204,7 @@ function ArrowIcon() {
       stroke="currentColor"
       strokeWidth="1.8"
       className="h-5 w-5"
+      aria-hidden="true"
     >
       <path d="M5 19L19 5" />
       <path d="M8 5h11v11" />
@@ -147,33 +212,33 @@ function ArrowIcon() {
   );
 }
 
-/* =========================================================================
+/* ============================================================================
    SPLIT WORDS
-=========================================================================== */
+============================================================================ */
 
 function SplitWords({ text }) {
+  const words = text.split(" ");
+
   return (
     <span className="inline-flex flex-wrap gap-x-[0.22em]">
-      {text.split(" ").map((word, index) => (
+      {words.map((word, index) => (
         <motion.span
           key={`${word}-${index}`}
           initial={{
             opacity: 0,
-            y: 25,
-            filter: "blur(8px)",
+            y: 18,
           }}
           whileInView={{
             opacity: 1,
             y: 0,
-            filter: "blur(0px)",
           }}
           viewport={{
             once: true,
             amount: 0.8,
           }}
           transition={{
-            duration: 0.65,
-            delay: index * 0.07,
+            duration: 0.55,
+            delay: index * 0.055,
             ease: EASE,
           }}
         >
@@ -184,52 +249,53 @@ function SplitWords({ text }) {
   );
 }
 
-/* =========================================================================
+/* ============================================================================
    BUSINESS CARD
-=========================================================================== */
+============================================================================ */
 
 function BusinessCard({
   item,
   index,
   reduceMotion,
+  enablePointer,
 }) {
   const cardRef = useRef(null);
 
   const active = useInView(cardRef, {
-    amount: 0.55,
-    margin: "-10% 0px -10% 0px",
+    amount: 0.32,
+    margin: "-8% 0px -8% 0px",
   });
 
-  /* -----------------------------------------------------------------------
+  /* ==========================================================================
      SPOTLIGHT
-  ----------------------------------------------------------------------- */
+  ========================================================================== */
 
   const mouseX = useMotionValue(50);
   const mouseY = useMotionValue(50);
 
   const smoothX = useSpring(mouseX, {
-    stiffness: 220,
+    stiffness: 170,
     damping: 28,
-    mass: 0.25,
+    mass: 0.2,
   });
 
   const smoothY = useSpring(mouseY, {
-    stiffness: 220,
+    stiffness: 170,
     damping: 28,
-    mass: 0.25,
+    mass: 0.2,
   });
 
   const spotlight = useMotionTemplate`
     radial-gradient(
-      220px circle at ${smoothX}% ${smoothY}%,
-      rgba(0,169,224,0.16),
+      190px circle at ${smoothX}% ${smoothY}%,
+      rgba(0,169,224,0.13),
       transparent 72%
     )
   `;
 
-  /* -----------------------------------------------------------------------
-     HOVER TILT
-  ----------------------------------------------------------------------- */
+  /* ==========================================================================
+     TILT
+  ========================================================================== */
 
   const rotateX = useMotionValue(0);
   const rotateY = useMotionValue(0);
@@ -237,63 +303,167 @@ function BusinessCard({
   const springRotateX = useSpring(
     rotateX,
     {
-      stiffness: 170,
-      damping: 18,
-      mass: 0.35,
+      stiffness: 145,
+      damping: 24,
+      mass: 0.22,
     }
   );
 
   const springRotateY = useSpring(
     rotateY,
     {
-      stiffness: 170,
-      damping: 18,
-      mass: 0.35,
+      stiffness: 145,
+      damping: 24,
+      mass: 0.22,
     }
   );
 
-  const handleMouseMove = (event) => {
-    if (reduceMotion) return;
+  /* ==========================================================================
+     POINTER RAF THROTTLE
+  ========================================================================== */
 
-    const rect =
-      event.currentTarget.getBoundingClientRect();
+  const rafRef = useRef(null);
 
-    const xPercent =
-      (event.clientX - rect.left) /
-      rect.width;
+  const pointerValuesRef = useRef({
+    x: 50,
+    y: 50,
+    rx: 0,
+    ry: 0,
+  });
 
-    const yPercent =
-      (event.clientY - rect.top) /
-      rect.height;
+  const flushPointer = useCallback(() => {
+    rafRef.current = null;
 
-    mouseX.set(xPercent * 100);
-    mouseY.set(yPercent * 100);
+    const values =
+      pointerValuesRef.current;
 
-    rotateY.set((xPercent - 0.5) * 5);
-    rotateX.set(-(yPercent - 0.5) * 5);
-  };
+    mouseX.set(values.x);
+    mouseY.set(values.y);
+    rotateX.set(values.rx);
+    rotateY.set(values.ry);
+  }, [
+    mouseX,
+    mouseY,
+    rotateX,
+    rotateY,
+  ]);
 
-  const handleMouseLeave = () => {
-    mouseX.set(50);
-    mouseY.set(50);
+  const handlePointerMove = useCallback(
+    (event) => {
+      if (
+        reduceMotion ||
+        !enablePointer
+      ) {
+        return;
+      }
 
-    rotateX.set(0);
-    rotateY.set(0);
-  };
+      const element =
+        event.currentTarget;
+
+      const rect =
+        element.getBoundingClientRect();
+
+      if (
+        rect.width <= 0 ||
+        rect.height <= 0
+      ) {
+        return;
+      }
+
+      const px = Math.max(
+        0,
+        Math.min(
+          1,
+          (event.clientX - rect.left) /
+            rect.width
+        )
+      );
+
+      const py = Math.max(
+        0,
+        Math.min(
+          1,
+          (event.clientY - rect.top) /
+            rect.height
+        )
+      );
+
+      pointerValuesRef.current.x =
+        px * 100;
+
+      pointerValuesRef.current.y =
+        py * 100;
+
+      pointerValuesRef.current.ry =
+        (px - 0.5) * 3.5;
+
+      pointerValuesRef.current.rx =
+        -(py - 0.5) * 3.5;
+
+      if (
+        rafRef.current === null
+      ) {
+        rafRef.current =
+          requestAnimationFrame(
+            flushPointer
+          );
+      }
+    },
+    [
+      enablePointer,
+      reduceMotion,
+      flushPointer,
+    ]
+  );
+
+  const handlePointerLeave =
+    useCallback(() => {
+      if (!enablePointer) {
+        return;
+      }
+
+      pointerValuesRef.current = {
+        x: 50,
+        y: 50,
+        rx: 0,
+        ry: 0,
+      };
+
+      if (
+        rafRef.current === null
+      ) {
+        rafRef.current =
+          requestAnimationFrame(
+            flushPointer
+          );
+      }
+    }, [
+      enablePointer,
+      flushPointer,
+    ]);
+
+  useEffect(() => {
+    return () => {
+      if (
+        rafRef.current !== null
+      ) {
+        cancelAnimationFrame(
+          rafRef.current
+        );
+      }
+    };
+  }, []);
 
   return (
     <motion.article
       ref={cardRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
       initial={
         reduceMotion
           ? false
           : {
               opacity: 0,
-              y: 70,
-              scale: 0.94,
-              filter: "blur(10px)",
+              y: 42,
+              scale: 0.975,
             }
       }
       whileInView={
@@ -303,7 +473,6 @@ function BusinessCard({
               opacity: 1,
               y: 0,
               scale: 1,
-              filter: "blur(0px)",
             }
       }
       viewport={{
@@ -311,10 +480,10 @@ function BusinessCard({
         amount: 0.12,
       }}
       transition={{
-        duration: 0.9,
+        duration: 0.7,
         delay: Math.min(
-          index * 0.09,
-          0.45
+          index * 0.065,
+          0.3
         ),
         ease: EASE,
       }}
@@ -323,25 +492,27 @@ function BusinessCard({
           ? undefined
           : {
               scale: active
-                ? 1.01
-                : 0.985,
+                ? 1.008
+                : 1,
               opacity: active
                 ? 1
-                : 0.84,
+                : 0.94,
             }
       }
-      whileHover={
-        reduceMotion
-          ? undefined
-          : {
-              y: -10,
-              scale: 1.025,
-            }
+      onPointerMove={
+        enablePointer
+          ? handlePointerMove
+          : undefined
+      }
+      onPointerLeave={
+        enablePointer
+          ? handlePointerLeave
+          : undefined
       }
       style={{
         rotateX: springRotateX,
         rotateY: springRotateY,
-        transformPerspective: 1000,
+        transformPerspective: 900,
       }}
       className="
         group
@@ -351,50 +522,49 @@ function BusinessCard({
         border
         border-black/[0.07]
         bg-white
-        shadow-[0_18px_70px_rgba(7,24,39,0.06)]
-        transition-all
-        duration-500
+        shadow-[0_18px_60px_rgba(7,24,39,0.055)]
+        will-change-transform
         hover:border-[#00A9E0]/25
-        hover:shadow-[0_30px_100px_rgba(0,137,186,0.15)]
         dark:border-white/[0.07]
         dark:bg-[#0A1722]
         dark:shadow-none
         dark:hover:border-[#5DDBFF]/20
-        dark:hover:shadow-[0_30px_100px_rgba(0,217,255,0.08)]
       "
     >
-      {/* ---------------------------------------------------------------------
-          HOVER SPOTLIGHT
-      --------------------------------------------------------------------- */}
+      {/* ======================================================================
+          POINTER SPOTLIGHT
+      ====================================================================== */}
 
-      <motion.div
-        aria-hidden
-        style={{
-          background: spotlight,
-        }}
-        className="
-          pointer-events-none
-          absolute
-          inset-0
-          z-40
-          opacity-0
-          transition-opacity
-          duration-300
-          group-hover:opacity-100
-        "
-      />
+      {enablePointer && (
+        <motion.div
+          aria-hidden="true"
+          style={{
+            background: spotlight,
+          }}
+          className="
+            pointer-events-none
+            absolute
+            inset-0
+            z-40
+            opacity-0
+            transition-opacity
+            duration-300
+            group-hover:opacity-100
+          "
+        />
+      )}
 
-      {/* ---------------------------------------------------------------------
+      {/* ======================================================================
           ACTIVE BORDER
-      --------------------------------------------------------------------- */}
+      ====================================================================== */}
 
       <motion.div
-        aria-hidden
+        aria-hidden="true"
         animate={{
           opacity: active ? 1 : 0,
         }}
         transition={{
-          duration: 0.35,
+          duration: 0.28,
         }}
         className="
           pointer-events-none
@@ -404,87 +574,101 @@ function BusinessCard({
           rounded-[30px]
           ring-1
           ring-inset
-          ring-[#00A9E0]/30
-          dark:ring-[#5DDBFF]/25
+          ring-[#00A9E0]/25
+          dark:ring-[#5DDBFF]/20
         "
       />
 
-      {/* ---------------------------------------------------------------------
-          HOVER EDGE GLOW
-      --------------------------------------------------------------------- */}
+      {/* ======================================================================
+          TOP EDGE
+      ====================================================================== */}
 
-      <motion.div
-        aria-hidden
-        className="
-          pointer-events-none
-          absolute
-          inset-x-6
-          top-0
-          z-50
-          h-px
-          origin-center
-          bg-gradient-to-r
-          from-transparent
-          via-[#00A9E0]
-          to-transparent
-        "
-        initial={{
-          scaleX: 0,
-          opacity: 0,
-        }}
-        whileHover={
-          reduceMotion
-            ? undefined
-            : {
-                scaleX: 1,
-                opacity: 1,
-              }
-        }
-        transition={{
-          duration: 0.5,
-          ease: EASE,
-        }}
-      />
+      {enablePointer && (
+        <motion.div
+          aria-hidden="true"
+          initial={{
+            scaleX: 0,
+            opacity: 0,
+          }}
+          whileHover={{
+            scaleX: 1,
+            opacity: 1,
+          }}
+          transition={{
+            duration: 0.42,
+            ease: EASE,
+          }}
+          className="
+            pointer-events-none
+            absolute
+            inset-x-7
+            top-0
+            z-50
+            h-px
+            origin-center
+            bg-gradient-to-r
+            from-transparent
+            via-[#00A9E0]
+            to-transparent
+          "
+        />
+      )}
 
-      {/* ---------------------------------------------------------------------
+      {/* ======================================================================
           IMAGE
-      --------------------------------------------------------------------- */}
+      ====================================================================== */}
 
-      <div className="relative h-[250px] overflow-hidden">
+      <div
+        className="
+          relative
+          h-[235px]
+          overflow-hidden
+          sm:h-[245px]
+          md:h-[250px]
+        "
+      >
         <motion.div
           initial={{
-            scale: 1.16,
-            y: 18,
+            scale: 1.08,
           }}
           whileInView={{
             scale: 1,
-            y: 0,
           }}
           viewport={{
             once: true,
-            amount: 0.35,
+            amount: 0.25,
           }}
           transition={{
-            duration: 1.15,
-            delay: index * 0.06,
+            duration: 0.9,
+            delay: index * 0.05,
             ease: EASE,
           }}
-          className="h-full w-full"
+          className="
+            h-full
+            w-full
+            will-change-transform
+          "
         >
           <motion.img
             src={item.image}
             alt={item.eyebrow}
-            loading="lazy"
+            loading={
+              index < 2
+                ? "eager"
+                : "lazy"
+            }
+            decoding="async"
             draggable="false"
             whileHover={
-              reduceMotion
+              reduceMotion ||
+              !enablePointer
                 ? undefined
                 : {
-                    scale: 1.09,
+                    scale: 1.045,
                   }
             }
             transition={{
-              duration: 0.9,
+              duration: 0.65,
               ease: EASE,
             }}
             className="
@@ -492,126 +676,42 @@ function BusinessCard({
               w-full
               object-cover
               object-center
+              will-change-transform
             "
           />
         </motion.div>
 
-        {/* Cinematic reveal */}
-
-        <motion.div
-          aria-hidden
-          initial={{
-            clipPath:
-              "inset(0 100% 0 0)",
-          }}
-          whileInView={{
-            clipPath:
-              "inset(0 0% 0 0)",
-          }}
-          viewport={{
-            once: true,
-          }}
-          transition={{
-            duration: 1,
-            delay:
-              0.1 + index * 0.05,
-            ease: EASE,
-          }}
+        {/* Image color wash */}
+        <div
+          aria-hidden="true"
           className="
             pointer-events-none
             absolute
             inset-0
+            z-10
             bg-gradient-to-br
-            from-[#00A9E0]/20
+            from-[#00A9E0]/10
             via-transparent
             to-transparent
-            mix-blend-screen
           "
         />
 
-        {/* Light sweep */}
-
-        <motion.div
-          aria-hidden
-          initial={{
-            x: "-130%",
-          }}
-          whileInView={{
-            x: "130%",
-          }}
-          viewport={{
-            once: true,
-            amount: 0.35,
-          }}
-          transition={{
-            duration: 1.2,
-            delay:
-              0.15 + index * 0.05,
-            ease: EASE,
-          }}
+        {/* Bottom gradient */}
+        <div
+          aria-hidden="true"
           className="
             pointer-events-none
-            absolute
-            inset-y-0
-            left-0
-            z-10
-            w-1/3
-            -skew-x-12
-            bg-white/[0.18]
-            blur-xl
-          "
-        />
-
-        {/* Gradient */}
-
-        <div
-          className="
             absolute
             inset-0
             z-20
             bg-gradient-to-t
-            from-[#071827]
+            from-[#071827]/95
             via-[#071827]/25
             to-transparent
-            opacity-90
-          "
-        />
-
-        {/* Animated color */}
-
-        <motion.div
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  opacity: [
-                    0.15,
-                    0.4,
-                    0.15,
-                  ],
-                }
-          }
-          transition={{
-            duration: 3.2,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: index * 0.2,
-          }}
-          className="
-            pointer-events-none
-            absolute
-            inset-0
-            z-20
-            bg-gradient-to-br
-            from-[#5DDBFF]/20
-            via-transparent
-            to-[#00A878]/10
-            mix-blend-screen
           "
         />
 
         {/* Number */}
-
         <span
           className="
             absolute
@@ -622,55 +722,35 @@ function BusinessCard({
             text-[10px]
             font-semibold
             tracking-[0.2em]
-            text-white/80
+            text-white/85
           "
         >
           {item.number}
         </span>
 
-        {/* Floating icon */}
-
+        {/* Arrow */}
         <motion.div
           animate={
             reduceMotion
               ? undefined
               : {
-                  y: [0, -7, 0],
-                  rotate: [
-                    0,
-                    3,
-                    -2,
-                    0,
-                  ],
-                  scale: [
-                    1,
-                    1.05,
-                    1,
-                  ],
+                  y: [0, -4, 0],
                 }
           }
           transition={{
-            duration: 4.5,
+            duration: 4,
             repeat: Infinity,
             ease: "easeInOut",
             delay: index * 0.18,
           }}
-          whileHover={
-            reduceMotion
-              ? undefined
-              : {
-                  scale: 1.18,
-                  rotate: 45,
-                }
-          }
           className="
             absolute
             right-6
             top-6
             z-30
             flex
-            h-11
-            w-11
+            h-10
+            w-10
             items-center
             justify-center
             rounded-full
@@ -678,33 +758,15 @@ function BusinessCard({
             border-white/20
             bg-white/10
             text-white
-            backdrop-blur-md
-            shadow-[0_0_35px_rgba(0,169,224,0.22)]
+            backdrop-blur-sm
+            will-change-transform
           "
         >
           <ArrowIcon />
         </motion.div>
 
         {/* Category */}
-
-        <motion.div
-          initial={{
-            opacity: 0,
-            y: 12,
-          }}
-          whileInView={{
-            opacity: 1,
-            y: 0,
-          }}
-          viewport={{
-            once: true,
-          }}
-          transition={{
-            duration: 0.55,
-            delay:
-              0.3 + index * 0.06,
-            ease: EASE,
-          }}
+        <div
           className="
             absolute
             bottom-6
@@ -724,67 +786,24 @@ function BusinessCard({
           >
             {item.eyebrow}
           </span>
-        </motion.div>
+        </div>
       </div>
 
-      {/* ---------------------------------------------------------------------
-          CONTENT
-      --------------------------------------------------------------------- */}
+      {/* ======================================================================
+          CARD CONTENT
+      ====================================================================== */}
 
-      <div className="relative z-10 p-7 md:p-8">
+      <div
+        className="
+          relative
+          z-10
+          p-6
+          sm:p-7
+          md:p-8
+        "
+      >
         {/* Title */}
-
         <motion.h3
-          initial={{
-            opacity: 0,
-            y: 14,
-          }}
-          whileInView={{
-            opacity: 1,
-            y: 0,
-          }}
-          viewport={{
-            once: true,
-          }}
-          transition={{
-            duration: 0.65,
-            delay:
-              0.18 + index * 0.06,
-            ease: EASE,
-          }}
-          animate={
-            reduceMotion
-              ? undefined
-              : {
-                  x: active ? 2 : 0,
-                }
-          }
-          whileHover={
-            reduceMotion
-              ? undefined
-              : {
-                  x: 5,
-                }
-          }
-          className="
-            relative
-            max-w-[390px]
-            font-display
-            text-3xl
-            font-semibold
-            leading-[0.98]
-            tracking-[-0.045em]
-            text-[#071827]
-            dark:text-white
-            md:text-[2.15rem]
-          "
-        >
-          {item.title}
-        </motion.h3>
-
-        {/* Description */}
-
-        <motion.p
           initial={{
             opacity: 0,
             y: 12,
@@ -797,9 +816,60 @@ function BusinessCard({
             once: true,
           }}
           transition={{
-            duration: 0.65,
+            duration: 0.55,
             delay:
-              0.25 + index * 0.06,
+              0.12 +
+              index * 0.045,
+            ease: EASE,
+          }}
+          animate={
+            reduceMotion
+              ? undefined
+              : {
+                  x: active ? 1.5 : 0,
+                }
+          }
+          whileHover={
+            reduceMotion ||
+            !enablePointer
+              ? undefined
+              : {
+                  x: 3,
+                }
+          }
+          className="
+            max-w-[410px]
+            font-display
+            text-2xl
+            font-semibold
+            leading-[0.98]
+            tracking-[-0.045em]
+            text-[#071827]
+            dark:text-white
+            md:text-[2.15rem]
+          "
+        >
+          {item.title}
+        </motion.h3>
+
+        {/* Description */}
+        <motion.p
+          initial={{
+            opacity: 0,
+            y: 10,
+          }}
+          whileInView={{
+            opacity: 1,
+            y: 0,
+          }}
+          viewport={{
+            once: true,
+          }}
+          transition={{
+            duration: 0.55,
+            delay:
+              0.18 +
+              index * 0.045,
             ease: EASE,
           }}
           animate={
@@ -810,12 +880,11 @@ function BusinessCard({
                 }
           }
           className="
-            relative
-            mt-5
-            max-w-[430px]
-            text-sm
-            leading-[1.8]
-            text-[#526477]
+            mt-4
+            max-w-[450px]
+            text-[14px]
+            leading-[1.78]
+            text-[#4B6275]
             dark:text-[#A8BAC8]
           "
         >
@@ -823,16 +892,23 @@ function BusinessCard({
         </motion.p>
 
         {/* Tags */}
-
-        <div className="relative mt-7 flex flex-wrap gap-2">
+        <div
+          className="
+            relative
+            mt-6
+            flex
+            flex-wrap
+            gap-2
+          "
+        >
           {item.tags.map(
             (tag, tagIndex) => (
               <motion.span
                 key={tag}
                 initial={{
                   opacity: 0,
-                  y: 10,
-                  scale: 0.94,
+                  y: 8,
+                  scale: 0.96,
                 }}
                 whileInView={{
                   opacity: 1,
@@ -843,19 +919,20 @@ function BusinessCard({
                   once: true,
                 }}
                 whileHover={
-                  reduceMotion
+                  reduceMotion ||
+                  !enablePointer
                     ? undefined
                     : {
-                        y: -4,
-                        scale: 1.06,
+                        y: -2,
+                        scale: 1.04,
                       }
                 }
                 transition={{
-                  duration: 0.42,
+                  duration: 0.35,
                   delay:
-                    0.32 +
-                    index * 0.06 +
-                    tagIndex * 0.045,
+                    0.24 +
+                    index * 0.04 +
+                    tagIndex * 0.035,
                   ease: EASE,
                 }}
                 className="
@@ -868,11 +945,11 @@ function BusinessCard({
                   font-medium
                   uppercase
                   tracking-[0.15em]
-                  text-[#637587]
-                  transition-all
+                  text-[#5C7182]
+                  transition-colors
                   duration-300
                   group-hover:border-[#00A9E0]/25
-                  group-hover:text-[#0089BA]
+                  group-hover:text-[#007BA8]
                   dark:border-white/[0.08]
                   dark:text-[#8198A8]
                   dark:group-hover:border-[#5DDBFF]/25
@@ -886,11 +963,10 @@ function BusinessCard({
         </div>
 
         {/* Progress */}
-
         <div
           className="
             relative
-            mt-8
+            mt-7
             h-[2px]
             w-full
             overflow-hidden
@@ -908,19 +984,13 @@ function BusinessCard({
             }}
             viewport={{
               once: true,
-              amount: 0.5,
+              amount: 0.4,
             }}
-            whileHover={
-              reduceMotion
-                ? undefined
-                : {
-                    scaleY: 2,
-                  }
-            }
             transition={{
-              duration: 1,
+              duration: 0.8,
               delay:
-                0.25 + index * 0.07,
+                0.2 +
+                index * 0.055,
               ease: EASE,
             }}
             className="
@@ -932,27 +1002,29 @@ function BusinessCard({
               from-[#0066B3]
               via-[#00A9E0]
               to-[#00A878]
+              will-change-transform
             "
           />
         </div>
 
-        {/* Hover indicator */}
-
+        {/* Explore */}
         <motion.div
           initial={{
             opacity: 0,
-            x: -8,
+            x: -5,
           }}
-          whileHover={
-            reduceMotion
-              ? undefined
-              : {
-                  opacity: 1,
-                  x: 0,
-                }
-          }
+          whileInView={{
+            opacity: 0.9,
+            x: 0,
+          }}
+          viewport={{
+            once: true,
+          }}
           transition={{
-            duration: 0.35,
+            duration: 0.4,
+            delay:
+              0.28 +
+              index * 0.045,
             ease: EASE,
           }}
           className="
@@ -964,7 +1036,7 @@ function BusinessCard({
             font-semibold
             uppercase
             tracking-[0.22em]
-            text-[#0089BA]
+            text-[#007CA8]
             dark:text-[#8BEAFF]
           "
         >
@@ -973,13 +1045,18 @@ function BusinessCard({
           </span>
 
           <motion.span
-            animate={{
-              x: [0, 4, 0],
-            }}
+            animate={
+              reduceMotion
+                ? undefined
+                : {
+                    x: [0, 3, 0],
+                  }
+            }
             transition={{
-              duration: 1.2,
+              duration: 1.5,
               repeat: Infinity,
               ease: "easeInOut",
+              repeatDelay: 1.5,
             }}
           >
             →
@@ -990,104 +1067,110 @@ function BusinessCard({
   );
 }
 
-/* =========================================================================
-   MAGNETIC CTA + SMOOTH SCROLL
-=========================================================================== */
+/* ============================================================================
+   MAGNETIC CTA
+============================================================================ */
 
 function MagneticCTA({
   reduceMotion,
+  enablePointer,
 }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
   const springX = useSpring(x, {
-    stiffness: 300,
-    damping: 22,
-    mass: 0.22,
+    stiffness: 270,
+    damping: 24,
+    mass: 0.2,
   });
 
   const springY = useSpring(y, {
-    stiffness: 300,
-    damping: 22,
-    mass: 0.22,
+    stiffness: 270,
+    damping: 24,
+    mass: 0.2,
   });
 
-  const handleMove = (event) => {
-    if (reduceMotion) return;
+  const handleMove = useCallback(
+    (event) => {
+      if (
+        reduceMotion ||
+        !enablePointer
+      ) {
+        return;
+      }
 
-    const rect =
-      event.currentTarget.getBoundingClientRect();
+      const rect =
+        event.currentTarget.getBoundingClientRect();
 
-    x.set(
-      (event.clientX -
-        (rect.left +
-          rect.width / 2)) *
-        0.15
-    );
-
-    y.set(
-      (event.clientY -
-        (rect.top +
-          rect.height / 2)) *
-        0.15
-    );
-  };
-
-  const reset = () => {
-    x.set(0);
-    y.set(0);
-  };
-
-  const handleClick = (event) => {
-    event.preventDefault();
-
-    const contact =
-      document.getElementById(
-        "contact"
+      x.set(
+        (event.clientX -
+          (rect.left +
+            rect.width / 2)) *
+          0.1
       );
 
-    if (!contact) {
-      /*
-       * If the contact section does not
-       * exist on the current page, keep
-       * the hash navigation behavior.
-       */
+      y.set(
+        (event.clientY -
+          (rect.top +
+            rect.height / 2)) *
+          0.1
+      );
+    },
+    [
+      reduceMotion,
+      enablePointer,
+      x,
+      y,
+    ]
+  );
 
-      window.history.pushState(
+  const reset = useCallback(() => {
+    x.set(0);
+    y.set(0);
+  }, [x, y]);
+
+  const handleClick = useCallback(
+    (event) => {
+      event.preventDefault();
+
+      const contact =
+        document.getElementById(
+          "contact"
+        );
+
+      if (!contact) {
+        window.history.replaceState(
+          null,
+          "",
+          "#contact"
+        );
+        return;
+      }
+
+      const navbarOffset = 105;
+
+      const targetPosition =
+        contact.getBoundingClientRect()
+          .top +
+        window.scrollY -
+        navbarOffset;
+
+      window.scrollTo({
+        top: Math.max(
+          0,
+          targetPosition
+        ),
+        behavior: "smooth",
+      });
+
+      window.history.replaceState(
         null,
         "",
         "#contact"
       );
-
-      return;
-    }
-
-    const navbarOffset = 105;
-
-    const targetPosition =
-      contact.getBoundingClientRect()
-        .top +
-      window.scrollY -
-      navbarOffset;
-
-    window.scrollTo({
-      top: Math.max(
-        0,
-        targetPosition
-      ),
-      behavior: "smooth",
-    });
-
-    /*
-     * Update the URL without jumping.
-     */
-
-    window.history.replaceState(
-      null,
-      "",
-      "#contact"
-    );
-  };
+    },
+    []
+  );
 
   return (
     <motion.a
@@ -1097,20 +1180,29 @@ function MagneticCTA({
         y: springY,
       }}
       onClick={handleClick}
-      onMouseMove={handleMove}
-      onMouseLeave={reset}
+      onPointerMove={
+        enablePointer
+          ? handleMove
+          : undefined
+      }
+      onPointerLeave={
+        enablePointer
+          ? reset
+          : undefined
+      }
       whileHover={
-        reduceMotion
+        reduceMotion ||
+        !enablePointer
           ? undefined
           : {
-              scale: 1.04,
+              scale: 1.03,
             }
       }
       whileTap={
         reduceMotion
           ? undefined
           : {
-              scale: 0.96,
+              scale: 0.97,
             }
       }
       className="
@@ -1122,38 +1214,23 @@ function MagneticCTA({
         font-semibold
         uppercase
         tracking-[0.22em]
-        text-[#0089BA]
+        text-[#007CA8]
         dark:text-[#8BEAFF]
+        will-change-transform
       "
     >
       Talk to our team
 
       <motion.span
         whileHover={
-          reduceMotion
+          reduceMotion ||
+          !enablePointer
             ? undefined
             : {
-                rotate: -45,
-                x: 4,
-                scale: 1.08,
+                rotate: -35,
+                x: 3,
               }
         }
-        animate={
-          reduceMotion
-            ? undefined
-            : {
-                rotate: [
-                  0,
-                  -3,
-                  0,
-                ],
-              }
-        }
-        transition={{
-          duration: 2.5,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
         className="
           flex
           h-10
@@ -1163,11 +1240,10 @@ function MagneticCTA({
           rounded-full
           border
           border-[#00A9E0]/20
-          transition-all
+          transition-colors
           duration-300
           group-hover:border-[#00A9E0]/50
           group-hover:bg-[#00A9E0]/[0.08]
-          group-hover:shadow-[0_0_25px_rgba(0,169,224,0.18)]
           dark:border-[#5DDBFF]/20
           dark:group-hover:border-[#5DDBFF]/40
         "
@@ -1178,9 +1254,9 @@ function MagneticCTA({
   );
 }
 
-/* =========================================================================
+/* ============================================================================
    MAIN SECTION
-=========================================================================== */
+============================================================================ */
 
 export default function BusinessSolutionsSection() {
   const sectionRef = useRef(null);
@@ -1188,56 +1264,57 @@ export default function BusinessSolutionsSection() {
   const reduceMotion =
     useReducedMotion();
 
-  const { scrollYProgress } =
-    useScroll({
-      target: sectionRef,
-      offset: [
-        "start end",
-        "end start",
-      ],
-    });
+  const enablePointer =
+    useHasFinePointer();
 
-  /* -----------------------------------------------------------------------
-     PARALLAX
-  ----------------------------------------------------------------------- */
+  const {
+    scrollYProgress,
+  } = useScroll({
+    target: sectionRef,
+    offset: [
+      "start end",
+      "end start",
+    ],
+  });
+
+  /* ==========================================================================
+     BACKGROUND PARALLAX
+  ========================================================================== */
 
   const backgroundX =
     useTransform(
       scrollYProgress,
       [0, 1],
-      ["-8%", "8%"]
+      ["-3%", "3%"]
     );
 
   const backgroundY =
     useTransform(
       scrollYProgress,
       [0, 1],
-      ["8%", "-8%"]
+      ["4%", "-4%"]
     );
 
   const backgroundScale =
     useTransform(
       scrollYProgress,
       [0, 0.5, 1],
-      [0.85, 1.08, 0.9]
+      [0.95, 1.035, 0.97]
     );
 
   const headingY =
     useTransform(
       scrollYProgress,
       [0, 1],
-      [45, -45]
+      [20, -20]
     );
 
-  /* -----------------------------------------------------------------------
-     ORB PARALLAX
-  ----------------------------------------------------------------------- */
-
-  const orbX = useTransform(
-    scrollYProgress,
-    [0, 1],
-    ["18%", "-18%"]
-  );
+  const orbX =
+    useTransform(
+      scrollYProgress,
+      [0, 1],
+      ["7%", "-7%"]
+    );
 
   return (
     <section
@@ -1249,20 +1326,21 @@ export default function BusinessSolutionsSection() {
         overflow-hidden
         scroll-mt-[110px]
         bg-[#F5F7FA]
-        py-24
+        py-20
         text-[#071827]
         dark:bg-[#07131F]
         dark:text-white
+        sm:py-24
         md:py-32
-        lg:py-40
+        lg:py-36
       "
     >
-      {/* ===================================================================
+      {/* ======================================================================
           BACKGROUND
-      ==================================================================== */}
+      ====================================================================== */}
 
       <motion.div
-        aria-hidden
+        aria-hidden="true"
         style={{
           x: backgroundX,
           y: backgroundY,
@@ -1272,15 +1350,16 @@ export default function BusinessSolutionsSection() {
           pointer-events-none
           absolute
           left-[58%]
-          top-[8%]
+          top-[10%]
           z-0
-          h-[560px]
-          w-[560px]
+          h-[500px]
+          w-[500px]
           -translate-x-1/2
           rounded-full
-          bg-[#00A9E0]/[0.055]
-          blur-[125px]
-          dark:bg-[#00D9FF]/[0.035]
+          bg-[#00A9E0]/[0.04]
+          blur-[100px]
+          will-change-transform
+          dark:bg-[#00D9FF]/[0.028]
         "
       />
 
@@ -1289,37 +1368,46 @@ export default function BusinessSolutionsSection() {
           x: orbX,
         }}
         className="
-          bottom-[20%]
+          bottom-[18%]
           right-[-10%]
-          h-[430px]
-          w-[430px]
-          bg-[#00A878]/[0.035]
-          dark:bg-[#00A878]/[0.02]
+          h-[360px]
+          w-[360px]
+          bg-[#00A878]/[0.025]
+          dark:bg-[#00A878]/[0.018]
         "
       />
 
+      {/* Grid */}
       <div
-        aria-hidden
+        aria-hidden="true"
         className="
           pointer-events-none
           absolute
           inset-0
           z-0
-          opacity-[0.022]
+          opacity-[0.018]
           [background-image:linear-gradient(#0089BA_1px,transparent_1px),linear-gradient(90deg,#0089BA_1px,transparent_1px)]
-          [background-size:48px_48px]
-          dark:opacity-[0.03]
+          [background-size:64px_64px]
+          dark:opacity-[0.026]
         "
       />
 
-      {/* ===================================================================
+      {/* ======================================================================
           CONTENT
-      ==================================================================== */}
+      ====================================================================== */}
 
-      <div className="container-x relative z-10 px-5 md:px-0">
-        {/* =================================================================
+      <div
+        className="
+          container-x
+          relative
+          z-10
+          px-5
+          md:px-0
+        "
+      >
+        {/* ====================================================================
             HEADER
-        ================================================================== */}
+        ==================================================================== */}
 
         <motion.div
           style={{
@@ -1332,7 +1420,7 @@ export default function BusinessSolutionsSection() {
               ? false
               : {
                   opacity: 0,
-                  y: 40,
+                  y: 28,
                 }
           }
           whileInView={
@@ -1348,10 +1436,11 @@ export default function BusinessSolutionsSection() {
             amount: 0.25,
           }}
           transition={{
-            duration: 0.85,
+            duration: 0.75,
             ease: EASE,
           }}
         >
+          {/* Label */}
           <div className="flex items-center gap-3">
             <motion.span
               initial={{
@@ -1364,7 +1453,7 @@ export default function BusinessSolutionsSection() {
                 once: true,
               }}
               transition={{
-                duration: 0.7,
+                duration: 0.55,
                 ease: EASE,
               }}
               className="
@@ -1380,7 +1469,7 @@ export default function BusinessSolutionsSection() {
                 font-semibold
                 uppercase
                 tracking-[0.28em]
-                text-[#0089BA]
+                text-[#007CA8]
                 dark:text-[#5DDBFF]
                 md:text-[10px]
               "
@@ -1389,12 +1478,13 @@ export default function BusinessSolutionsSection() {
             </span>
           </div>
 
+          {/* Heading + supporting copy */}
           <div
             className="
               mt-5
               flex
               flex-col
-              gap-8
+              gap-7
               lg:flex-row
               lg:items-end
               lg:justify-between
@@ -1408,8 +1498,10 @@ export default function BusinessSolutionsSection() {
                 font-semibold
                 leading-[0.9]
                 tracking-[-0.065em]
+                text-[#071827]
+                dark:text-white
                 md:text-6xl
-                lg:text-[7rem]
+                lg:text-[6.5rem]
               "
             >
               <SplitWords text="Built for" />
@@ -1417,7 +1509,7 @@ export default function BusinessSolutionsSection() {
               <span
                 className="
                   block
-                  text-[#0089BA]
+                  text-[#007CA8]
                   dark:text-[#5DDBFF]
                 "
               >
@@ -1430,7 +1522,7 @@ export default function BusinessSolutionsSection() {
             <motion.p
               initial={{
                 opacity: 0,
-                x: 30,
+                x: 20,
               }}
               whileInView={{
                 opacity: 1,
@@ -1438,17 +1530,18 @@ export default function BusinessSolutionsSection() {
               }}
               viewport={{
                 once: true,
+                amount: 0.25,
               }}
               transition={{
-                duration: 0.75,
-                delay: 0.2,
+                duration: 0.65,
+                delay: 0.12,
                 ease: EASE,
               }}
               className="
                 max-w-xl
-                text-sm
-                leading-[1.8]
-                text-[#526477]
+                text-[15px]
+                leading-[1.75]
+                text-[#4B6275]
                 dark:text-[#A8BAC8]
                 md:text-base
                 lg:pb-2
@@ -1462,15 +1555,16 @@ export default function BusinessSolutionsSection() {
           </div>
         </motion.div>
 
-        {/* =================================================================
-            CARDS
-        ================================================================== */}
+        {/* ====================================================================
+            BUSINESS CARDS
+        ==================================================================== */}
 
         <div
           className="
-            mt-16
+            mt-14
             grid
             gap-5
+            sm:mt-16
             md:mt-20
             md:grid-cols-2
             xl:grid-cols-3
@@ -1485,19 +1579,22 @@ export default function BusinessSolutionsSection() {
                 reduceMotion={
                   reduceMotion
                 }
+                enablePointer={
+                  enablePointer
+                }
               />
             )
           )}
         </div>
 
-        {/* =================================================================
+        {/* ====================================================================
             CTA
-        ================================================================== */}
+        ==================================================================== */}
 
         <motion.div
           initial={{
             opacity: 0,
-            y: 30,
+            y: 22,
           }}
           whileInView={{
             opacity: 1,
@@ -1508,18 +1605,19 @@ export default function BusinessSolutionsSection() {
             amount: 0.3,
           }}
           transition={{
-            duration: 0.8,
+            duration: 0.7,
             ease: EASE,
           }}
           className="
-            mt-14
+            mt-12
             flex
             flex-col
-            gap-6
+            gap-5
             border-t
             border-black/[0.07]
-            pt-7
+            pt-6
             dark:border-white/[0.07]
+            sm:mt-14
             md:flex-row
             md:items-center
             md:justify-between
@@ -1532,7 +1630,7 @@ export default function BusinessSolutionsSection() {
                 font-semibold
                 uppercase
                 tracking-[0.28em]
-                text-[#0089BA]
+                text-[#007CA8]
                 dark:text-[#5DDBFF]
               "
             >
@@ -1543,9 +1641,9 @@ export default function BusinessSolutionsSection() {
               className="
                 mt-2
                 max-w-2xl
-                text-sm
-                leading-relaxed
-                text-[#637587]
+                text-[14px]
+                leading-[1.75]
+                text-[#5B7082]
                 dark:text-[#8198A8]
               "
             >
@@ -1557,6 +1655,9 @@ export default function BusinessSolutionsSection() {
 
           <MagneticCTA
             reduceMotion={reduceMotion}
+            enablePointer={
+              enablePointer
+            }
           />
         </motion.div>
       </div>
