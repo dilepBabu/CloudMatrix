@@ -27,81 +27,144 @@ html {
   position: relative;
   width: 100%;
   min-width: 0;
+
   scroll-behavior: auto !important;
+
   overflow-x: clip;
+
   background: #ffffff;
+
   overscroll-behavior-x: none;
 }
 
 body {
   position: relative;
+
   width: 100%;
   min-width: 0;
+
   margin: 0;
   padding: 0;
 
   overflow-x: clip;
+
   overscroll-behavior-x: none;
 
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /*
-   * Keep this because your site contains a lot of animated
-   * graphics and text. It avoids expensive typographic
-   * rendering while scrolling.
-   */
   text-rendering: optimizeSpeed;
 }
 
 #root {
   position: relative;
+
   width: 100%;
   min-width: 0;
   min-height: 100vh;
+
   overflow-x: clip;
+}
+
+/* =========================================================================
+   GLOBAL LAYOUT SAFETY
+=========================================================================== */
+
+main,
+section,
+article,
+header,
+footer,
+nav,
+div {
+  min-width: 0;
 }
 
 main,
 section {
   width: 100%;
   max-width: 100%;
-  min-width: 0;
 }
 
 /* =========================================================================
    CURSOR
 =========================================================================== */
 
+/*
+ * IMPORTANT
+ *
+ * The custom cursor is rendered by React/Framer Motion.
+ *
+ * We only hide the browser cursor after the custom cursor has
+ * successfully activated.
+ */
+
 @media (pointer: fine) {
   html.signal-cursor-active,
   html.signal-cursor-active body,
   html.signal-cursor-active a,
   html.signal-cursor-active button,
+  html.signal-cursor-active [role="button"],
+  html.signal-cursor-active summary {
+    cursor: none !important;
+  }
+
+  /*
+   * Preserve normal text editing.
+   */
+
   html.signal-cursor-active input,
   html.signal-cursor-active textarea,
-  html.signal-cursor-active select {
-    cursor: none !important;
+  html.signal-cursor-active select,
+  html.signal-cursor-active [contenteditable="true"] {
+    cursor: text !important;
   }
 }
 
-@media (hover: none), (pointer: coarse) {
+/*
+ * Never hide the browser cursor on touch devices.
+ */
+
+@media (pointer: coarse), (hover: none) {
   html.signal-cursor-active,
   html.signal-cursor-active body,
   html.signal-cursor-active a,
   html.signal-cursor-active button,
-  html.signal-cursor-active input,
-  html.signal-cursor-active textarea,
-  html.signal-cursor-active select {
+  html.signal-cursor-active [role="button"] {
     cursor: auto !important;
   }
 }
 
+/*
+ * Custom cursor visual layers.
+ */
+
 .signal-cursor-layer {
-  pointer-events: none;
-  transform: translate3d(0, 0, 0);
+  pointer-events: none !important;
+
+  position: fixed;
+
+  user-select: none;
+  -webkit-user-select: none;
+
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+
+  transform-style: flat;
+
+  contain: layout style paint;
+
+  isolation: isolate;
+}
+
+/*
+ * Protect cursor from accidental opacity/compositing
+ * changes from surrounding sections.
+ */
+
+.signal-cursor-layer,
+.signal-cursor-layer * {
+  pointer-events: none !important;
 }
 
 /* =========================================================================
@@ -111,8 +174,11 @@ section {
 @layer base {
   html {
     position: relative;
+
     scroll-behavior: auto !important;
+
     overflow-x: clip;
+
     background: #ffffff;
   }
 
@@ -120,11 +186,15 @@ section {
     @apply bg-white text-slate-900 font-body antialiased;
 
     position: relative;
+
     width: 100%;
     min-width: 0;
+
     margin: 0;
     padding: 0;
+
     overflow-x: clip;
+
     overscroll-behavior-x: none;
   }
 
@@ -145,6 +215,7 @@ section {
   button,
   a {
     -webkit-tap-highlight-color: transparent;
+
     touch-action: manipulation;
   }
 }
@@ -160,18 +231,21 @@ section {
 
 .gpu-accelerated {
   transform: translate3d(0, 0, 0);
+
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
 .animate-transform {
   transform: translate3d(0, 0, 0);
+
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
 
 .decorative-layer {
   pointer-events: none;
+
   user-select: none;
   -webkit-user-select: none;
 }
@@ -183,8 +257,8 @@ section {
 
 /*
  * Do not apply will-change globally.
- * It can create too many compositor layers.
  */
+
 [data-scroll-reveal="true"],
 .cloud-visual,
 .hero-tech-grid,
@@ -218,6 +292,7 @@ section {
 
     -webkit-background-clip: text;
     background-clip: text;
+
     color: transparent;
   }
 
@@ -235,6 +310,7 @@ section {
 
     -webkit-background-clip: text;
     background-clip: text;
+
     color: transparent;
 
     animation:
@@ -256,6 +332,7 @@ section {
 
 .hero-tech-grid {
   position: absolute;
+
   inset: 0;
 
   background-image:
@@ -322,7 +399,27 @@ section {
 
 @layer components {
   .career-input {
-    @apply w-full rounded-xl border border-[#D5E7EC] bg-[#F9FCFD] px-4 py-3.5 text-sm text-[#173C45] outline-none transition-all duration-300 placeholder:text-[#9AAEB4] focus:border-[#00A8C4] focus:bg-white focus:ring-4 focus:ring-[#00A8C4]/10 dark:border-[#194657] dark:bg-[#071F2C] dark:text-[#E5F9FC] dark:placeholder:text-[#648A96] dark:focus:border-[#27C9DF] dark:focus:bg-[#082432] dark:focus:ring-[#27C9DF]/10;
+    @apply w-full rounded-xl
+      border border-[#D5E7EC]
+      bg-[#F9FCFD]
+      px-4 py-3.5
+      text-sm
+      text-[#173C45]
+      outline-none
+      transition-all
+      duration-300
+      placeholder:text-[#9AAEB4]
+      focus:border-[#00A8C4]
+      focus:bg-white
+      focus:ring-4
+      focus:ring-[#00A8C4]/10
+      dark:border-[#194657]
+      dark:bg-[#071F2C]
+      dark:text-[#E5F9FC]
+      dark:placeholder:text-[#648A96]
+      dark:focus:border-[#27C9DF]
+      dark:focus:bg-[#082432]
+      dark:focus:ring-[#27C9DF]/10;
   }
 }
 
@@ -331,10 +428,6 @@ section {
 
   border: 1px solid rgba(255, 255, 255, 0.1);
 
-  /*
-   * Keep your glass effect on desktop.
-   * Responsive reductions are below.
-   */
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 
@@ -373,9 +466,11 @@ section {
 
 .grain-overlay {
   position: absolute;
+
   inset: 0;
 
   pointer-events: none;
+
   z-index: 0;
 
   opacity: 0.018;
@@ -437,6 +532,7 @@ section {
 
   -webkit-background-clip: text;
   background-clip: text;
+
   -webkit-text-fill-color: transparent;
 
   animation:
@@ -549,11 +645,6 @@ section {
 
 /* =========================================================================
    LIGHTWEIGHT SCROLL REVEAL
-
-   IMPORTANT:
-   These values intentionally match your existing animation.
-
-   No direction is overridden by responsive rules.
 =========================================================================== */
 
 [data-scroll-reveal="true"] {
@@ -600,10 +691,6 @@ section {
   -webkit-backface-visibility: hidden;
 }
 
-/*
- * Only ask the browser to prepare the element while it
- * is actually hidden/revealing.
- */
 [data-scroll-reveal="true"][data-reveal-visible="false"] {
   will-change:
     transform,
@@ -670,8 +757,10 @@ section {
 
 .service-page {
   position: relative;
+
   width: 100%;
   min-width: 0;
+
   overflow-x: clip;
 }
 
@@ -681,6 +770,7 @@ section {
 
 .service-card {
   position: relative;
+
   min-width: 0;
 
   backface-visibility: hidden;
@@ -693,9 +783,11 @@ section {
 
 .service-shine {
   position: absolute;
+
   inset: 0;
 
   pointer-events: none;
+
   overflow: hidden;
 
   transform:
@@ -773,6 +865,61 @@ section {
 }
 
 /* =========================================================================
+   FUTURISTIC IMAGE SHINE
+=========================================================================== */
+
+.service-image-shine {
+  left: -70%;
+
+  transform:
+    translate3d(
+      -140%,
+      0,
+      0
+    )
+    skewX(-22deg);
+
+  opacity: 0;
+}
+
+.group:hover .service-image-shine {
+  opacity: 1;
+
+  animation:
+    serviceImageShine
+    1.15s
+    cubic-bezier(
+      0.16,
+      1,
+      0.3,
+      1
+    )
+    1;
+}
+
+@keyframes serviceImageShine {
+  0% {
+    transform:
+      translate3d(
+        -140%,
+        0,
+        0
+      )
+      skewX(-22deg);
+  }
+
+  100% {
+    transform:
+      translate3d(
+        520%,
+        0,
+        0
+      )
+      skewX(-22deg);
+  }
+}
+
+/* =========================================================================
    TABLET
 =========================================================================== */
 
@@ -802,6 +949,10 @@ section {
   .cloud-glass {
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
+  }
+
+  .service-image-shine {
+    display: none;
   }
 }
 
@@ -844,6 +995,7 @@ section {
 
   .hero-tech-grid {
     background-size: 42px 42px;
+
     animation-duration: 32s;
   }
 
@@ -927,25 +1079,26 @@ section {
 
 /* =========================================================================
    TOUCH DEVICES / IPAD
-
-   Keep native browser scrolling.
-   Don't force extra GPU behavior onto touch layouts.
 =========================================================================== */
 
 @media (hover: none), (pointer: coarse) {
-  /*
-   * Avoid creating unnecessary compositor layers for
-   * static reveal elements on touch devices.
-   */
   [data-scroll-reveal="true"][data-reveal-visible="true"] {
     will-change: auto;
   }
 
-  /*
-   * Pointer hover effects aren't useful on touch devices.
-   */
-  .service-shine {
+  .service-shine,
+  .service-image-shine {
     animation: none !important;
+
+    display: none !important;
+  }
+
+  /*
+   * Don't keep custom cursor active on touch devices.
+   */
+
+  .signal-cursor-layer {
+    display: none !important;
   }
 }
 
@@ -974,13 +1127,25 @@ section {
 
   [data-scroll-reveal="true"] {
     opacity: 1 !important;
+
     transform: none !important;
+
     transition: none !important;
+
     will-change: auto !important;
   }
 
   html {
     scroll-behavior: auto !important;
+  }
+
+  .signal-cursor-layer {
+    display: none !important;
+  }
+
+  html.signal-cursor-active,
+  html.signal-cursor-active body {
+    cursor: auto !important;
   }
 }
 
@@ -995,6 +1160,7 @@ section {
 
   .hero-brand-gradient {
     animation: none;
+
     background-position: 0% 50%;
   }
 
@@ -1010,15 +1176,16 @@ section {
   .hero-shine {
     animation: none;
   }
+
+  .service-image-shine,
+  .service-shine {
+    animation: none !important;
+    display: none !important;
+  }
 }
 
 /* =========================================================================
    ADDITIONAL HERO COMPOSITING HELPERS
-
-   Use data-hero-layer="true" on large animated decorative
-   Motion elements in the Hero component.
-
-   This does NOT change their animation.
 =========================================================================== */
 
 [data-hero-layer="true"] {
@@ -1026,10 +1193,6 @@ section {
   -webkit-backface-visibility: hidden;
 }
 
-/*
- * Only animated layers should use will-change.
- * Avoid putting this class on the complete hero.
- */
 [data-hero-layer="true"].will-change-transform {
   will-change: transform;
 }
@@ -1047,11 +1210,6 @@ section {
    FINAL RESPONSIVE PERFORMANCE
 =========================================================================== */
 
-/*
- * Desktop:
- * Full visual effects remain enabled.
- */
-
 @media (min-width: 1025px) {
   .hero-tech-grid,
   .cloud-visual,
@@ -1059,11 +1217,6 @@ section {
     transform: translate3d(0, 0, 0);
   }
 }
-
-/*
- * Tablet / iPad:
- * Keep the visual design but reduce expensive compositing.
- */
 
 @media (min-width: 769px) and (max-width: 1024px) {
   .service-page .blur-3xl {
@@ -1074,88 +1227,71 @@ section {
     opacity: 0.7;
   }
 }
-/* =========================================================
-   FUTURISTIC IMAGE SHINE
-   Transform-only animation: cheap during scroll.
-========================================================= */
 
-.service-image-shine {
-  left: -70%;
-  transform: translate3d(-140%, 0, 0) skewX(-22deg);
-  opacity: 0;
-}
-
-.group:hover .service-image-shine {
-  opacity: 1;
-  animation: serviceImageShine 1.15s cubic-bezier(0.16, 1, 0.3, 1) 1;
-}
-
-@keyframes serviceImageShine {
-  0% {
-    transform: translate3d(-140%, 0, 0) skewX(-22deg);
-  }
-
-  100% {
-    transform: translate3d(520%, 0, 0) skewX(-22deg);
-  }
-}
-
-/* Desktop Hero shine should remain subtle and transform-only. */
-
-@media (max-width: 1024px) {
-  .service-image-shine {
-    display: none;
-  }
-
-  /* Keep the service image interactive without running a sweep. */
-  .group:active .service-image-shine {
-    display: none;
-  }
-}
-
-/* Touch devices: remove hover-dependent shine and keep the image responsive. */
-@media (hover: none), (pointer: coarse) {
-  .service-image-shine {
-    display: none !important;
-  }
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .service-image-shine {
-    display: none !important;
-  }
-}
 /* =========================================================================
-   PREMIUM ARROW CURSOR
-   ========================================================================= */
+   CUSTOM CURSOR FINAL SAFETY
+=========================================================================== */
+
+/*
+ * Never let cursor helper elements capture clicks.
+ */
+
+.signal-cursor-layer {
+  pointer-events: none !important;
+}
+
+/*
+ * Cursor stays above:
+ *
+ * Navbar       z-50
+ * Drawer       high
+ * Route overlay z-150
+ * Custom cursor z-99999
+ */
+
+.signal-cursor-layer {
+  z-index: 99999;
+}
+
+/*
+ * Browser cursor is hidden only when the React cursor
+ * has enabled itself.
+ */
 
 @media (pointer: fine) {
-  html.signal-cursor-active,
-  html.signal-cursor-active body,
-  html.signal-cursor-active a,
-  html.signal-cursor-active button,
-  html.signal-cursor-active [role="button"],
-  html.signal-cursor-active * {
+  html.signal-cursor-active {
     cursor: none !important;
   }
 
-  /* Keep text editing natural */
+  html.signal-cursor-active body {
+    cursor: none !important;
+  }
+
+  html.signal-cursor-active a,
+  html.signal-cursor-active button,
+  html.signal-cursor-active [role="button"] {
+    cursor: none !important;
+  }
+
   html.signal-cursor-active input,
   html.signal-cursor-active textarea,
+  html.signal-cursor-active select,
   html.signal-cursor-active [contenteditable="true"] {
     cursor: text !important;
   }
 }
 
 /* =========================================================================
-   PREVENT CURSOR ELEMENTS FROM AFFECTING LAYOUT
-   ========================================================================= */
+   MOBILE CURSOR SAFETY
+=========================================================================== */
 
-.signal-cursor-active {
-  cursor: none;
-}
+@media (max-width: 1024px) and (pointer: coarse) {
+  html.signal-cursor-active,
+  html.signal-cursor-active body {
+    cursor: auto !important;
+  }
 
-.signal-cursor-active body {
-  cursor: none;
+  .signal-cursor-layer {
+    display: none !important;
+  }
 }

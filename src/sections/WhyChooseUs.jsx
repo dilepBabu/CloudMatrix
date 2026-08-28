@@ -3,11 +3,13 @@ import {
   motion,
   useReducedMotion,
 } from "framer-motion";
+
 import {
   useCallback,
   useEffect,
   useState,
 } from "react";
+
 import { whyChooseUs } from "../data/content";
 
 /* ============================================================================
@@ -33,11 +35,12 @@ export default function WhyChooseUs() {
 
   const count = items.length;
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] =
+    useState(0);
 
   /* --------------------------------------------------------------------------
-     GO TO SLIDE
-     -------------------------------------------------------------------------- */
+     GO TO
+  -------------------------------------------------------------------------- */
 
   const goTo = useCallback(
     (index) => {
@@ -53,7 +56,7 @@ export default function WhyChooseUs() {
 
   /* --------------------------------------------------------------------------
      NEXT
-     -------------------------------------------------------------------------- */
+  -------------------------------------------------------------------------- */
 
   const next = useCallback(() => {
     if (count <= 1) return;
@@ -65,7 +68,7 @@ export default function WhyChooseUs() {
 
   /* --------------------------------------------------------------------------
      PREVIOUS
-     -------------------------------------------------------------------------- */
+  -------------------------------------------------------------------------- */
 
   const previous = useCallback(() => {
     if (count <= 1) return;
@@ -78,17 +81,10 @@ export default function WhyChooseUs() {
   }, [count]);
 
   /* --------------------------------------------------------------------------
-     ALWAYS RUNNING AUTOPLAY
+     AUTOPLAY
 
-     This does NOT depend on:
-     - hover
-     - click
-     - drag
-     - arrow
-     - dot
-
-     Therefore autoplay continues normally after manual navigation.
-     -------------------------------------------------------------------------- */
+     Keeps running continuously just like your previous version.
+  -------------------------------------------------------------------------- */
 
   useEffect(() => {
     if (reduceMotion) return undefined;
@@ -106,8 +102,8 @@ export default function WhyChooseUs() {
   }, [count, reduceMotion]);
 
   /* --------------------------------------------------------------------------
-     KEYBOARD NAVIGATION
-     -------------------------------------------------------------------------- */
+     KEYBOARD
+  -------------------------------------------------------------------------- */
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -136,8 +132,8 @@ export default function WhyChooseUs() {
   }, [next, previous]);
 
   /* --------------------------------------------------------------------------
-     EMPTY DATA
-     -------------------------------------------------------------------------- */
+     EMPTY
+  -------------------------------------------------------------------------- */
 
   if (!count) {
     return null;
@@ -145,11 +141,13 @@ export default function WhyChooseUs() {
 
   /* --------------------------------------------------------------------------
      REDUCED MOTION
-     -------------------------------------------------------------------------- */
+  -------------------------------------------------------------------------- */
 
   if (reduceMotion) {
     return (
-      <ReducedWhyUs items={items} />
+      <ReducedWhyUs
+        items={items}
+      />
     );
   }
 
@@ -196,7 +194,8 @@ export default function WhyChooseUs() {
           "
         >
           <div className="min-w-0">
-            {/* Eyebrow */}
+            {/* EYEBROW */}
+
             <motion.div
               initial={{
                 opacity: 0,
@@ -245,7 +244,8 @@ export default function WhyChooseUs() {
               </span>
             </motion.div>
 
-            {/* Heading */}
+            {/* HEADING */}
+
             <motion.h2
               initial={{
                 opacity: 0,
@@ -290,7 +290,8 @@ export default function WhyChooseUs() {
             </motion.h2>
           </div>
 
-          {/* Desktop counter */}
+          {/* DESKTOP COUNTER */}
+
           <div
             className="
               hidden
@@ -304,10 +305,9 @@ export default function WhyChooseUs() {
               sm:block
             "
           >
-            {String(activeIndex + 1).padStart(
-              2,
-              "0"
-            )}
+            {String(
+              activeIndex + 1
+            ).padStart(2, "0")}
 
             <span className="mx-2 opacity-30">
               /
@@ -346,7 +346,8 @@ export default function WhyChooseUs() {
             lg:h-[475px]
           "
         >
-          {/* Center alignment guide */}
+          {/* CENTER GUIDE */}
+
           <div
             aria-hidden="true"
             className="
@@ -366,14 +367,16 @@ export default function WhyChooseUs() {
             "
           />
 
-          {/* Cards */}
+          {/* CARDS */}
+
           <CarouselTrack
             items={items}
             activeIndex={activeIndex}
             goTo={goTo}
           />
 
-          {/* Left fade */}
+          {/* LEFT FADE */}
+
           <div
             aria-hidden="true"
             className="
@@ -392,7 +395,8 @@ export default function WhyChooseUs() {
             "
           />
 
-          {/* Right fade */}
+          {/* RIGHT FADE */}
+
           <div
             aria-hidden="true"
             className="
@@ -411,7 +415,8 @@ export default function WhyChooseUs() {
             "
           />
 
-          {/* Arrows */}
+          {/* ARROWS */}
+
           {count > 1 && (
             <>
               <CarouselArrow
@@ -446,7 +451,8 @@ export default function WhyChooseUs() {
             md:w-[86%]
           "
         >
-          {/* Left information */}
+          {/* LEFT INFORMATION */}
+
           <div
             className="
               hidden
@@ -478,7 +484,8 @@ export default function WhyChooseUs() {
             />
           </div>
 
-          {/* Dots */}
+          {/* DOTS */}
+
           <div
             className="
               flex
@@ -487,60 +494,63 @@ export default function WhyChooseUs() {
               sm:gap-2
             "
           >
-            {items.map((item, index) => {
-              const selected =
-                index === activeIndex;
+            {items.map(
+              (item, index) => {
+                const selected =
+                  index === activeIndex;
 
-              return (
-                <button
-                  key={
-                    item.title ??
-                    `dot-${index}`
-                  }
-                  type="button"
-                  aria-label={`Show advantage ${
-                    index + 1
-                  }`}
-                  aria-current={
-                    selected
-                      ? "true"
-                      : undefined
-                  }
-                  onClick={() =>
-                    goTo(index)
-                  }
-                  className="
-                    flex
-                    h-7
-                    items-center
-                    justify-center
-                  "
-                >
-                  <motion.span
-                    animate={{
-                      width: selected
-                        ? 34
-                        : 9,
-                      opacity: selected
-                        ? 1
-                        : 0.28,
-                    }}
-                    transition={{
-                      duration: 0.42,
-                      ease: EASE,
-                    }}
+                return (
+                  <button
+                    key={
+                      item.title ??
+                      `dot-${index}`
+                    }
+                    type="button"
+                    aria-label={`Show advantage ${
+                      index + 1
+                    }`}
+                    aria-current={
+                      selected
+                        ? "true"
+                        : undefined
+                    }
+                    onClick={() =>
+                      goTo(index)
+                    }
                     className="
-                      h-[2px]
-                      rounded-full
-                      bg-[#1BB7DD]
+                      flex
+                      h-7
+                      items-center
+                      justify-center
                     "
-                  />
-                </button>
-              );
-            })}
+                  >
+                    <motion.span
+                      animate={{
+                        width: selected
+                          ? 34
+                          : 9,
+                        opacity: selected
+                          ? 1
+                          : 0.28,
+                      }}
+                      transition={{
+                        duration: 0.42,
+                        ease: EASE,
+                      }}
+                      className="
+                        h-[2px]
+                        rounded-full
+                        bg-[#1BB7DD]
+                      "
+                    />
+                  </button>
+                );
+              }
+            )}
           </div>
 
-          {/* Counter */}
+          {/* COUNTER */}
+
           <div
             className="
               font-mono
@@ -551,13 +561,10 @@ export default function WhyChooseUs() {
               sm:text-[10px]
             "
           >
-            {String(activeIndex + 1).padStart(
-              2,
-              "0"
-            )}
-
+            {String(
+              activeIndex + 1
+            ).padStart(2, "0")}
             {" / "}
-
             {String(count).padStart(
               2,
               "0"
@@ -566,7 +573,8 @@ export default function WhyChooseUs() {
         </div>
       </div>
 
-      {/* Compact bottom spacing */}
+      {/* COMPACT BOTTOM */}
+
       <div className="h-6 sm:h-8 md:h-10" />
     </section>
   );
@@ -585,33 +593,49 @@ function CarouselTrack({
 
   return (
     <div className="absolute inset-0">
-      {items.map((item, index) => {
-        const relative =
-          getRelativeIndex(
-            index,
-            activeIndex,
-            count
-          );
+      {items.map(
+        (item, index) => {
+          const relative =
+            getRelativeIndex(
+              index,
+              activeIndex,
+              count
+            );
 
-        return (
-          <CarouselCard
-            key={
-              item.title ??
-              `card-${index}`
-            }
-            item={item}
-            index={index}
-            relative={relative}
-            goTo={goTo}
-          />
-        );
-      })}
+          return (
+            <CarouselCard
+              key={
+                item.title ??
+                `card-${index}`
+              }
+              item={item}
+              index={index}
+              relative={relative}
+              goTo={goTo}
+            />
+          );
+        }
+      )}
     </div>
   );
 }
 
 /* ============================================================================
    CAROUSEL CARD
+
+   IMPORTANT PERFORMANCE CHANGE
+
+   OLD:
+   - animate left percentage
+   - animate x percentage
+   - animate filter
+   - repeated layout calculations
+
+   NEW:
+   - fixed left: 50%
+   - movement is transform-only
+   - transform stays on GPU
+   - no animated layout property
 ============================================================================ */
 
 function CarouselCard({
@@ -620,60 +644,49 @@ function CarouselCard({
   relative,
   goTo,
 }) {
-  const isActive = relative === 0;
+  const isActive =
+    relative === 0;
+
+  const visible =
+    Math.abs(relative) <= 1;
 
   /*
-   * Stable responsive width.
+   * Keep exactly the same visual card width.
    */
   const cardWidth =
     "min(70vw, 700px)";
 
   /*
-   * Exact positioning.
+   * Side-card horizontal travel.
    *
-   * Active card:
-   * 50%
+   * 19% and 81% positions from the old design
+   * equal approximately ±31vw around center.
    *
-   * Previous:
-   * 19%
-   *
-   * Next:
-   * 81%
+   * This gives the same visual arrangement while
+   * using transform instead of layout animation.
    */
-  const position =
+  const x =
     relative === 0
-      ? "50%"
+      ? "-50%"
       : relative < 0
-      ? "19%"
-      : "81%";
+      ? "calc(-50% - 31vw)"
+      : "calc(-50% + 31vw)";
 
-  /*
-   * Active card is dominant.
-   */
   const scale =
     relative === 0
       ? 1
       : 0.68;
 
-  /*
-   * Side cards are intentionally visible.
-   */
   const opacity =
     relative === 0
       ? 1
       : 0.42;
 
-  /*
-   * Side cards sit slightly lower.
-   */
   const y =
     relative === 0
       ? 0
       : 18;
 
-  /*
-   * Small editorial rotation.
-   */
   const rotate =
     relative === 0
       ? 0
@@ -681,19 +694,14 @@ function CarouselCard({
       ? -2.2
       : 2.2;
 
-  /*
-   * Only adjacent cards remain visible.
-   */
-  const visible =
-    Math.abs(relative) <= 1;
-
   return (
     <motion.div
       className="
         absolute
-        left-0
+        left-1/2
         top-1/2
         origin-center
+        transform-gpu
         will-change-transform
       "
       style={{
@@ -701,26 +709,27 @@ function CarouselCard({
       }}
       initial={false}
       animate={{
-        left: position,
-        x: "-50%",
+        x,
         y: `calc(-50% + ${y}px)`,
         scale,
         opacity: visible
           ? opacity
           : 0,
         rotate,
-        filter: isActive
-          ? "blur(0px)"
-          : "blur(0.25px)",
         zIndex: isActive
           ? 20
           : 10,
       }}
       transition={{
-        duration: TRANSITION_DURATION,
+        duration:
+          TRANSITION_DURATION,
         ease: EASE,
       }}
-      drag={isActive ? "x" : false}
+      drag={
+        isActive
+          ? "x"
+          : false
+      }
       dragConstraints={{
         left: 0,
         right: 0,
@@ -750,9 +759,9 @@ function CarouselCard({
         }
       }}
     >
-      {/* ======================================================================
+      {/* ====================================================================
           CARD
-      ====================================================================== */}
+      ==================================================================== */}
 
       <motion.div
         whileHover={
@@ -772,18 +781,20 @@ function CarouselCard({
           border-[#102A43]/10
           bg-white
           shadow-[0_24px_65px_rgba(18,104,179,0.09)]
-          dark:border-white/[0.08]
-          dark:bg-[#0A263B]
-          dark:shadow-[0_28px_70px_rgba(0,0,0,0.26)]
+          transform-gpu
           sm:h-[305px]
           sm:rounded-[30px]
           md:h-[330px]
           md:rounded-[34px]
           lg:h-[350px]
           lg:rounded-[38px]
+          dark:border-white/[0.08]
+          dark:bg-[#0A263B]
+          dark:shadow-[0_28px_70px_rgba(0,0,0,0.26)]
         "
       >
-        {/* Accent line */}
+        {/* ACCENT */}
+
         <div
           aria-hidden="true"
           className="
@@ -800,7 +811,8 @@ function CarouselCard({
           "
         />
 
-        {/* Top right glow */}
+        {/* TOP RIGHT GLOW */}
+
         <div
           aria-hidden="true"
           className="
@@ -816,7 +828,8 @@ function CarouselCard({
           "
         />
 
-        {/* Bottom left glow */}
+        {/* BOTTOM LEFT GLOW */}
+
         <div
           aria-hidden="true"
           className="
@@ -832,7 +845,8 @@ function CarouselCard({
           "
         />
 
-        {/* Giant number */}
+        {/* GIANT NUMBER */}
+
         <div
           aria-hidden="true"
           className="
@@ -849,15 +863,17 @@ function CarouselCard({
             dark:text-[#48D9F2]/[0.05]
           "
         >
-          {String(index + 1).padStart(
+          {String(
+            index + 1
+          ).padStart(
             2,
             "0"
           )}
         </div>
 
-        {/* ====================================================================
-            CARD CONTENT
-        ==================================================================== */}
+        {/* ==================================================================
+            CONTENT
+        ================================================================== */}
 
         <div
           className="
@@ -873,7 +889,8 @@ function CarouselCard({
             lg:p-8
           "
         >
-          {/* Top */}
+          {/* TOP */}
+
           <div
             className="
               flex
@@ -899,7 +916,9 @@ function CarouselCard({
                   sm:text-xs
                 "
               >
-                {String(index + 1).padStart(
+                {String(
+                  index + 1
+                ).padStart(
                   2,
                   "0"
                 )}
@@ -944,7 +963,8 @@ function CarouselCard({
             </span>
           </div>
 
-          {/* Main content */}
+          {/* MAIN CONTENT */}
+
           <div
             className="
               flex
@@ -1021,7 +1041,8 @@ function CarouselCard({
             </AnimatePresence>
           </div>
 
-          {/* Bottom */}
+          {/* BOTTOM */}
+
           <div
             className="
               flex
@@ -1054,9 +1075,11 @@ function CarouselCard({
                 "
               >
                 Digital systems
+
                 <span className="mx-1.5 opacity-40">
                   /
                 </span>
+
                 Built for growth
               </div>
             </div>
@@ -1088,7 +1111,7 @@ function CarouselCard({
 }
 
 /* ============================================================================
-   IMPORTANT: THIS WAS MISSING IN THE PREVIOUS VERSION
+   RELATIVE INDEX
 ============================================================================ */
 
 function getRelativeIndex(
@@ -1103,29 +1126,20 @@ function getRelativeIndex(
   let difference =
     index - active;
 
-  /*
-   * Make the carousel circular.
-   *
-   * Example:
-   *
-   * active = 0
-   * last item = -1
-   *
-   * instead of:
-   *
-   * last item = +4
-   */
-  if (difference > count / 2) {
+  if (
+    difference >
+    count / 2
+  ) {
     difference -= count;
   }
 
-  if (difference < -count / 2) {
+  if (
+    difference <
+    -count / 2
+  ) {
     difference += count;
   }
 
-  /*
-   * Only the immediate neighbors are needed.
-   */
   if (difference < -1) {
     return -2;
   }
@@ -1138,7 +1152,7 @@ function getRelativeIndex(
 }
 
 /* ============================================================================
-   CAROUSEL ARROW
+   ARROW
 ============================================================================ */
 
 function CarouselArrow({
@@ -1198,6 +1212,7 @@ function CarouselArrow({
           transition-transform
           duration-300
           dark:text-[#48D9F2]
+
           ${
             isPrevious
               ? "group-hover:-translate-x-0.5"
@@ -1205,7 +1220,9 @@ function CarouselArrow({
           }
         `}
       >
-        {isPrevious ? "←" : "→"}
+        {isPrevious
+          ? "←"
+          : "→"}
       </span>
     </button>
   );
@@ -1213,12 +1230,16 @@ function CarouselArrow({
 
 /* ============================================================================
    BACKGROUND
+
+   Static decorative layers.
+   Keeping these static prevents unnecessary animation work.
 ============================================================================ */
 
 function Background() {
   return (
     <>
-      {/* Central ambient glow */}
+      {/* CENTER GLOW */}
+
       <div
         aria-hidden="true"
         className="
@@ -1237,7 +1258,8 @@ function Background() {
         "
       />
 
-      {/* Fine grid */}
+      {/* GRID */}
+
       <div
         aria-hidden="true"
         className="
@@ -1251,7 +1273,8 @@ function Background() {
         "
       />
 
-      {/* Top fade */}
+      {/* TOP FADE */}
+
       <div
         aria-hidden="true"
         className="
@@ -1267,7 +1290,8 @@ function Background() {
         "
       />
 
-      {/* Bottom fade */}
+      {/* BOTTOM FADE */}
+
       <div
         aria-hidden="true"
         className="
@@ -1315,7 +1339,13 @@ function ReducedWhyUs({
           max-w-[1380px]
         "
       >
-        <div className="flex items-center gap-3">
+        <div
+          className="
+            flex
+            items-center
+            gap-3
+          "
+        >
           <span
             className="
               h-px
@@ -1374,64 +1404,68 @@ function ReducedWhyUs({
             md:grid-cols-2
           "
         >
-          {items.map((item, index) => (
-            <article
-              key={
-                item.title ??
-                `reduced-${index}`
-              }
-              className="
-                rounded-[24px]
-                border
-                border-[#D6E7F0]
-                bg-white
-                p-6
-                dark:border-[#163B55]
-                dark:bg-[#0A263B]
-              "
-            >
-              <span
+          {items.map(
+            (item, index) => (
+              <article
+                key={
+                  item.title ??
+                  `reduced-${index}`
+                }
                 className="
-                  font-mono
-                  text-xs
-                  tracking-[0.18em]
-                  text-[#0878B8]
-                  dark:text-[#48D9F2]
+                  rounded-[24px]
+                  border
+                  border-[#D6E7F0]
+                  bg-white
+                  p-6
+                  dark:border-[#163B55]
+                  dark:bg-[#0A263B]
                 "
               >
-                {String(index + 1).padStart(
-                  2,
-                  "0"
-                )}
-              </span>
+                <span
+                  className="
+                    font-mono
+                    text-xs
+                    tracking-[0.18em]
+                    text-[#0878B8]
+                    dark:text-[#48D9F2]
+                  "
+                >
+                  {String(
+                    index + 1
+                  ).padStart(
+                    2,
+                    "0"
+                  )}
+                </span>
 
-              <h3
-                className="
-                  mt-4
-                  font-display
-                  text-3xl
-                  font-semibold
-                  leading-[0.9]
-                  tracking-[-0.05em]
-                "
-              >
-                {item.title}
-              </h3>
+                <h3
+                  className="
+                    mt-4
+                    font-display
+                    text-3xl
+                    font-semibold
+                    leading-[0.9]
+                    tracking-[-0.05em]
+                  "
+                >
+                  {item.title}
+                </h3>
 
-              <p
-                className="
-                  mt-4
-                  max-w-xl
-                  text-sm
-                  leading-[1.8]
-                  text-[#58738A]
-                  dark:text-[#9BC0D4]
-                "
-              >
-                {item.description}
-              </p>
-            </article>
-          ))}
+                <p
+                  className="
+                    mt-4
+                    max-w-xl
+                    text-sm
+                    leading-[1.8]
+                    text-[#58738A]
+                    dark:text-[#9BC0D4]
+                  "
+                >
+                  {item.description}
+                </p>
+              </article>
+            )
+          )}
         </div>
       </div>
     </section>

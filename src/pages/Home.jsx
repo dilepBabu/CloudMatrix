@@ -16,7 +16,7 @@ export default function Home() {
       <Services />
       <Process />
       <WhyChooseUs />
-      <IndustriesSection />
+      
       <Testimonials />
       <FAQ />
       <ContactCTA />

@@ -2247,8 +2247,7 @@ function AnimatedHeroImage({
 export default function Hero() {
   const performance = usePerformanceMode();
 
-  const ref =
-    useRef(null);
+  const ref = useRef(null);
 
   const {
     scrollYProgress,
@@ -2260,19 +2259,21 @@ export default function Hero() {
     ],
   });
 
-  const contentY =
-    useTransform(
-      scrollYProgress,
-      [0, 1],
-      [0, 34]
-    );
+  /* -----------------------------------------------------------------------
+     SCROLL MOTION
+  ----------------------------------------------------------------------- */
 
-  const contentOpacity =
-    useTransform(
-      scrollYProgress,
-      [0, 0.8],
-      [1, 0]
-    );
+  const contentY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    [0, 20]
+  );
+
+  const contentOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.82],
+    [1, 0]
+  );
 
   return (
     <section
@@ -2281,26 +2282,58 @@ export default function Hero() {
       className="
         relative
         flex
-        min-h-screen
         w-full
         items-center
         overflow-hidden
         bg-[#031B2E]
-        pt-28
-        pb-16
+
+        /* ===============================================================
+           MOBILE
+        =============================================================== */
+        min-h-[100svh]
+        pt-24
+        pb-10
+
+        /* ===============================================================
+           SMALL TABLET / IPAD MINI
+        =============================================================== */
+        sm:pt-28
+        sm:pb-10
+
+        /* ===============================================================
+           IPAD / IPAD PRO PORTRAIT
+
+           Keep the iPad Pro composition compact instead of allowing the
+           tall 1024x1366 viewport to create a large empty area.
+        =============================================================== */
+        [@media(min-width:800px)_and_(orientation:portrait)]:!min-h-0
+        [@media(min-width:800px)_and_(orientation:portrait)]:!h-[740px]
+        [@media(min-width:800px)_and_(orientation:portrait)]:!pt-14
+        [@media(min-width:800px)_and_(orientation:portrait)]:!pb-4
+
+        /* ===============================================================
+           LANDSCAPE TABLET / DESKTOP
+        =============================================================== */
+        lg:min-h-[100svh]
+        lg:h-auto
+        lg:pt-24
+        lg:pb-8
+
         [overscroll-behavior-x:none]
       "
     >
-      {/* BACKGROUND */}
+      {/* ============================================================== 
+          BACKGROUND
+      ============================================================== */}
 
       <HeroBackground
-        scrollYProgress={
-          scrollYProgress
-        }
+        scrollYProgress={scrollYProgress}
         performance={performance}
       />
 
-      {/* GRAIN */}
+      {/* ============================================================== 
+          GRAIN
+      ============================================================== */}
 
       <div
         aria-hidden="true"
@@ -2313,19 +2346,23 @@ export default function Hero() {
         "
       />
 
-      {/* MAIN CONTENT */}
+      {/* ============================================================== 
+          MAIN CONTENT
+      ============================================================== */}
 
       <motion.div
         style={{
           y: contentY,
-          opacity:
-            contentOpacity,
+          opacity: contentOpacity,
         }}
         className="
           container-x
           relative
           z-10
+          mx-auto
           w-full
+
+          [@media(min-width:800px)_and_(orientation:portrait)]:-translate-y-7
         "
       >
         <div
@@ -2333,13 +2370,28 @@ export default function Hero() {
             grid
             grid-cols-1
             items-center
-            gap-10
-            lg:grid-cols-[0.88fr_1.12fr]
-            xl:gap-16
+
+            /* MOBILE */
+            gap-8
+
+            /* TABLET / IPAD MINI */
+            sm:gap-9
+
+            /* IPAD / IPAD PRO */
+            min-[800px]:grid-cols-[0.92fr_1.08fr]
+            min-[800px]:gap-6
+
+            /* DESKTOP */
+            lg:grid-cols-[0.9fr_1.1fr]
+            lg:gap-8
+
+            xl:grid-cols-[0.88fr_1.12fr]
+            xl:gap-12
+            2xl:gap-16
           "
         >
           {/* ============================================================
-              LEFT
+              LEFT CONTENT
           ============================================================= */}
 
           <motion.div
@@ -2349,7 +2401,14 @@ export default function Hero() {
             className="
               relative
               z-20
+              w-full
               max-w-3xl
+
+              min-[800px]:max-w-[485px]
+
+              lg:max-w-[520px]
+              xl:max-w-[620px]
+              2xl:max-w-3xl
             "
           >
             {/* EYEBROW */}
@@ -2358,8 +2417,14 @@ export default function Hero() {
               variants={item}
               className="
                 eyebrow
-                mb-5
+                mb-3
                 text-[#F2B632]
+
+                sm:mb-4
+
+                min-[800px]:mb-3
+
+                xl:mb-5
               "
             >
               {company.tagline}
@@ -2368,34 +2433,35 @@ export default function Hero() {
             {/* TITLE */}
 
             <motion.h1
-              variants={
-                headlineContainer
-              }
+              variants={headlineContainer}
               initial="hidden"
               animate="show"
               className="
                 relative
                 font-display
-                text-4xl
                 font-semibold
-                leading-[1.05]
-                tracking-[-0.03em]
+                tracking-[-0.035em]
                 text-white
-                sm:text-5xl
-                md:text-6xl
-                xl:text-7xl
+
+                text-[2.25rem]
+                leading-[1.02]
+
+                sm:text-[2.8rem]
+
+                min-[800px]:text-[2.85rem]
+                min-[800px]:leading-[1.01]
+
+                lg:text-[3.2rem]
+                xl:text-6xl
+                2xl:text-7xl
               "
             >
-              <AnimatedWords
-                text="Turn Your Ideas Into"
-              />
+              <AnimatedWords text="Turn Your Ideas Into" />
 
-              <span className="mt-1 block">
+              <span className="mt-0.5 block sm:mt-1">
                 <AnimatedWords
                   text="Smart AI Solutions."
-                  className="
-                    animated-gradient-text
-                  "
+                  className="animated-gradient-text"
                 />
               </span>
             </motion.h1>
@@ -2405,212 +2471,232 @@ export default function Hero() {
             <motion.p
               variants={item}
               className="
-                mt-6
+                mt-4
                 max-w-xl
-                text-base
-                leading-relaxed
+                text-[14px]
+                leading-6
                 text-slate-300
-                md:text-lg
+
+                sm:mt-5
+                sm:text-base
+                sm:leading-7
+
+                min-[800px]:mt-4
+                min-[800px]:max-w-[480px]
+                min-[800px]:text-[13px]
+                min-[800px]:leading-[1.5]
+
+                lg:text-sm
+
+                xl:mt-5
+                xl:text-base
               "
             >
-              Explore AI solutions,
-              web development,
-              mobile apps, and
-              custom software designed
-              to make work smarter and
-              simpler.
+              Explore AI solutions, web development,
+              mobile apps, and custom software designed
+              to make work smarter and simpler.
             </motion.p>
 
-         
-
-           
-
-            {/* ==========================================================
-                STATS
-            =========================================================== */}
+            {/* STATS */}
 
             <motion.div
               variants={item}
               className="
-                mt-10
+                mt-5
                 grid
                 w-full
                 grid-cols-1
-                gap-3
-                sm:grid-cols-2
-                lg:grid-cols-3
+                gap-2
+
+                sm:mt-7
+                sm:grid-cols-3
+                sm:gap-3
+
+                min-[800px]:mt-5
+                min-[800px]:grid-cols-3
+                min-[800px]:gap-2
+
+                lg:gap-2.5
+
+                xl:mt-7
+                xl:gap-3
               "
             >
-              {heroStats.map(
-                (stat, index) => {
-                  const themes = [
-                    {
-                      border:
-                        "border-[#0066B3]/35",
-                      glow:
-                        "bg-[#0066B3]/10",
-                      number:
-                        "text-[#00A9E0]",
-                      line:
-                        "from-[#0066B3] to-[#00A9E0]",
-                    },
+              {heroStats.map((stat, index) => {
+                const themes = [
+                  {
+                    border: "border-[#0066B3]/35",
+                    glow: "bg-[#0066B3]/10",
+                    number: "text-[#00A9E0]",
+                    line: "from-[#0066B3] to-[#00A9E0]",
+                  },
+                  {
+                    border: "border-[#00A878]/30",
+                    glow: "bg-[#00A878]/10",
+                    number: "text-[#00A878]",
+                    line: "from-[#00A878] to-[#00A9E0]",
+                  },
+                  {
+                    border: "border-[#F2B632]/25",
+                    glow: "bg-[#F2B632]/10",
+                    number: "text-[#F2B632]",
+                    line: "from-[#F47B20] to-[#F2B632]",
+                  },
+                ];
 
-                    {
-                      border:
-                        "border-[#00A878]/30",
-                      glow:
-                        "bg-[#00A878]/10",
-                      number:
-                        "text-[#00A878]",
-                      line:
-                        "from-[#00A878] to-[#00A9E0]",
-                    },
+                const theme = themes[index % themes.length];
 
-                    {
-                      border:
-                        "border-[#F2B632]/25",
-                      glow:
-                        "bg-[#F2B632]/10",
-                      number:
-                        "text-[#F2B632]",
-                      line:
-                        "from-[#F47B20] to-[#F2B632]",
-                    },
-                  ];
+                return (
+                  <motion.div
+                    key={stat.label ?? index}
+                    initial={{
+                      opacity: 0,
+                      y: 10,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                    }}
+                    transition={{
+                      delay: 0.3 + index * 0.08,
+                      duration: 0.45,
+                      ease: SMOOTH_EASE,
+                    }}
+                    whileHover={{
+                      y: -3,
+                    }}
+                    className={`
+                      group
+                      relative
+                      overflow-hidden
+                      rounded-xl
+                      border
+                      ${theme.border}
+                      bg-[#031B2E]/85
+                      px-2.5
+                      py-2.5
+                      backdrop-blur-md
 
-                  const theme =
-                    themes[
-                      index %
-                        themes.length
-                    ];
+                      sm:rounded-2xl
+                      sm:px-3.5
+                      sm:py-3.5
 
-                  return (
-                    <motion.div
-                      key={
-                        stat.label ??
-                        index
-                      }
-                      initial={{
-                        opacity: 0,
-                        y: 10,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        y: 0,
-                      }}
-                      transition={{
-                        delay:
-                          0.3 +
-                          index *
-                            0.08,
-                        duration: 0.45,
-                        ease: SMOOTH_EASE,
-                      }}
-                      whileHover={{
-                        y: -3,
-                      }}
+                      min-[800px]:rounded-xl
+                      min-[800px]:px-2.5
+                      min-[800px]:py-2
+
+                      lg:px-3.5
+                      lg:py-3
+
+                      xl:rounded-2xl
+                      xl:px-4
+                      xl:py-3.5
+
+                      transition-shadow
+                      duration-300
+                      hover:shadow-[0_0_22px_rgba(0,169,224,0.08)]
+                    `}
+                  >
+                    <div
+                      aria-hidden="true"
                       className={`
-                        group
-                        relative
-                        overflow-hidden
-                        rounded-2xl
-                        border
-                        ${theme.border}
-                        bg-[#031B2E]/85
-                        px-5
-                        py-4
-                        backdrop-blur-md
-                        transition-shadow
-                        duration-300
-                        hover:shadow-[0_0_22px_rgba(0,169,224,0.08)]
+                        pointer-events-none
+                        absolute
+                        -right-8
+                        -top-8
+                        h-20
+                        w-20
+                        rounded-full
+                        ${theme.glow}
+                        blur-xl
                       `}
-                    >
+                    />
+
+                    <div
+                      aria-hidden="true"
+                      className="
+                        pointer-events-none
+                        absolute
+                        inset-x-0
+                        top-0
+                        h-px
+                        bg-gradient-to-r
+                        from-transparent
+                        via-white/15
+                        to-transparent
+                      "
+                    />
+
+                    <div className="relative">
                       <div
-                        aria-hidden="true"
                         className={`
-                          pointer-events-none
-                          absolute
-                          -right-8
-                          -top-8
-                          h-20
-                          w-20
-                          rounded-full
-                          ${theme.glow}
-                          blur-xl
+                          text-xl
+                          font-bold
+                          tracking-tight
+
+                          min-[800px]:text-[17px]
+                          lg:text-xl
+                          xl:text-2xl
+
+                          ${theme.number}
                         `}
-                      />
-
-                      <div
-                        aria-hidden="true"
-                        className="
-                          pointer-events-none
-                          absolute
-                          inset-x-0
-                          top-0
-                          h-px
-                          bg-gradient-to-r
-                          from-transparent
-                          via-white/15
-                          to-transparent
-                        "
-                      />
-
-                      <div className="relative">
-                        <div
-                          className={`
-                            text-2xl
-                            font-bold
-                            tracking-tight
-                            ${theme.number}
-                          `}
-                        >
-                          {stat.value ||
-                            stat.stat ||
-                            stat.number ||
-                            ""}
-                        </div>
-
-                        <div
-                          className="
-                            mt-0.5
-                            text-sm
-                            font-semibold
-                            text-white
-                          "
-                        >
-                          {stat.label}
-                        </div>
-
-                        <p
-                          className="
-                            mt-1
-                            truncate
-                            text-xs
-                            leading-5
-                            text-slate-400
-                          "
-                        >
-                          {stat.description ||
-                            "Professional solutions for your business."}
-                        </p>
+                      >
+                        {stat.value ||
+                          stat.stat ||
+                          stat.number ||
+                          ""}
                       </div>
 
                       <div
-                        className={`
-                          absolute
-                          bottom-0
-                          left-5
-                          h-[2px]
-                          w-8
-                          rounded-full
-                          bg-gradient-to-r
-                          ${theme.line}
-                        `}
-                      />
-                    </motion.div>
-                  );
-                }
-              )}
+                        className="
+                          mt-0.5
+                          text-[11px]
+                          font-semibold
+                          leading-5
+                          text-white
+
+                          min-[800px]:text-[9px]
+                          lg:text-[11px]
+                          xl:text-sm
+                        "
+                      >
+                        {stat.label}
+                      </div>
+
+                      <p
+                        className="
+                          mt-0.5
+                          truncate
+                          text-[9px]
+                          leading-4
+                          text-slate-400
+
+                          min-[800px]:text-[7px]
+                          lg:text-[9px]
+                          xl:text-xs
+                          xl:leading-5
+                        "
+                      >
+                        {stat.description ||
+                          "Professional solutions for your business."}
+                      </p>
+                    </div>
+
+                    <div
+                      className={`
+                        absolute
+                        bottom-0
+                        left-3
+                        h-[2px]
+                        w-7
+                        rounded-full
+                        bg-gradient-to-r
+                        ${theme.line}
+                      `}
+                    />
+                  </motion.div>
+                );
+              })}
             </motion.div>
           </motion.div>
 
@@ -2636,28 +2722,36 @@ export default function Hero() {
               relative
               z-10
               flex
-              min-h-[390px]
               w-full
               items-center
               justify-center
-              sm:min-h-[460px]
-              lg:min-h-[560px]
+              mt-0
             "
           >
-            <AnimatedHeroImage
-              scrollYProgress={
-                scrollYProgress
-              }
-              performance={performance}
-            />
+            <div
+              className="
+                w-full
+                max-w-[560px]
+                sm:max-w-[640px]
+                min-[800px]:max-w-[490px]
+                lg:max-w-[560px]
+                xl:max-w-[680px]
+                2xl:max-w-[760px]
+              "
+            >
+              <AnimatedHeroImage
+                scrollYProgress={scrollYProgress}
+                performance={performance}
+              />
+            </div>
           </motion.div>
         </div>
       </motion.div>
 
-      {/* ==============================================================
+      {/* ============================================================== 
           SCROLL INDICATOR
       ============================================================== */}
-
+{/* 
       <motion.div
         initial={{
           opacity: 0,
@@ -2672,23 +2766,27 @@ export default function Hero() {
         className="
           pointer-events-none
           absolute
-          bottom-7
+          bottom-3
           left-1/2
           hidden
           -translate-x-1/2
           flex-col
           items-center
-          gap-2
+          gap-1
           text-white/50
+
           md:flex
+          xl:bottom-5
         "
       >
         <span
           className="
             font-mono
-            text-[10px]
+            text-[9px]
             uppercase
             tracking-[0.3em]
+
+            xl:text-[10px]
           "
         >
           Scroll
@@ -2698,7 +2796,7 @@ export default function Hero() {
           animate={{
             y: [
               0,
-              7,
+              6,
               0,
             ],
           }}
@@ -2708,14 +2806,16 @@ export default function Hero() {
             ease: "easeInOut",
           }}
           className="
-            h-8
+            h-5
             w-[1px]
             bg-gradient-to-b
             from-[#00A9E0]
             to-transparent
+
+            xl:h-8
           "
         />
-      </motion.div>
+      </motion.div> */}
     </section>
   );
 }

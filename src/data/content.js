@@ -265,42 +265,56 @@ export const services = [
 // ============================================================================
 // WHY CHOOSE US
 // ============================================================================
-
 export const whyChooseUs = [
-  {
-    title: "Lifetime Support",
+{
+title: "Result Driven",
 
-    description:
-      "We're committed to your success forever. Enjoy continuous updates, maintenance, and dedicated support throughout your journey with us.",
-  },
 
-  {
-    title: "On Time Delivery",
+description:
+  "We focus on measurable growth, stronger online visibility, increased traffic, and better opportunities that help your business reach the right audience.",
 
-    description:
-      "Rapid project turnaround without compromising quality. We understand the value of time and deliver solutions efficiently to meet your deadlines.",
-  },
 
-  {
-    title: "100% Customised",
+},
 
-    description:
-      "No cookie-cutter templates. Every project is crafted to align perfectly with your specific requirements, vision, and goals.",
-  },
+{
+title: "On Time Delivery",
 
-  {
-    title: "Secure & Reliable",
 
-    description:
-      "Enterprise-grade security and robust infrastructure ensure your data and applications are protected, with reliability built into every layer.",
-  },
+description:
+  "We value your time and deliver every project within the agreed timeline while maintaining high standards of quality, performance, and reliability.",
 
-  {
-    title: "Competitive Pricing",
 
-    description:
-      "Premium quality at affordable rates, with transparent pricing that makes professional technology solutions accessible to businesses of every size.",
-  },
+},
+
+{
+title: "100% Customized",
+
+
+description:
+  "Every solution is carefully designed around your business needs, target audience, brand identity, and long-term goals — never one-size-fits-all.",
+
+
+},
+
+{
+title: "Secure & Reliable",
+
+
+description:
+  "We build secure, stable, and high-performance solutions with reliable technology, thoughtful architecture, and attention to every detail.",
+
+
+},
+
+{
+title: "Competitive Pricing",
+
+
+description:
+  "Get premium technology solutions at competitive pricing with transparent communication, practical strategies, and maximum value for your investment.",
+
+
+},
 ];
 
 // ============================================================================
@@ -372,46 +386,46 @@ export const process = [
   {
     step: "Discover",
 
-    title: "Understand the goal",
+    title: "Understand the Goal",
 
     description:
-      "We start by listening: your business, your customers, and the outcome you actually need.",
+      "We understand your business needs, target audience, and goals to create the right digital solution.",
   },
 
   {
     step: "Design",
 
-    title: "Plan the experience",
+    title: "Plan the Experience",
 
     description:
-      "Wireframes and architecture decisions come before code, so the build has clear direction.",
+      "We plan the UI/UX, features, and website structure for a smooth user experience.",
   },
 
   {
     step: "Build",
 
-    title: "Develop & iterate",
+    title: "Develop & Iterate",
 
     description:
-      "Agile development with regular check-ins, so you see real progress and can steer early.",
+      "We build fast, responsive, and SEO-friendly websites and mobile applications with regular improvements.",
   },
 
   {
     step: "Launch",
 
-    title: "Test & deploy",
+    title: "Test & Deploy",
 
     description:
-      "Thorough testing across devices before going live, so launch day is uneventful in the best way.",
+      "We test performance, responsiveness, security, and functionality before launching your website or app.",
   },
 
   {
     step: "Support",
 
-    title: "Support for life",
+    title: "Support for Life",
 
     description:
-      "Lifetime support means we stay involved after launch, not just at the handover.",
+      "We provide ongoing website maintenance, updates, technical support, and performance optimization.",
   },
 ];
 

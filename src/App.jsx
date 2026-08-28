@@ -4,15 +4,11 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
-import { AnimatePresence } from "framer-motion";
 
-import SmoothScroll from "./components/SmoothScroll";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Preloader from "./components/Preloader";
-import ScrollProgress from "./components/ScrollProgress";
 import CustomCursor from "./components/CustomCursor";
-import RouteTransition from "./components/RouteTransition";
 
 import Home from "./pages/Home";
 import Blog from "./pages/Blog";
@@ -22,6 +18,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import NotFound from "./pages/NotFound";
 import IndustriesSection from "./sections/Industries";
+import Hero from "./sections/Hero";
 
 /* ============================================================
    SCROLL TO TOP
@@ -31,15 +28,21 @@ function ScrollToTop() {
   const location = useLocation();
 
   useEffect(() => {
-    if (!location.hash) {
-      window.scrollTo({
-        top: 0,
-        behavior:
-          "instant" in window
-            ? "instant"
-            : "auto",
-      });
+    /*
+     * Don't interfere with hash navigation.
+     * Example:
+     * /#services
+     * /#why-us
+     */
+    if (location.hash) {
+      return;
     }
+
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: "auto",
+    });
   }, [location.pathname]);
 
   return null;
@@ -51,71 +54,115 @@ function ScrollToTop() {
 
 export default function App() {
   const location = useLocation();
+
+  /*
+   * Keep this state for the preloader.
+   * The custom cursor does NOT depend on it.
+   */
   const [appReady, setAppReady] = useState(false);
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Preloader onComplete={() => setAppReady(true)} />
+      {/* ========================================================
+          PRELOADER
+      ======================================================== */}
 
-      <SmoothScroll enabled={appReady}>
-        <ScrollProgress />
+      <Preloader
+        onComplete={() => {
+          setAppReady(true);
+        }}
+      />
 
-        <CustomCursor />
+      {/* ========================================================
+          NAVBAR
+      ======================================================== */}
 
-        <RouteTransition />
+      <Navbar />
 
-        <ScrollToTop />
+      {/* ========================================================
+          CUSTOM CURSOR
 
-        <Navbar />
+          IMPORTANT:
+          Cursor is always mounted.
+          It internally decides whether it should display.
+      ======================================================== */}
 
-        <main className="flex-1">
-          <AnimatePresence mode="wait">
-            <Routes
-              location={location}
-              key={location.pathname}
-            >
-              <Route
-                path="/"
-                element={<Home />}
-              />
-              <Route path="/industries"
-              element={<IndustriesSection/>}/>
+      <CustomCursor />
 
-              <Route
-                path="/blog"
-                element={<Blog />}
-              />
+      {/* ========================================================
+          SCROLL POSITION
+      ======================================================== */}
 
-              <Route
-                path="/career"
-                element={<Career />}
-              />
+      <ScrollToTop />
 
-              <Route
-                path="/talk-to-expert"
-                element={<TalkToExpert />}
-              />
+      {/* ========================================================
+          PAGE ROUTES
+      ======================================================== */}
 
-              <Route
-                path="/privacy-policy"
-                element={<PrivacyPolicy />}
-              />
+      <main className="flex-1">
+        <Routes
+          location={location}
+          key={location.pathname}
+        >
+          {/* HOME */}
+          <Route
+            path="/"
+            element={<Home />}
+          />
+          <Route
+            path="/hero"
+            element={<Hero />}
+          />
 
-              <Route
-                path="/terms-of-service"
-                element={<TermsOfService />}
-              />
+          {/* INDUSTRIES */}
+          <Route
+            path="/industries"
+            element={<IndustriesSection />}
+          />
 
-              <Route
-                path="*"
-                element={<NotFound />}
-              />
-            </Routes>
-          </AnimatePresence>
-        </main>
+          {/* BLOG */}
+          <Route
+            path="/blog"
+            element={<Blog />}
+          />
 
-        <Footer />
-      </SmoothScroll>
+          {/* CAREER */}
+          <Route
+            path="/career"
+            element={<Career />}
+          />
+
+          {/* TALK TO EXPERT */}
+          <Route
+            path="/talk-to-expert"
+            element={<TalkToExpert />}
+          />
+
+          {/* PRIVACY */}
+          <Route
+            path="/privacy-policy"
+            element={<PrivacyPolicy />}
+          />
+
+          {/* TERMS */}
+          <Route
+            path="/terms-of-service"
+            element={<TermsOfService />}
+          />
+
+          {/* 404 */}
+          <Route
+            path="*"
+            element={<NotFound />}
+          />
+        </Routes>
+      </main>
+
+      {/* ========================================================
+          FOOTER
+      ======================================================== */}
+
+      <Footer />
     </div>
   );
 }

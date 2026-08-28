@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  memo,
-} from "react";
+import { useCallback, useEffect, useRef, useState, memo } from "react";
 
 import {
   AnimatePresence,
@@ -13,11 +7,7 @@ import {
   useSpring,
 } from "framer-motion";
 
-import {
-  Link,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import ThemeToggle from "./ThemeToggle";
 import MagneticButton from "./MagneticButton";
@@ -28,16 +18,35 @@ import logo from "../assets/logo.png";
 ========================================================= */
 
 const navLinks = [
-  { label: "Home", to: "/", hash: "" },
-  { label: "Services", to: "/", hash: "#services" },
-  { label: "Why Us", to: "/", hash: "#why-us" },
-  { label: "Industries", to: "/", hash: "#industries" },
-  { label: "Blog", to: "/blog", hash: "" },
-  { label: "Career", to: "/career", hash: "" },
+  {
+    label: "Home",
+    to: "/hero",
+    hash: "#home",
+  },
+ {
+    label: "Services",
+    to: "/services",
+    hash: "#services",
+  },
+  {
+    label: "Why Us",
+    to: "/whyUs",
+    hash: "#why-us",
+  },
+  {
+    label: "Blog",
+    to: "/blog",
+    hash: "",
+  },
+  {
+    label: "Career",
+    to: "/career",
+    hash: "",
+  },
 ];
 
 /* =========================================================
-   GLOBAL EASING
+   EASING
 ========================================================= */
 
 const ease = [0.16, 1, 0.3, 1];
@@ -72,10 +81,6 @@ const NavItem = memo(function NavItem({
     mass: 0.35,
   });
 
-  /* =======================================================
-     MOUSE MOVE
-  ======================================================= */
-
   const handleMouseMove = useCallback(
     (event) => {
       const el = itemRef.current;
@@ -84,31 +89,19 @@ const NavItem = memo(function NavItem({
 
       const rect = el.getBoundingClientRect();
 
-      const px =
-        event.clientX -
-        (rect.left + rect.width * 0.5);
+      const px = event.clientX - (rect.left + rect.width * 0.5);
 
-      const py =
-        event.clientY -
-        (rect.top + rect.height * 0.5);
+      const py = event.clientY - (rect.top + rect.height * 0.5);
 
       mouseX.set(px * 0.06);
       mouseY.set(py * 0.06);
     },
-    [mouseX, mouseY]
+    [mouseX, mouseY],
   );
-
-  /* =======================================================
-     MOUSE ENTER
-  ======================================================= */
 
   const handleMouseEnter = useCallback(() => {
     setHovered(link.label);
   }, [link.label, setHovered]);
-
-  /* =======================================================
-     MOUSE LEAVE
-  ======================================================= */
 
   const handleMouseLeave = useCallback(() => {
     setHovered(null);
@@ -148,19 +141,19 @@ const NavItem = memo(function NavItem({
       className="
         relative
         group
-        h-11
-        px-3.5
+        h-9
+        px-2
         flex
+        min-[900px]:h-8
+        min-[900px]:px-1.5
+        xl:h-11
+        xl:px-3.5
         items-center
         justify-center
         overflow-hidden
         transform-gpu
       "
     >
-      {/* ===================================================
-          HOVER BACKGROUND
-      =================================================== */}
-
       <AnimatePresence>
         {hovered === link.label && (
           <motion.span
@@ -185,22 +178,15 @@ const NavItem = memo(function NavItem({
             className={`
               absolute
               inset-0
-              rounded-xl
+              rounded-lg
               pointer-events-none
+              xl:rounded-xl
               transform-gpu
-              ${
-                isDark
-                  ? "bg-white/[0.08]"
-                  : "bg-[#0066B3]/[0.055]"
-              }
+              ${isDark ? "bg-white/[0.08]" : "bg-[#0066B3]/[0.055]"}
             `}
           />
         )}
       </AnimatePresence>
-
-      {/* ===================================================
-          TEXT
-      =================================================== */}
 
       <span
         className={`
@@ -208,8 +194,10 @@ const NavItem = memo(function NavItem({
           z-10
           overflow-hidden
           leading-none
-          text-[14px]
+          text-[11px]
           font-semibold
+          min-[900px]:text-[10px]
+          xl:text-[14px]
           tracking-[-0.01em]
           ${
             isDark
@@ -222,8 +210,6 @@ const NavItem = memo(function NavItem({
           }
         `}
       >
-        {/* Current text */}
-
         <motion.span
           className="block"
           animate={{
@@ -233,14 +219,9 @@ const NavItem = memo(function NavItem({
             duration: 0.35,
             ease,
           }}
-          style={{
-            willChange: "transform",
-          }}
         >
           {link.label}
         </motion.span>
-
-        {/* Hover text */}
 
         <motion.span
           className={`
@@ -248,11 +229,7 @@ const NavItem = memo(function NavItem({
             left-0
             top-[18px]
             block
-            ${
-              isDark
-                ? "text-[#58D9FF]"
-                : "text-[#0066B3]"
-            }
+            ${isDark ? "text-[#58D9FF]" : "text-[#0066B3]"}
           `}
           animate={{
             y: hovered === link.label ? -18 : 0,
@@ -261,17 +238,10 @@ const NavItem = memo(function NavItem({
             duration: 0.35,
             ease,
           }}
-          style={{
-            willChange: "transform",
-          }}
         >
           {link.label}
         </motion.span>
       </span>
-
-      {/* ===================================================
-          ACTIVE LINE
-      =================================================== */}
 
       {active && (
         <motion.span
@@ -280,7 +250,7 @@ const NavItem = memo(function NavItem({
             width: 0,
           }}
           animate={{
-            width: 22,
+            width: 18,
           }}
           transition={{
             type: "spring",
@@ -301,9 +271,6 @@ const NavItem = memo(function NavItem({
             shadow-[0_0_12px_rgba(0,169,224,0.9)]
             transform-gpu
           "
-          style={{
-            willChange: "width",
-          }}
         />
       )}
     </motion.button>
@@ -311,12 +278,10 @@ const NavItem = memo(function NavItem({
 });
 
 /* =========================================================
-   RESPONSIVE SHINE CTA
+   SHINE CTA
 ========================================================= */
 
-const ShineCTA = memo(function ShineCTA({
-  mobile = false,
-}) {
+const ShineCTA = memo(function ShineCTA({ mobile = false }) {
   return (
     <MagneticButton
       to="/talk-to-expert"
@@ -332,15 +297,16 @@ const ShineCTA = memo(function ShineCTA({
         ${
           mobile
             ? "w-full min-h-[52px] px-5 rounded-2xl"
-            : "min-w-[175px] min-h-[44px] px-5 rounded-full"
+            : "min-w-[128px] min-h-[36px] px-3 rounded-full xl:min-w-[175px] xl:min-h-[44px] xl:px-5"
         }
         bg-gradient-to-r
         from-[#031B2E]
         via-[#0066B3]
         to-[#00A9E0]
         text-white
-        text-[13px]
+        text-[11px]
         font-semibold
+        xl:text-[13px]
         border
         border-[#00A9E0]/30
         shadow-[0_8px_25px_rgba(0,102,179,0.22)]
@@ -348,8 +314,6 @@ const ShineCTA = memo(function ShineCTA({
         transform-gpu
       `}
     >
-      {/* BASE GLOW */}
-
       <motion.span
         className="
           absolute
@@ -368,8 +332,6 @@ const ShineCTA = memo(function ShineCTA({
         }}
       />
 
-      {/* MAIN SHINE */}
-
       <motion.span
         className="
           absolute
@@ -377,7 +339,6 @@ const ShineCTA = memo(function ShineCTA({
           bottom-[-70%]
           left-[-45%]
           w-[24%]
-          min-w-[24px]
           pointer-events-none
           z-10
           rotate-[24deg]
@@ -389,36 +350,9 @@ const ShineCTA = memo(function ShineCTA({
           transform-gpu
         "
         animate={{
-          left: [
-            "-45%",
-            "-15%",
-            "20%",
-            "5%",
-            "45%",
-            "30%",
-            "75%",
-            "145%",
-          ],
-          rotate: [
-            24,
-            -18,
-            25,
-            -20,
-            22,
-            -17,
-            24,
-            20,
-          ],
-          opacity: [
-            0,
-            0.8,
-            0.5,
-            0.9,
-            0.6,
-            0.9,
-            0.5,
-            0,
-          ],
+          left: ["-45%", "-15%", "20%", "5%", "45%", "30%", "75%", "145%"],
+          rotate: [24, -18, 25, -20, 22, -17, 24, 20],
+          opacity: [0, 0.8, 0.5, 0.9, 0.6, 0.9, 0.5, 0],
         }}
         transition={{
           duration: mobile ? 2.8 : 2.4,
@@ -428,103 +362,9 @@ const ShineCTA = memo(function ShineCTA({
         }}
       />
 
-      {/* SOFT GLOW */}
-
-      <motion.span
-        className="
-          absolute
-          top-[-80%]
-          bottom-[-80%]
-          left-[-55%]
-          w-[45%]
-          min-w-[55px]
-          pointer-events-none
-          z-[9]
-          rotate-[24deg]
-          bg-[#00D9FF]/25
-          blur-xl
-          transform-gpu
-        "
-        animate={{
-          left: [
-            "-55%",
-            "-20%",
-            "15%",
-            "0%",
-            "45%",
-            "30%",
-            "75%",
-            "150%",
-          ],
-          rotate: [
-            24,
-            -18,
-            25,
-            -20,
-            22,
-            -17,
-            24,
-            20,
-          ],
-          opacity: [
-            0,
-            0.6,
-            0.3,
-            0.6,
-            0.3,
-            0.6,
-            0.3,
-            0,
-          ],
-        }}
-        transition={{
-          duration: mobile ? 3 : 2.7,
-          repeat: Infinity,
-          repeatDelay: mobile ? 2.5 : 3,
-          ease: "easeInOut",
-        }}
-      />
-
-      {/* BORDER */}
-
-      <motion.span
-        className="
-          absolute
-          inset-0
-          rounded-[inherit]
-          border
-          border-[#00A9E0]/30
-          pointer-events-none
-          z-[12]
-          transform-gpu
-        "
-        animate={{
-          borderColor: [
-            "rgba(0,169,224,0.25)",
-            "rgba(0,217,255,0.7)",
-            "rgba(0,169,224,0.25)",
-          ],
-        }}
-        transition={{
-          duration: 2.4,
-          repeat: Infinity,
-          ease: "easeInOut",
-        }}
-      />
-
-      {/* TEXT */}
-
-      <span
-        className="
-          relative
-          z-20
-          whitespace-nowrap
-        "
-      >
+      <span className="relative z-20 whitespace-nowrap">
         Talk to Our Expert
       </span>
-
-      {/* ARROW */}
 
       <motion.span
         className="
@@ -549,7 +389,7 @@ const ShineCTA = memo(function ShineCTA({
 });
 
 /* =========================================================
-   MAIN NAVBAR
+   NAVBAR
 ========================================================= */
 
 export default function Navbar() {
@@ -557,63 +397,43 @@ export default function Navbar() {
   const navigate = useNavigate();
 
   const [scrolled, setScrolled] = useState(false);
+
   const [open, setOpen] = useState(false);
-  const [activeSection, setActiveSection] =
-    useState("home");
+
+  const [activeSection, setActiveSection] = useState("home");
 
   const [hovered, setHovered] = useState(null);
-
-  /*
-   * IMPORTANT:
-   * This state tracks the actual ThemeToggle state.
-   * It prevents the navbar from forcing white text
-   * when the page is in light mode.
-   */
 
   const [isDark, setIsDark] = useState(() => {
     if (typeof document === "undefined") {
       return false;
     }
 
-    return document.documentElement.classList.contains(
-      "dark"
-    );
+    return document.documentElement.classList.contains("dark");
   });
 
   const navRef = useRef(null);
 
   /* =======================================================
-     WATCH THEME CHANGES
+     THEME
   ======================================================= */
 
   useEffect(() => {
     if (typeof document === "undefined") {
-      return;
+      return undefined;
     }
 
     const root = document.documentElement;
 
     const updateTheme = () => {
-      setIsDark(
-        root.classList.contains("dark")
-      );
+      setIsDark(root.classList.contains("dark"));
     };
 
     updateTheme();
 
-    const observer = new MutationObserver(
-      (mutations) => {
-        for (const mutation of mutations) {
-          if (
-            mutation.type === "attributes" &&
-            mutation.attributeName === "class"
-          ) {
-            updateTheme();
-            break;
-          }
-        }
-      }
-    );
+    const observer = new MutationObserver(() => {
+      updateTheme();
+    });
 
     observer.observe(root, {
       attributes: true,
@@ -626,17 +446,13 @@ export default function Navbar() {
   }, []);
 
   /* =======================================================
-     PAGE TYPE
+     PAGE / ROUTE
   ======================================================= */
 
-  const isInnerPage =
-    location.pathname !== "/";
-
-  const isTopOfHome =
-    !isInnerPage && !scrolled;
+  const isHome = location.pathname === "/";
 
   /* =======================================================
-     CURSOR FOLLOW GLOW
+     MOUSE GLOW
   ======================================================= */
 
   const mouseX = useMotionValue(0);
@@ -666,53 +482,41 @@ export default function Navbar() {
         return;
       }
 
-      mouseFrame.current =
-        requestAnimationFrame(() => {
-          const rect =
-            navRef.current.getBoundingClientRect();
+      mouseFrame.current = requestAnimationFrame(() => {
+        const rect = navRef.current.getBoundingClientRect();
 
-          mouseX.set(
-            event.clientX - rect.left
-          );
+        mouseX.set(event.clientX - rect.left);
 
-          mouseY.set(
-            event.clientY - rect.top
-          );
+        mouseY.set(event.clientY - rect.top);
 
-          mouseFrame.current = null;
-        });
+        mouseFrame.current = null;
+      });
     },
-    [mouseX, mouseY]
+    [mouseX, mouseY],
   );
 
   useEffect(() => {
     return () => {
       if (mouseFrame.current) {
-        cancelAnimationFrame(
-          mouseFrame.current
-        );
+        cancelAnimationFrame(mouseFrame.current);
       }
     };
   }, []);
 
   /* =======================================================
-     SCROLL
+     SCROLL STATE
   ======================================================= */
 
   useEffect(() => {
     let ticking = false;
 
     const handleScroll = () => {
-      if (ticking) {
-        return;
-      }
+      if (ticking) return;
 
       ticking = true;
 
       requestAnimationFrame(() => {
-        setScrolled(
-          window.scrollY > 35
-        );
+        setScrolled(window.scrollY > 35);
 
         ticking = false;
       });
@@ -720,78 +524,64 @@ export default function Navbar() {
 
     handleScroll();
 
-    window.addEventListener(
-      "scroll",
-      handleScroll,
-      {
-        passive: true,
-      }
-    );
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+    });
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      );
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
   /* =======================================================
-     CLOSE MOBILE MENU
+     CLOSE MOBILE MENU WHEN ROUTE CHANGES
   ======================================================= */
 
   useEffect(() => {
     setOpen(false);
-  }, [
-    location.pathname,
-    location.hash,
-  ]);
+    setHovered(null);
+  }, [location.pathname, location.hash]);
 
   /* =======================================================
      ACTIVE SECTION
   ======================================================= */
 
   useEffect(() => {
-    if (location.pathname !== "/") {
-      return;
+    if (!isHome) {
+      setActiveSection("");
+      return undefined;
     }
 
-    const sections = [
-      "services",
-      "why-us",
-      "industries",
-    ];
+    const sections = ["services", "why-us", "industries"];
 
     let ticking = false;
 
     const detectSection = () => {
-      if (ticking) {
-        return;
-      }
+      if (ticking) return;
 
       ticking = true;
 
       requestAnimationFrame(() => {
-        const position =
-          window.scrollY + 180;
+        const position = window.scrollY + 180;
 
         let current = "home";
 
         sections.forEach((id) => {
-          const section =
-            document.getElementById(id);
+          const section = document.getElementById(id);
 
-          if (!section) {
-            return;
-          }
+          if (!section) return;
 
-          if (
-            position >=
-            section.offsetTop
-          ) {
+          if (position >= section.offsetTop) {
             current = id;
           }
         });
+
+        /*
+         * Hash is given priority when present.
+         */
+        if (location.hash) {
+          current = location.hash.replace("#", "");
+        }
 
         setActiveSection(current);
 
@@ -801,43 +591,14 @@ export default function Navbar() {
 
     detectSection();
 
-    window.addEventListener(
-      "scroll",
-      detectSection,
-      {
-        passive: true,
-      }
-    );
+    window.addEventListener("scroll", detectSection, {
+      passive: true,
+    });
 
     return () => {
-      window.removeEventListener(
-        "scroll",
-        detectSection
-      );
+      window.removeEventListener("scroll", detectSection);
     };
-  }, [location.pathname]);
-
-  /* =======================================================
-     HASH ACTIVE
-  ======================================================= */
-
-  useEffect(() => {
-    if (location.pathname !== "/") {
-      return;
-    }
-
-    if (!location.hash) {
-      setActiveSection("home");
-      return;
-    }
-
-    setActiveSection(
-      location.hash.replace("#", "")
-    );
-  }, [
-    location.pathname,
-    location.hash,
-  ]);
+  }, [isHome, location.hash]);
 
   /* =======================================================
      ACTIVE CHECK
@@ -846,56 +607,70 @@ export default function Navbar() {
   const isActive = useCallback(
     (link) => {
       if (link.to === "/blog") {
-        return (
-          location.pathname === "/blog"
-        );
+        return location.pathname === "/blog";
       }
 
       if (link.to === "/career") {
-        return (
-          location.pathname === "/career"
-        );
+        return location.pathname === "/career";
+      }
+
+      if (link.to === "/talk-to-expert") {
+        return location.pathname === "/talk-to-expert";
+      }
+
+      if (link.to === "/privacy-policy") {
+        return location.pathname === "/privacy-policy";
+      }
+
+      if (link.to === "/terms-of-service") {
+        return location.pathname === "/terms-of-service";
       }
 
       if (link.label === "Home") {
-        return (
-          location.pathname === "/" &&
-          activeSection === "home"
-        );
+        return location.pathname === "/" && activeSection === "home";
       }
 
       if (link.hash) {
         return (
           location.pathname === "/" &&
-          activeSection ===
-            link.hash.replace("#", "")
+          activeSection === link.hash.replace("#", "")
         );
       }
 
       return false;
     },
-    [
-      location.pathname,
-      activeSection,
-    ]
+    [location.pathname, activeSection],
   );
 
   /* =======================================================
      NAVIGATION
+
+     IMPORTANT:
+     - Never use window.history here
+     - Never reload the page
+     - React Router handles the route
   ======================================================= */
 
   const go = useCallback(
     (link) => {
       setOpen(false);
+      setHovered(null);
 
-      /* INNER PAGE */
+      /* ----------------------------------------------------
+         REAL PAGE
+      ---------------------------------------------------- */
 
       if (!link.hash) {
-        navigate(link.to);
+        if (location.pathname !== link.to) {
+          navigate(link.to);
+        }
+
         return;
       }
 
-      /* HOME */
+      /* ----------------------------------------------------
+         HOME
+      ---------------------------------------------------- */
 
       if (link.label === "Home") {
         setActiveSection("home");
@@ -905,34 +680,34 @@ export default function Navbar() {
           return;
         }
 
-        window.history.replaceState(
-          null,
-          "",
-          "/"
-        );
-
         window.scrollTo({
           top: 0,
+          left: 0,
           behavior: "smooth",
         });
 
         return;
       }
 
-      /* SECTION */
+      /* ----------------------------------------------------
+         HOME SECTION
+      ---------------------------------------------------- */
 
-      const targetId =
-        link.hash.replace("#", "");
+      const targetId = link.hash.replace("#", "");
 
       setActiveSection(targetId);
 
+      /*
+       * Coming from another page:
+       * React Router first goes home with the hash.
+       */
       if (location.pathname !== "/") {
-        navigate(`/#${targetId}`);
+        navigate(`/${link.hash}`);
+
         return;
       }
 
-      const element =
-        document.getElementById(targetId);
+      const element = document.getElementById(targetId);
 
       if (!element) {
         return;
@@ -941,236 +716,104 @@ export default function Navbar() {
       const navbarOffset = 105;
 
       const targetPosition =
-        element.getBoundingClientRect()
-          .top +
-        window.scrollY -
-        navbarOffset;
+        element.getBoundingClientRect().top + window.scrollY - navbarOffset;
 
-      window.history.replaceState(
-        null,
-        "",
-        `/#${targetId}`
-      );
+      navigate(`/${link.hash}`, {
+        replace: false,
+      });
 
-      window.scrollTo({
-        top: targetPosition,
-        behavior: "smooth",
+      requestAnimationFrame(() => {
+        window.scrollTo({
+          top: Math.max(0, targetPosition),
+          left: 0,
+          behavior: "smooth",
+        });
       });
     },
-    [
-      location.pathname,
-      navigate,
-    ]
+    [location.pathname, navigate],
   );
 
   /* =======================================================
-     ADAPTIVE PAGE COLORS
+     PAGE COLORS
   ======================================================= */
 
   const getPageColors = () => {
-    /* BLOG */
-
     if (location.pathname === "/blog") {
       return {
         bg: "rgba(255,255,255,0.72)",
-        darkBg:
-          "rgba(15,23,42,0.78)",
-
-        scrolled:
-          "rgba(255,255,255,0.94)",
-
-        darkScrolled:
-          "rgba(15,23,42,0.95)",
-
-        border:
-          "rgba(99,102,241,0.16)",
-
-        shadow:
-          "rgba(99,102,241,0.12)",
-
-        glow:
-          "rgba(99,102,241,0.10)",
+        darkBg: "rgba(15,23,42,0.78)",
+        scrolled: "rgba(255,255,255,0.94)",
+        darkScrolled: "rgba(15,23,42,0.95)",
+        border: "rgba(99,102,241,0.16)",
+        shadow: "rgba(99,102,241,0.12)",
+        glow: "rgba(99,102,241,0.10)",
       };
     }
-
-    /* CAREER */
 
     if (location.pathname === "/career") {
       return {
         bg: "rgba(255,255,255,0.72)",
-
-        darkBg:
-          "rgba(3,27,46,0.78)",
-
-        scrolled:
-          "rgba(255,255,255,0.94)",
-
-        darkScrolled:
-          "rgba(3,27,46,0.95)",
-
-        border:
-          "rgba(0,169,224,0.16)",
-
-        shadow:
-          "rgba(0,169,224,0.12)",
-
-        glow:
-          "rgba(0,169,224,0.10)",
+        darkBg: "rgba(3,27,46,0.78)",
+        scrolled: "rgba(255,255,255,0.94)",
+        darkScrolled: "rgba(3,27,46,0.95)",
+        border: "rgba(0,169,224,0.16)",
+        shadow: "rgba(0,169,224,0.12)",
+        glow: "rgba(0,169,224,0.10)",
       };
     }
-
-    /* SERVICES */
 
     if (activeSection === "services") {
       return {
-        bg:
-          "rgba(235,248,255,0.76)",
-
-        darkBg:
-          "rgba(3,35,55,0.80)",
-
-        scrolled:
-          "rgba(235,248,255,0.94)",
-
-        darkScrolled:
-          "rgba(3,35,55,0.96)",
-
-        border:
-          "rgba(0,169,224,0.18)",
-
-        shadow:
-          "rgba(0,169,224,0.14)",
-
-        glow:
-          "rgba(0,169,224,0.12)",
+        bg: "rgba(235,248,255,0.76)",
+        darkBg: "rgba(3,35,55,0.80)",
+        scrolled: "rgba(235,248,255,0.94)",
+        darkScrolled: "rgba(3,35,55,0.96)",
+        border: "rgba(0,169,224,0.18)",
+        shadow: "rgba(0,169,224,0.14)",
+        glow: "rgba(0,169,224,0.12)",
       };
     }
-
-    /* WHY US */
 
     if (activeSection === "why-us") {
       return {
-        bg:
-          "rgba(245,240,255,0.76)",
-
-        darkBg:
-          "rgba(30,20,50,0.80)",
-
-        scrolled:
-          "rgba(245,240,255,0.94)",
-
-        darkScrolled:
-          "rgba(30,20,50,0.96)",
-
-        border:
-          "rgba(139,92,246,0.18)",
-
-        shadow:
-          "rgba(139,92,246,0.14)",
-
-        glow:
-          "rgba(139,92,246,0.12)",
+        bg: "rgba(245,240,255,0.76)",
+        darkBg: "rgba(30,20,50,0.80)",
+        scrolled: "rgba(245,240,255,0.94)",
+        darkScrolled: "rgba(30,20,50,0.96)",
+        border: "rgba(139,92,246,0.18)",
+        shadow: "rgba(139,92,246,0.14)",
+        glow: "rgba(139,92,246,0.12)",
       };
     }
 
-    /* INDUSTRIES */
-
-    if (
-      activeSection === "industries"
-    ) {
+    if (activeSection === "industries") {
       return {
-        bg:
-          "rgba(232,245,250,0.76)",
-
-        darkBg:
-          "rgba(4,30,42,0.82)",
-
-        scrolled:
-          "rgba(232,245,250,0.94)",
-
-        darkScrolled:
-          "rgba(4,30,42,0.96)",
-
-        border:
-          "rgba(0,128,160,0.18)",
-
-        shadow:
-          "rgba(0,128,160,0.14)",
-
-        glow:
-          "rgba(0,128,160,0.12)",
+        bg: "rgba(232,245,250,0.76)",
+        darkBg: "rgba(4,30,42,0.82)",
+        scrolled: "rgba(232,245,250,0.94)",
+        darkScrolled: "rgba(4,30,42,0.96)",
+        border: "rgba(0,128,160,0.18)",
+        shadow: "rgba(0,128,160,0.14)",
+        glow: "rgba(0,128,160,0.12)",
       };
     }
-
-    /* HERO / HOME */
 
     return {
-      /*
-       * LIGHT STATIC NAVBAR
-       * Dark enough so the logo/text is visible.
-       */
-
-      bg:
-        "rgba(255,255,255,0.76)",
-
-      /*
-       * DARK STATIC NAVBAR
-       */
-
-      darkBg:
-        "rgba(3,27,46,0.78)",
-
-      /*
-       * LIGHT SCROLLED
-       */
-
-      scrolled:
-        "rgba(255,255,255,0.94)",
-
-      /*
-       * DARK SCROLLED
-       */
-
-      darkScrolled:
-        "rgba(3,27,46,0.96)",
-
-      border:
-        "rgba(0,169,224,0.18)",
-
-      shadow:
-        "rgba(0,102,179,0.14)",
-
-      glow:
-        "rgba(0,169,224,0.10)",
+      bg: "rgba(255,255,255,0.76)",
+      darkBg: "rgba(3,27,46,0.78)",
+      scrolled: "rgba(255,255,255,0.94)",
+      darkScrolled: "rgba(3,27,46,0.96)",
+      border: "rgba(0,169,224,0.18)",
+      shadow: "rgba(0,102,179,0.14)",
+      glow: "rgba(0,169,224,0.10)",
     };
   };
 
-  const pageColors =
-    getPageColors();
+  const pageColors = getPageColors();
 
-  /* =======================================================
-     THEME-AWARE TEXT COLORS
-  ======================================================= */
+  const logoTitleClass = isDark ? "text-white" : "text-[#062B49]";
 
-  /*
-   * IMPORTANT:
-   *
-   * Do NOT use isTopOfHome here.
-   *
-   * Previously:
-   *
-   * isTopOfHome ? "text-white" : ...
-   *
-   * caused white text in light static mode.
-   */
-
-  const logoTitleClass = isDark
-    ? "text-white"
-    : "text-[#062B49]";
-
-  const logoSubtitleClass = isDark
-    ? "text-white/70"
-    : "text-[#174B6D]";
+  const logoSubtitleClass = isDark ? "text-white/70" : "text-[#174B6D]";
 
   /* =======================================================
      RENDER
@@ -1199,10 +842,6 @@ export default function Navbar() {
         pointer-events-none
       "
     >
-      {/* ===================================================
-          MAIN NAVBAR
-      =================================================== */}
-
       <motion.div
         ref={navRef}
         onMouseMove={handleMouseMove}
@@ -1221,8 +860,9 @@ export default function Navbar() {
           mx-auto
           mt-4
           md:mt-5
-          w-[calc(100%-24px)]
-          md:w-[calc(100%-40px)]
+          w-[calc(100%-20px)]
+          md:w-[calc(100%-32px)]
+          min-[900px]:w-[calc(100%-36px)]
           max-w-6xl
           rounded-[20px]
           border
@@ -1234,7 +874,7 @@ export default function Navbar() {
           ease-out
 
           ${
-            scrolled || isInnerPage
+            scrolled || !isHome
               ? `
                 bg-[var(--nav-bg-scrolled)]
                 dark:bg-[var(--nav-bg-scrolled-dark)]
@@ -1249,31 +889,15 @@ export default function Navbar() {
           }
         `}
         style={{
-          "--nav-bg":
-            pageColors.bg,
-
-          "--nav-bg-dark":
-            pageColors.darkBg,
-
-          "--nav-bg-scrolled":
-            pageColors.scrolled,
-
-          "--nav-bg-scrolled-dark":
-            pageColors.darkScrolled,
-
-          "--nav-border":
-            pageColors.border,
-
-          "--nav-shadow":
-            pageColors.shadow,
-
+          "--nav-bg": pageColors.bg,
+          "--nav-bg-dark": pageColors.darkBg,
+          "--nav-bg-scrolled": pageColors.scrolled,
+          "--nav-bg-scrolled-dark": pageColors.darkScrolled,
+          "--nav-border": pageColors.border,
+          "--nav-shadow": pageColors.shadow,
           willChange: "transform",
         }}
       >
-        {/* =================================================
-            CURSOR GLOW
-        ================================================= */}
-
         <motion.div
           className="
             pointer-events-none
@@ -1291,15 +915,9 @@ export default function Navbar() {
           style={{
             left: glowX,
             top: glowY,
-            backgroundColor:
-              pageColors.glow,
-            willChange: "transform",
+            backgroundColor: pageColors.glow,
           }}
         />
-
-        {/* =================================================
-            TOP ENERGY LINE
-        ================================================= */}
 
         <motion.div
           className="
@@ -1327,25 +945,24 @@ export default function Navbar() {
           }}
         />
 
-        {/* =================================================
-            NAV CONTENT
-        ================================================= */}
-
         <nav
           className="
             relative
             z-20
-            h-[72px]
-            px-4
+            h-[62px]
+            px-3
+            sm:px-4
             md:px-5
+            min-[900px]:h-[60px]
+            min-[900px]:px-3
+            xl:h-[72px]
+            xl:px-5
             flex
             items-center
             justify-between
           "
         >
-          {/* =================================================
-              LOGO
-          ================================================= */}
+          {/* LOGO */}
 
           <Link
             to="/"
@@ -1356,8 +973,9 @@ export default function Navbar() {
             className="
               flex
               items-center
-              gap-3
+              gap-2
               shrink-0
+              xl:gap-3
               min-w-0
             "
           >
@@ -1371,12 +989,18 @@ export default function Navbar() {
               }}
               className="
                 relative
-                h-12
-                w-12
-                md:h-14
-                md:w-14
-                lg:h-16
-                lg:w-16
+                h-10
+                w-10
+                sm:h-11
+                sm:w-11
+                md:h-12
+                md:w-12
+                min-[900px]:h-10
+                min-[900px]:w-10
+                xl:h-14
+                xl:w-14
+                2xl:h-16
+                2xl:w-16
                 flex
                 items-center
                 justify-center
@@ -1384,8 +1008,6 @@ export default function Navbar() {
                 transform-gpu
               "
             >
-              {/* Logo glow */}
-
               <div
                 className={`
                   absolute
@@ -1393,16 +1015,9 @@ export default function Navbar() {
                   rounded-full
                   blur-xl
                   pointer-events-none
-
-                  ${
-                    isDark
-                      ? "bg-[#00A9E0]/20"
-                      : "bg-[#00A9E0]/16"
-                  }
+                  ${isDark ? "bg-[#00A9E0]/20" : "bg-[#00A9E0]/16"}
                 `}
               />
-
-              {/* LOGO */}
 
               <motion.img
                 src={logo}
@@ -1410,12 +1025,18 @@ export default function Navbar() {
                 className="
                   relative
                   z-10
-                  h-14
-                  w-14
-                  md:h-[68px]
-                  md:w-[68px]
-                  lg:h-[76px]
-                  lg:w-[76px]
+                  h-11
+                  w-11
+                  sm:h-12
+                  sm:w-12
+                  md:h-14
+                  md:w-14
+                  min-[900px]:h-11
+                  min-[900px]:w-11
+                  xl:h-16
+                  xl:w-16
+                  2xl:h-[76px]
+                  2xl:w-[76px]
                   object-contain
                 "
                 animate={{
@@ -1426,55 +1047,41 @@ export default function Navbar() {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                style={{
-                  willChange: "transform",
-                }}
               />
             </motion.div>
 
-            {/* =================================================
-                LOGO TEXT
-            ================================================= */}
-
-            <div
-              className="
-                hidden
-                sm:block
-                min-w-0
-              "
-            >
+            <div className="hidden sm:block min-w-0">
               <p
                 className={`
-                  text-[17px]
-                  md:text-[20px]
-                  lg:text-[22px]
+                  text-[15px]
+                  sm:text-[17px]
+                  md:text-[18px]
+                  min-[900px]:text-[15px]
+                  xl:text-[20px]
+                  2xl:text-[22px]
                   font-extrabold
                   tracking-[-0.025em]
                   leading-none
                   whitespace-nowrap
-                  transition-colors
-                  duration-500
                   ${logoTitleClass}
                 `}
               >
-                CLOUD{" "}
-                <span className="text-[#00A9E0]">
-                  MATRIX
-                </span>
+                CLOUD <span className="text-[#00A9E0]">MATRIX</span>
               </p>
 
               <p
                 className={`
-                  mt-1.5
-                  text-[8px]
+                  mt-1
+                  text-[7px]
+                  sm:text-[8px]
                   md:text-[9px]
-                  lg:text-[10px]
+                  min-[900px]:text-[7px]
+                  xl:text-[9px]
+                  2xl:text-[10px]
                   tracking-[0.30em]
                   font-bold
                   font-mono
                   whitespace-nowrap
-                  transition-colors
-                  duration-500
                   ${logoSubtitleClass}
                 `}
               >
@@ -1483,19 +1090,21 @@ export default function Navbar() {
             </div>
           </Link>
 
-          {/* =================================================
-              DESKTOP NAV
-          ================================================= */}
+          {/* DESKTOP NAV */}
 
           <div
             className="
               hidden
-              lg:flex
+              min-[900px]:flex
               items-center
-              gap-1
-              px-1.5
-              py-1.5
-              rounded-2xl
+              gap-0.5
+              px-1
+              py-1
+              rounded-xl
+              xl:gap-1
+              xl:px-1.5
+              xl:py-1.5
+              xl:rounded-2xl
               bg-black/[0.025]
               dark:bg-white/[0.025]
               border
@@ -1503,49 +1112,41 @@ export default function Navbar() {
               dark:border-white/[0.05]
             "
           >
-            {navLinks.map(
-              (link, index) => (
-                <NavItem
-                  key={link.label}
-                  link={link}
-                  index={index}
-                  active={isActive(link)}
-                  hovered={hovered}
-                  setHovered={setHovered}
-                  onClick={() =>
-                    go(link)
-                  }
-                  isDark={isDark}
-                />
-              )
-            )}
+            {navLinks.map((link, index) => (
+              <NavItem
+                key={link.label}
+                link={link}
+                index={index}
+                active={isActive(link)}
+                hovered={hovered}
+                setHovered={setHovered}
+                onClick={() => go(link)}
+                isDark={isDark}
+              />
+            ))}
           </div>
 
-          {/* =================================================
-              DESKTOP CTA
-          ================================================= */}
+          {/* DESKTOP CTA */}
 
           <div
             className="
               hidden
-              lg:flex
+              min-[900px]:flex
               items-center
-              gap-3
+              gap-1.5
+              xl:gap-3
             "
           >
             <ThemeToggle />
-
             <ShineCTA />
           </div>
 
-          {/* =================================================
-              MOBILE CONTROLS
-          ================================================= */}
+          {/* MOBILE */}
 
           <div
             className="
               flex
-              lg:hidden
+              min-[900px]:hidden
               items-center
               gap-2
             "
@@ -1556,11 +1157,7 @@ export default function Navbar() {
               type="button"
               aria-label="Toggle navigation"
               aria-expanded={open}
-              onClick={() =>
-                setOpen(
-                  (value) => !value
-                )
-              }
+              onClick={() => setOpen((value) => !value)}
               whileTap={{
                 scale: 0.88,
               }}
@@ -1579,18 +1176,12 @@ export default function Navbar() {
                 border
                 border-black/[0.06]
                 dark:border-white/[0.08]
-                transform-gpu
               "
             >
               <motion.span
                 animate={{
                   rotate: open ? 45 : 0,
                   y: open ? 5 : 0,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 400,
-                  damping: 25,
                 }}
                 className="
                   h-[2px]
@@ -1604,10 +1195,6 @@ export default function Navbar() {
               <motion.span
                 animate={{
                   opacity: open ? 0 : 1,
-                  scaleX: open ? 0 : 1,
-                }}
-                transition={{
-                  duration: 0.2,
                 }}
                 className="
                   h-[2px]
@@ -1623,11 +1210,6 @@ export default function Navbar() {
                   rotate: open ? -45 : 0,
                   y: open ? -5 : 0,
                 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 400,
-                  damping: 25,
-                }}
                 className="
                   h-[2px]
                   w-[22px]
@@ -1642,14 +1224,12 @@ export default function Navbar() {
       </motion.div>
 
       {/* =====================================================
-          MOBILE / TABLET DRAWER
+          MOBILE DRAWER
       ===================================================== */}
 
       <AnimatePresence>
         {open && (
           <>
-            {/* BACKDROP */}
-
             <motion.div
               initial={{
                 opacity: 0,
@@ -1660,9 +1240,6 @@ export default function Navbar() {
               exit={{
                 opacity: 0,
               }}
-              transition={{
-                duration: 0.25,
-              }}
               className="
                 fixed
                 inset-0
@@ -1671,14 +1248,10 @@ export default function Navbar() {
                 dark:bg-black/50
                 backdrop-blur-md
                 pointer-events-auto
-                lg:hidden
+                min-[900px]:hidden
               "
-              onClick={() =>
-                setOpen(false)
-              }
+              onClick={() => setOpen(false)}
             />
-
-            {/* DRAWER */}
 
             <motion.div
               initial={{
@@ -1716,24 +1289,10 @@ export default function Navbar() {
                 dark:border-white/[0.08]
                 shadow-[0_25px_70px_rgba(0,0,0,0.15)]
                 pointer-events-auto
-                lg:hidden
-                transform-gpu
+                min-[900px]:hidden
               "
             >
-              {/* Drawer top line */}
-
-              <motion.div
-                initial={{
-                  scaleX: 0,
-                  transformOrigin: "left",
-                }}
-                animate={{
-                  scaleX: 1,
-                }}
-                transition={{
-                  duration: 0.6,
-                  ease,
-                }}
+              <div
                 className="
                   h-[2px]
                   w-full
@@ -1741,46 +1300,35 @@ export default function Navbar() {
                   from-[#0066B3]
                   via-[#00A9E0]
                   to-[#00A878]
-                  transform-gpu
                 "
               />
 
               <div className="p-4">
-                {/* MOBILE NAV LINKS */}
+                {navLinks.map((link, index) => {
+                  const active = isActive(link);
 
-                {navLinks.map(
-                  (link, index) => {
-                    const active =
-                      isActive(link);
-
-                    return (
-                      <motion.button
-                        key={link.label}
-                        type="button"
-                        onClick={() =>
-                          go(link)
-                        }
-                        initial={{
-                          opacity: 0,
-                          x: 25,
-                        }}
-                        animate={{
-                          opacity: 1,
-                          x: 0,
-                        }}
-                        transition={{
-                          delay:
-                            index * 0.055,
-                          duration: 0.4,
-                          ease,
-                        }}
-                        whileHover={{
-                          x: 5,
-                        }}
-                        whileTap={{
-                          scale: 0.97,
-                        }}
-                        className={`
+                  return (
+                    <motion.button
+                      key={link.label}
+                      type="button"
+                      onClick={() => go(link)}
+                      initial={{
+                        opacity: 0,
+                        x: 25,
+                      }}
+                      animate={{
+                        opacity: 1,
+                        x: 0,
+                      }}
+                      transition={{
+                        delay: index * 0.055,
+                        duration: 0.4,
+                        ease,
+                      }}
+                      whileTap={{
+                        scale: 0.97,
+                      }}
+                      className={`
                           relative
                           w-full
                           flex
@@ -1808,33 +1356,13 @@ export default function Navbar() {
                               `
                           }
                         `}
-                      >
-                        <span className="font-semibold">
-                          {link.label}
-                        </span>
+                    >
+                      <span className="font-semibold">{link.label}</span>
 
-                        <motion.span
-                          animate={{
-                            x: active
-                              ? 0
-                              : 3,
-
-                            opacity: active
-                              ? 1
-                              : 0.35,
-                          }}
-                          className="
-                            text-[#00A9E0]
-                          "
-                        >
-                          →
-                        </motion.span>
-                      </motion.button>
-                    );
-                  }
-                )}
-
-                {/* MOBILE CTA */}
+                      <span className="text-[#00A9E0]">→</span>
+                    </motion.button>
+                  );
+                })}
 
                 <motion.div
                   initial={{
@@ -1850,11 +1378,7 @@ export default function Navbar() {
                     duration: 0.45,
                     ease,
                   }}
-                  className="
-                    pt-3
-                    w-full
-                    transform-gpu
-                  "
+                  className="pt-3 w-full"
                 >
                   <ShineCTA mobile />
                 </motion.div>

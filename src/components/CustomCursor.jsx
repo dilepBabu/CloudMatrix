@@ -5,26 +5,33 @@ import {
   useReducedMotion,
   useSpring,
 } from "framer-motion";
-import { useEffect, useState } from "react";
+
+import {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+
 import { useCursor } from "../context/CursorContext";
 
 /* =========================================================================
    PREMIUM DIRECTION CURSOR
    =========================================================================
-   Concept:
+   Design preserved:
    - No circles
    - No rings
    - No orbit
    - No ripple
-   - No oversized cursor
    - Sharp directional arrow
    - Small trailing accent
    - Compact interaction label
-   - High contrast in light + dark mode
+   - High contrast light/dark
    ========================================================================= */
 
 export default function CustomCursor() {
-  const { cursor } = useCursor() || {};
+  const cursorContext = useCursor();
+
+  const cursor = cursorContext?.cursor;
 
   const reducedMotion = useReducedMotion();
 
@@ -34,16 +41,14 @@ export default function CustomCursor() {
 
   /* =========================================================================
      RAW POINTER
-     ========================================================================= */
+  ========================================================================= */
 
   const mouseX = useMotionValue(-100);
   const mouseY = useMotionValue(-100);
 
   /* =========================================================================
      MAIN CURSOR SPRING
-
-     Fast enough to feel attached to the mouse.
-     ========================================================================= */
+  ========================================================================= */
 
   const x = useSpring(mouseX, {
     stiffness: 1600,
@@ -59,9 +64,7 @@ export default function CustomCursor() {
 
   /* =========================================================================
      TRAIL SPRING
-
-     Slightly slower than the main arrow.
-     ========================================================================= */
+  ========================================================================= */
 
   const trailX = useSpring(mouseX, {
     stiffness: 480,
@@ -77,7 +80,7 @@ export default function CustomCursor() {
 
   /* =========================================================================
      CURSOR STATE
-     ========================================================================= */
+  ========================================================================= */
 
   const label = cursor?.label || "";
   const variant = cursor?.variant || "default";
@@ -87,22 +90,8 @@ export default function CustomCursor() {
   const isSocial = variant === "social";
 
   /* =========================================================================
-     HIGH CONTRAST COLORS
-
-     These are deliberately different between themes.
-
-     LIGHT:
-       Arrow      -> almost black
-       Accent     -> strong blue
-       Label      -> white
-
-     DARK:
-       Arrow      -> white
-       Accent     -> cyan
-       Label      -> dark navy
-
-     This prevents the cursor from disappearing against the background.
-     ========================================================================= */
+     COLORS
+  ========================================================================= */
 
   const arrowColor =
     customColor ||
@@ -128,29 +117,27 @@ export default function CustomCursor() {
       : "#2563EB";
 
   /* =========================================================================
-     POINTER INITIALIZATION
-     ========================================================================= */
+     POINTER / THEME INITIALIZATION
+  ========================================================================= */
 
   useEffect(() => {
     if (typeof window === "undefined") {
       return undefined;
     }
 
-    const finePointer = window.matchMedia(
+    const root = document.documentElement;
+
+    const finePointerQuery = window.matchMedia(
       "(pointer: fine)"
     );
 
-    if (!finePointer.matches) {
-      return undefined;
-    }
-
-    setEnabled(true);
-
-    const root = document.documentElement;
+    const reducedMotionQuery = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    );
 
     /* -----------------------------------------------------------------------
-       THEME DETECTION
-       ----------------------------------------------------------------------- */
+       THEME
+    ----------------------------------------------------------------------- */
 
     const updateTheme = () => {
       setIsDark(
@@ -169,21 +156,83 @@ export default function CustomCursor() {
     });
 
     /* -----------------------------------------------------------------------
-       POINTER
-       ----------------------------------------------------------------------- */
+       CURSOR ENABLE STATE
+    ----------------------------------------------------------------------- */
+
+    const updateCursorAvailability = () => {
+      const canRun =
+        finePointerQuery.matches &&
+        !reducedMotionQuery.matches;
+
+      setEnabled(canRun);
+
+      if (canRun) {
+        root.classList.add(
+          "signal-cursor-active"
+        );
+      } else {
+        root.classList.remove(
+          "signal-cursor-active"
+        );
+      }
+    };
+
+    updateCursorAvailability();
+
+    /* -----------------------------------------------------------------------
+       POINTER MOVE
+    ----------------------------------------------------------------------- */
 
     const handlePointerMove = (event) => {
+      /*
+       * Only a real mouse / fine pointer should
+       * drive this cursor.
+       */
+      if (
+        event.pointerType &&
+        event.pointerType !== "mouse"
+      ) {
+        return;
+      }
+
       mouseX.set(event.clientX);
       mouseY.set(event.clientY);
     };
 
-    const handlePointerDown = () => {
+    /* -----------------------------------------------------------------------
+       POINTER DOWN
+    ----------------------------------------------------------------------- */
+
+    const handlePointerDown = (event) => {
+      if (
+        event.pointerType &&
+        event.pointerType !== "mouse"
+      ) {
+        return;
+      }
+
       setPressed(true);
     };
+
+    /* -----------------------------------------------------------------------
+       POINTER UP
+    ----------------------------------------------------------------------- */
 
     const handlePointerUp = () => {
       setPressed(false);
     };
+
+    /* -----------------------------------------------------------------------
+       POINTER ENTER
+    ----------------------------------------------------------------------- */
+
+    const handlePointerCancel = () => {
+      setPressed(false);
+    };
+
+    /* -----------------------------------------------------------------------
+       LISTENERS
+    ----------------------------------------------------------------------- */
 
     window.addEventListener(
       "pointermove",
@@ -209,13 +258,31 @@ export default function CustomCursor() {
       }
     );
 
-    /* -----------------------------------------------------------------------
-       HIDE NATIVE CURSOR
-       ----------------------------------------------------------------------- */
-
-    root.classList.add(
-      "signal-cursor-active"
+    window.addEventListener(
+      "pointercancel",
+      handlePointerCancel,
+      {
+        passive: true,
+      }
     );
+
+    /* -----------------------------------------------------------------------
+       MEDIA QUERY CHANGES
+    ----------------------------------------------------------------------- */
+
+    finePointerQuery.addEventListener(
+      "change",
+      updateCursorAvailability
+    );
+
+    reducedMotionQuery.addEventListener(
+      "change",
+      updateCursorAvailability
+    );
+
+    /* -----------------------------------------------------------------------
+       CLEANUP
+    ----------------------------------------------------------------------- */
 
     return () => {
       window.removeEventListener(
@@ -233,6 +300,21 @@ export default function CustomCursor() {
         handlePointerUp
       );
 
+      window.removeEventListener(
+        "pointercancel",
+        handlePointerCancel
+      );
+
+      finePointerQuery.removeEventListener(
+        "change",
+        updateCursorAvailability
+      );
+
+      reducedMotionQuery.removeEventListener(
+        "change",
+        updateCursorAvailability
+      );
+
       themeObserver.disconnect();
 
       root.classList.remove(
@@ -242,37 +324,37 @@ export default function CustomCursor() {
   }, [mouseX, mouseY]);
 
   /* =========================================================================
-     TOUCH DEVICES
-     ========================================================================= */
+     NOTHING ON TOUCH / REDUCED MOTION
+  ========================================================================= */
 
   if (!enabled) {
     return null;
   }
 
   /* =========================================================================
-     ARROW DIMENSIONS
-     ========================================================================= */
+     DIMENSIONS
+  ========================================================================= */
 
-  const arrowWidth = hasLabel || isSocial
-    ? 30
-    : 25;
+  const arrowWidth =
+    hasLabel || isSocial
+      ? 30
+      : 25;
 
-  const arrowHeight = hasLabel || isSocial
-    ? 36
-    : 30;
+  const arrowHeight =
+    hasLabel || isSocial
+      ? 36
+      : 30;
 
   return (
     <>
       {/* =====================================================================
           TRAILING ACCENT
-
-          Small directional stroke.
-          Not a circle.
-          ===================================================================== */}
+      ===================================================================== */}
 
       <motion.div
         aria-hidden="true"
         className="
+          signal-cursor-layer
           pointer-events-none
           fixed
           left-0
@@ -289,9 +371,17 @@ export default function CustomCursor() {
       >
         <motion.div
           animate={{
-            width: hasLabel ? 25 : 16,
-            opacity: hasLabel ? 0.85 : 0.5,
-            scaleX: pressed ? 0.75 : 1,
+            width: hasLabel
+              ? 25
+              : 16,
+
+            opacity: hasLabel
+              ? 0.85
+              : 0.5,
+
+            scaleX: pressed
+              ? 0.75
+              : 1,
           }}
           transition={{
             type: "spring",
@@ -304,9 +394,12 @@ export default function CustomCursor() {
             rounded-full
           "
           style={{
-            backgroundColor: accentColor,
+            backgroundColor:
+              accentColor,
+
             transform:
               "translate(-7px, 8px) rotate(-45deg)",
+
             boxShadow:
               `0 0 8px ${accentColor}55`,
           }}
@@ -315,11 +408,12 @@ export default function CustomCursor() {
 
       {/* =====================================================================
           MAIN CURSOR
-          ===================================================================== */}
+      ===================================================================== */}
 
       <motion.div
         aria-hidden="true"
         className="
+          signal-cursor-layer
           pointer-events-none
           fixed
           left-0
@@ -336,7 +430,7 @@ export default function CustomCursor() {
       >
         {/* ===================================================================
             ARROW
-            =================================================================== */}
+        =================================================================== */}
 
         <motion.div
           animate={{
@@ -367,10 +461,6 @@ export default function CustomCursor() {
             height: arrowHeight,
           }}
         >
-          {/* ===============================================================
-              OUTER ARROW
-              =============================================================== */}
-
           <svg
             width={arrowWidth}
             height={arrowHeight}
@@ -383,12 +473,7 @@ export default function CustomCursor() {
                 `drop-shadow(0 2px 4px ${arrowColor}45)`,
             }}
           >
-            {/* -------------------------------------------------------------
-                MAIN ARROW BODY
-
-                Slightly custom pointer shape rather than a normal CSS
-                triangle.
-                ------------------------------------------------------------- */}
+            {/* MAIN ARROW */}
 
             <path
               d="
@@ -404,11 +489,7 @@ export default function CustomCursor() {
               fill={arrowColor}
             />
 
-            {/* -------------------------------------------------------------
-                INTERNAL CUT
-
-                Creates a refined outlined/navigation appearance.
-                ------------------------------------------------------------- */}
+            {/* INTERNAL CUT */}
 
             <path
               d="
@@ -428,9 +509,7 @@ export default function CustomCursor() {
               }
             />
 
-            {/* -------------------------------------------------------------
-                ACCENT EDGE
-                ------------------------------------------------------------- */}
+            {/* ACCENT EDGE */}
 
             <path
               d="
@@ -449,14 +528,17 @@ export default function CustomCursor() {
 
         {/* ===================================================================
             INTERACTION LABEL
+        =================================================================== */}
 
-            Compact and clean.
-            =================================================================== */}
-
-        <AnimatePresence mode="wait">
+        <AnimatePresence
+          mode="wait"
+          initial={false}
+        >
           {(hasLabel || isSocial) && (
             <motion.div
-              key={label || "social"}
+              key={
+                label || "social"
+              }
               initial={{
                 opacity: 0,
                 x: -5,
@@ -473,10 +555,16 @@ export default function CustomCursor() {
                 scale: 0.94,
               }}
               transition={{
-                duration: reducedMotion
-                  ? 0
-                  : 0.18,
-                ease: [0.16, 1, 0.3, 1],
+                duration:
+                  reducedMotion
+                    ? 0
+                    : 0.18,
+                ease: [
+                  0.16,
+                  1,
+                  0.3,
+                  1,
+                ],
               }}
               className="
                 absolute
@@ -490,10 +578,15 @@ export default function CustomCursor() {
                 backdrop-blur-xl
               "
               style={{
-                backgroundColor: labelBg,
-                color: labelColor,
+                backgroundColor:
+                  labelBg,
+
+                color:
+                  labelColor,
+
                 borderColor:
                   `${labelBorder}45`,
+
                 boxShadow: `
                   0 8px 25px rgba(0,0,0,0.10),
                   0 0 0 1px ${labelBorder}10
@@ -512,8 +605,6 @@ export default function CustomCursor() {
                   tracking-[0.14em]
                 "
               >
-                {/* Small accent indicator */}
-
                 <span
                   className="
                     block
@@ -525,13 +616,15 @@ export default function CustomCursor() {
                   style={{
                     backgroundColor:
                       accentColor,
+
                     boxShadow:
                       `0 0 7px ${accentColor}80`,
                   }}
                 />
 
                 <span>
-                  {label || "Social"}
+                  {label ||
+                    "Social"}
                 </span>
 
                 <span
@@ -540,7 +633,8 @@ export default function CustomCursor() {
                     font-normal
                   "
                   style={{
-                    color: accentColor,
+                    color:
+                      accentColor,
                   }}
                 >
                   ↗
@@ -552,16 +646,14 @@ export default function CustomCursor() {
       </motion.div>
 
       {/* =====================================================================
-          SECONDARY ACCENT POINT
-
-          Only a tiny square, NOT a circle.
-          Gives the cursor a unique visual identity.
-          ===================================================================== */}
+          SECONDARY ACCENT
+      ===================================================================== */}
 
       {!reducedMotion && (
         <motion.div
           aria-hidden="true"
           className="
+            signal-cursor-layer
             pointer-events-none
             fixed
             left-0
@@ -573,6 +665,7 @@ export default function CustomCursor() {
             y,
             translateX: 18,
             translateY: 19,
+            willChange: "transform",
           }}
         >
           <motion.span
@@ -580,6 +673,7 @@ export default function CustomCursor() {
               opacity: hasLabel
                 ? 1
                 : 0.55,
+
               scale: pressed
                 ? 0.7
                 : 1,
@@ -596,6 +690,7 @@ export default function CustomCursor() {
             style={{
               backgroundColor:
                 accentColor,
+
               boxShadow:
                 `0 0 8px ${accentColor}88`,
             }}
