@@ -47,7 +47,7 @@ export const company = {
       "https://www.facebook.com/profile.php?id=61583160751530",
 
     instagram:
-      "https://www.instagram.com/cloudmatrix.tech",
+      "https://www.instagram.com/cloudmatrixtechnologies?cplk=MTE1Nmhwbm13YjVnNg==h",
 
     linkedin:
       "https://www.linkedin.com/company/cloud-matrix-technologies/",
